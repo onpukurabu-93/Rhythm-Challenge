@@ -18,15 +18,14 @@
       box-sizing: border-box;
     }
     .header { text-align: center; }
-    .header h1 { font-size: 24px; color: #333; margin: 0 0 5px; }
+    .header h1 { font-size: 22px; color: #333; margin: 0 0 5px; }
     .header p { font-size: 14px; color: #666; margin: 0; }
     
-    /* カードの立体回転アニメーション */
     .card-container {
       width: 280px;
       height: 280px;
       perspective: 1000px;
-      margin: 20px 0;
+      margin: 15px 0;
       cursor: pointer;
     }
     .card-inner {
@@ -65,86 +64,113 @@
 
     .controls {
       display: flex;
-      gap: 15px;
+      gap: 10px;
       margin-bottom: 10px;
     }
     .btn {
       background-color: #ff6b6b;
       color: white;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
-      padding: 12px 24px;
+      padding: 12px 20px;
       border: none;
       border-radius: 25px;
       cursor: pointer;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .btn-next {
-      background-color: #4ea8de;
-    }
-    .hint {
+    .btn-prev { background-color: #74b9ff; }
+    .btn-next { background-color: #0984e3; }
+    .counter {
       font-size: 14px;
-      color: #888;
+      color: #555;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
   <div class="header">
-    <h1>レベル1：おんぷのお名前と長さ</h1>
-    <p>カードをタップすると「うら」が見えるよ！</p>
+    <h1>レベル1：おんぷ・きゅうふ カード</h1>
+    <p>タップして「うら（なまえ・ながさ）」をみよう！</p>
   </div>
 
-  <!-- カードエリア -->
   <div class="card-container" id="cardContainer" onclick="flipCard()">
     <div class="card-inner">
       <div class="card-front">
-        <img id="imgFront" class="card-img" src="onpu5-4bu1.png" alt="おんぷ（おもて）">
+        <img id="imgFront" class="card-img" src="" alt="おもて">
       </div>
       <div class="card-back">
-        <img id="imgBack" class="card-img" src="onpu5-4bu2.png" alt="おんぷ（うら）">
+        <img id="imgBack" class="card-img" src="" alt="うら">
       </div>
     </div>
   </div>
 
-  <div class="hint" id="hintText">👆 タップしてうら（答え）をみてみよう</div>
+  <div class="counter" id="cardCounter">1 / 19</div>
 
-  <!-- 操作ボタン -->
   <div class="controls">
+    <button class="btn btn-prev" onclick="prevCard()">まえ</button>
     <button class="btn" onclick="flipCard()">めくる</button>
-    <button class="btn btn-next" onclick="nextCard()">つぎのカード</button>
+    <button class="btn btn-next" onclick="nextCard()">つぎ</button>
   </div>
 
   <script>
-    // レベル1で使うカードデータのリスト（おもて画像, うら画像）
+    // 画像リスト（スクショの命名規則に完全対応）
     const cards = [
-      { front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' }, // 4分音符
-      { front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' }, // 2分音符
-      { front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' }, // 全音符
-      { front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' }  // 8分音符
+      // 音符
+      { front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
+      { front: 'onpu2-futen-2bu1.png', back: 'onpu2-futen-2bu2.png' },
+      { front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
+      { front: 'onpu4-futen-4bu1.png', back: 'onpu4-futen-4bu2.png' },
+      { front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
+      { front: 'onpu6-futen-8bu1.png', back: 'onpu6-futen-8bu2.png' },
+      { front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
+      { front: 'onpu8-8bu1.png', back: 'onpu8-8bu2.png' },
+      { front: 'onpu9-futen-16bu1.png', back: 'onpu9-futen-16bu2.png' },
+      { front: 'onpu10-futen-16bu1.png', back: 'onpu10-futen-16bu2.png' },
+
+      // 休符
+      { front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
+      { front: 'kyuufu2-futen-2bu1.png', back: 'kyuufu2-futen-2bu2.png' },
+      { front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
+      { front: 'kyuufu4-futen-4bu1.png', back: 'kyuufu4-futen-4bu2.png' },
+      { front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
+      { front: 'kyuufu6-futen-8bu1.png', back: 'kyuufu6-futen-8bu2.png' },
+      { front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
+      { front: 'kyuufu8-futen-16bu1.png', back: 'kyuufu8-futen-16bu2.png' },
+      { front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
     ];
 
     let currentIndex = 0;
     const container = document.getElementById('cardContainer');
     const imgFront = document.getElementById('imgFront');
     const imgBack = document.getElementById('imgBack');
+    const counter = document.getElementById('cardCounter');
 
-    // カードをめくる関数
+    function updateCard() {
+      container.classList.remove('flipped');
+      setTimeout(() => {
+        imgFront.src = cards[currentIndex].front;
+        imgBack.src = cards[currentIndex].back;
+        counter.innerText = `${currentIndex + 1} / ${cards.length}`;
+      }, 200);
+    }
+
     function flipCard() {
       container.classList.toggle('flipped');
     }
 
-    // 次のカードに進む関数
     function nextCard() {
-      // 一旦表に戻してから切り替え
-      container.classList.remove('flipped');
-      
-      setTimeout(() => {
-        currentIndex = (currentIndex + 1) % cards.length;
-        imgFront.src = cards[currentIndex].front;
-        imgBack.src = cards[currentIndex].back;
-      }, 300);
+      currentIndex = (currentIndex + 1) % cards.length;
+      updateCard();
     }
+
+    function prevCard() {
+      currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+      updateCard();
+    }
+
+    // 初回読み込み
+    updateCard();
   </script>
 </body>
 </html>
