@@ -105,7 +105,7 @@
     </div>
   </div>
 
-  <div class="counter" id="cardCounter">1 / 9</div>
+  <div class="counter" id="cardCounter">1 / 10</div>
 
   <div class="controls">
     <button class="btn btn-prev" onclick="prevCard()">まえ</button>
@@ -114,20 +114,21 @@
   </div>
 
   <script>
-    // レベル1用リスト（実際のファイル名に完全に合わせた9種類）
+    // レベル1用リスト（音符5種・休符5種の計10種類）
     const cards = [
-      // 基本音符（4種）
-      { front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },       // 全音符
-      { front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },       // 2分音符
-      { front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },       // 4分音符
-      { front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },       // 8分音符
+      // 基本音符（5種）
+      { front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },         // 全音符
+      { front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },         // 2分音符
+      { front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },         // 4分音符
+      { front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },         // 8分音符
+      { front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' },     // 16分音符
 
       // 基本休符（5種）
-      { front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },   // 全休符
-      { front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },   // 2分休符
-      { front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },   // 4分休符
-      { front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },   // 8分休符
-      { front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }  // 16分休符
+      { front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },     // 全休符
+      { front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },     // 2分休符
+      { front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },     // 4分休符
+      { front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },     // 8分休符
+      { front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }    // 16分休符
     ];
 
     let currentIndex = 0;
