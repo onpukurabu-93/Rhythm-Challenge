@@ -1,1 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>リズムカードテスト</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100vh;
+      box-sizing: border-box;
+      padding: 20px;
+    }
+    .header { text-align: center; }
+    .card-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .card-image {
+      width: 250px;
+      height: 250px;
+      object-fit: contain;
+      border: 4px solid transparent;
+      border-radius: 20px;
+      transition: all 0.1s ease;
+    }
+    .card-image.active {
+      border-color: #ff4757;
+      box-shadow: 0 0 20px #ff4757;
+      transform: scale(1.05);
+    }
+    .text-label {
+      font-size: 32px;
+      font-weight: bold;
+      color: #333;
+      margin-top: 15px;
+    }
+    .controls {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .btn {
+      background-color: #2ed573;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 15px 40px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h2>1点ラ（440Hz）で「たん」</h2>
+  </div>
+
+  <div class="card-area">
+    <img id="cardImg" class="card-image" src="note_tan.png" alt="四分音符" onerror="this.src='https://via.placeholder.com/250?text=Tan';">
+    <div class="text-label">たん</div>
+  </div>
+
+  <div class="controls">
+    <button id="startBtn" class="btn">マイクをスタート</button>
+    <div id="statusText" class="status">ボタンを押して声をだしてね</div>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const statusText = document.getElementById('statusText');
+    const cardImg = document.getElementById('cardImg');
+
+    let audioContext;
+    let analyser;
+    let microphone;
+    let isListening = false;
+
+    startBtn.addEventListener('click', async () => {
+      if (isListening) return;
+
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphone = audioContext.createMediaStreamSource(stream);
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        microphone.connect(analyser);
+
+        isListening = true;
+        startBtn.style.display = 'none';
+        statusText.innerText = 'マイクON！「1点ラ」で声をだしてみてね';
+
+        detectPitch();
+      } catch (err) {
+        alert('マイクの許可が必要です');
+      }
+    });
+
+    function detectPitch() {
+      const buffer = new Float32Array(analyser.fftSize);
+      analyser.getFloatTimeDomainData(buffer);
+
+      const pitch = autoCorrelate(buffer, audioContext.sampleRate);
+
+      if (pitch !== -1 && pitch >= 410 && pitch <= 470) {
+        cardImg.classList.add('active');
+        statusText.innerText = `ピッタリ！ (${Math.round(pitch)} Hz)`;
+      } else {
+        cardImg.classList.remove('active');
+        if (pitch !== -1) {
+          statusText.innerText = `声の高さ: ${Math.round(pitch)} Hz`;
+        }
+      }
+
+      requestAnimationFrame(detectPitch);
+    }
+
+    function autoCorrelate(buf, sampleRate) {
+      let SIZE = buf.length;
+      let rms = 0;
+      for (let i = 0; i < SIZE; i++) {
+        let val = buf[i];
+        rms += val * val;
+      }
+      rms = Math.sqrt(rms / SIZE);
+      if (rms < 0.01) return -1;
+
+      let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+      for (let i = 0; i < SIZE / 2; i++) {
+        if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+      }
+      for (let i = 1; i < SIZE / 2; i++) {
+        if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+      }
+
+      buf = buf.slice(r1, r2);
+      SIZE = buf.length;
+
+      let c = new Array(SIZE).fill(0);
+      for (let i = 0; i < SIZE; i++) {
+        for (let j = 0; j < SIZE - i; j++) {
+          c[i] = c[i] + buf[j] * buf[j + i];
+        }
+      }
+
+      let d = 0;
+      while (c[d] > c[d + 1]) d++;
+      let maxval = -1, maxpos = -1;
+      for (let i = d; i < SIZE; i++) {
+        if (c[i] > maxval) {
+          maxval = c[i];
+          maxpos = i;
+        }
+      }
+      let T0 = maxpos;
+
+      return sampleRate / T0;
+    }
+  </script>
+</body>
+</html>
 
