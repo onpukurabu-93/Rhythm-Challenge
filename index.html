@@ -90,7 +90,7 @@
 <body>
 
   <div class="header">
-    <h1>レベル1：おんぷ・きゅうふ カード</h1>
+    <h1>レベル1：基本のおんぷ・きゅうふ</h1>
     <p>タップして「うら（なまえ・ながさ）」をみよう！</p>
   </div>
 
@@ -105,7 +105,7 @@
     </div>
   </div>
 
-  <div class="counter" id="cardCounter">1 / 19</div>
+  <div class="counter" id="cardCounter">1 / 10</div>
 
   <div class="controls">
     <button class="btn btn-prev" onclick="prevCard()">まえ</button>
@@ -114,30 +114,20 @@
   </div>
 
   <script>
-    // 画像リスト（スクショの命名規則に完全対応）
+    // レベル1用リスト（基本音符・休符のみ、付点・複数連結・16分除外）
     const cards = [
-      // 音符
-      { front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
-      { front: 'onpu2-futen-2bu1.png', back: 'onpu2-futen-2bu2.png' },
-      { front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
-      { front: 'onpu4-futen-4bu1.png', back: 'onpu4-futen-4bu2.png' },
-      { front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
-      { front: 'onpu6-futen-8bu1.png', back: 'onpu6-futen-8bu2.png' },
-      { front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
-      { front: 'onpu8-8bu1.png', back: 'onpu8-8bu2.png' },
-      { front: 'onpu9-futen-16bu1.png', back: 'onpu9-futen-16bu2.png' },
-      { front: 'onpu10-futen-16bu1.png', back: 'onpu10-futen-16bu2.png' },
+      // 基本音符
+      { front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },       // 全音符
+      { front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },       // 2分音符
+      { front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },       // 4分音符
+      { front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },       // 8分音符
 
-      // 休符
-      { front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
-      { front: 'kyuufu2-futen-2bu1.png', back: 'kyuufu2-futen-2bu2.png' },
-      { front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
-      { front: 'kyuufu4-futen-4bu1.png', back: 'kyuufu4-futen-4bu2.png' },
-      { front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
-      { front: 'kyuufu6-futen-8bu1.png', back: 'kyuufu6-futen-8bu2.png' },
-      { front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
-      { front: 'kyuufu8-futen-16bu1.png', back: 'kyuufu8-futen-16bu2.png' },
-      { front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
+      // 基本休符
+      { front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },   // 全休符
+      { front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },   // 2分休符
+      { front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },   // 4分休符
+      { front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },   // 8分休符
+      { front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }  // 16分休符
     ];
 
     let currentIndex = 0;
