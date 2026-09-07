@@ -3,180 +3,148 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>リズムカードテスト</title>
+  <title>リズムカード - レベル1</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
+      padding: 20px;
       font-family: sans-serif;
-      background-color: #ffffff;
+      background-color: #f7f9fc;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      height: 100vh;
+      min-height: 90vh;
       box-sizing: border-box;
-      padding: 20px;
     }
     .header { text-align: center; }
-    .card-area {
-      flex: 1;
+    .header h1 { font-size: 24px; color: #333; margin: 0 0 5px; }
+    .header p { font-size: 14px; color: #666; margin: 0; }
+    
+    /* カードの立体回転アニメーション */
+    .card-container {
+      width: 280px;
+      height: 280px;
+      perspective: 1000px;
+      margin: 20px 0;
+      cursor: pointer;
+    }
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s ease;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      border-radius: 20px;
+    }
+    .card-container.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      background: #ffffff;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 100%;
+      border: 3px solid #e0e0e0;
+      box-sizing: border-box;
     }
-    .card-image {
-      width: 250px;
-      height: 250px;
+    .card-back {
+      transform: rotateY(180deg);
+    }
+    .card-img {
+      width: 90%;
+      height: 90%;
       object-fit: contain;
-      border: 4px solid transparent;
-      border-radius: 20px;
-      transition: all 0.1s ease;
     }
-    .card-image.active {
-      border-color: #ff4757;
-      box-shadow: 0 0 20px #ff4757;
-      transform: scale(1.05);
-    }
-    .text-label {
-      font-size: 32px;
-      font-weight: bold;
-      color: #333;
-      margin-top: 15px;
-    }
+
     .controls {
-      width: 100%;
-      text-align: center;
-      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+      margin-bottom: 10px;
     }
     .btn {
-      background-color: #2ed573;
+      background-color: #ff6b6b;
       color: white;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
-      padding: 15px 40px;
+      padding: 12px 24px;
       border: none;
-      border-radius: 30px;
+      border-radius: 25px;
       cursor: pointer;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .status {
-      margin-top: 10px;
+    .btn-next {
+      background-color: #4ea8de;
+    }
+    .hint {
       font-size: 14px;
-      color: #666;
+      color: #888;
     }
   </style>
 </head>
 <body>
 
   <div class="header">
-    <h2>1点ラ（440Hz）で「たん」</h2>
+    <h1>レベル1：おんぷのお名前と長さ</h1>
+    <p>カードをタップすると「うら」が見えるよ！</p>
   </div>
 
-  <div class="card-area">
-    <img id="cardImg" class="card-image" src="note_tan.png" alt="四分音符" onerror="this.src='https://via.placeholder.com/250?text=Tan';">
-    <div class="text-label">たん</div>
+  <!-- カードエリア -->
+  <div class="card-container" id="cardContainer" onclick="flipCard()">
+    <div class="card-inner">
+      <div class="card-front">
+        <img id="imgFront" class="card-img" src="onpu5-4bu1.png" alt="おんぷ（おもて）">
+      </div>
+      <div class="card-back">
+        <img id="imgBack" class="card-img" src="onpu5-4bu2.png" alt="おんぷ（うら）">
+      </div>
+    </div>
   </div>
 
+  <div class="hint" id="hintText">👆 タップしてうら（答え）をみてみよう</div>
+
+  <!-- 操作ボタン -->
   <div class="controls">
-    <button id="startBtn" class="btn">マイクをスタート</button>
-    <div id="statusText" class="status">ボタンを押して声をだしてね</div>
+    <button class="btn" onclick="flipCard()">めくる</button>
+    <button class="btn btn-next" onclick="nextCard()">つぎのカード</button>
   </div>
 
   <script>
-    const startBtn = document.getElementById('startBtn');
-    const statusText = document.getElementById('statusText');
-    const cardImg = document.getElementById('cardImg');
+    // レベル1で使うカードデータのリスト（おもて画像, うら画像）
+    const cards = [
+      { front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' }, // 4分音符
+      { front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' }, // 2分音符
+      { front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' }, // 全音符
+      { front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' }  // 8分音符
+    ];
 
-    let audioContext;
-    let analyser;
-    let microphone;
-    let isListening = false;
+    let currentIndex = 0;
+    const container = document.getElementById('cardContainer');
+    const imgFront = document.getElementById('imgFront');
+    const imgBack = document.getElementById('imgBack');
 
-    startBtn.addEventListener('click', async () => {
-      if (isListening) return;
-
-      try {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        microphone = audioContext.createMediaStreamSource(stream);
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 2048;
-        microphone.connect(analyser);
-
-        isListening = true;
-        startBtn.style.display = 'none';
-        statusText.innerText = 'マイクON！「1点ラ」で声をだしてみてね';
-
-        detectPitch();
-      } catch (err) {
-        alert('マイクの許可が必要です');
-      }
-    });
-
-    function detectPitch() {
-      const buffer = new Float32Array(analyser.fftSize);
-      analyser.getFloatTimeDomainData(buffer);
-
-      const pitch = autoCorrelate(buffer, audioContext.sampleRate);
-
-      if (pitch !== -1 && pitch >= 410 && pitch <= 470) {
-        cardImg.classList.add('active');
-        statusText.innerText = `ピッタリ！ (${Math.round(pitch)} Hz)`;
-      } else {
-        cardImg.classList.remove('active');
-        if (pitch !== -1) {
-          statusText.innerText = `声の高さ: ${Math.round(pitch)} Hz`;
-        }
-      }
-
-      requestAnimationFrame(detectPitch);
+    // カードをめくる関数
+    function flipCard() {
+      container.classList.toggle('flipped');
     }
 
-    function autoCorrelate(buf, sampleRate) {
-      let SIZE = buf.length;
-      let rms = 0;
-      for (let i = 0; i < SIZE; i++) {
-        let val = buf[i];
-        rms += val * val;
-      }
-      rms = Math.sqrt(rms / SIZE);
-      if (rms < 0.01) return -1;
-
-      let r1 = 0, r2 = SIZE - 1, thres = 0.2;
-      for (let i = 0; i < SIZE / 2; i++) {
-        if (Math.abs(buf[i]) < thres) { r1 = i; break; }
-      }
-      for (let i = 1; i < SIZE / 2; i++) {
-        if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
-      }
-
-      buf = buf.slice(r1, r2);
-      SIZE = buf.length;
-
-      let c = new Array(SIZE).fill(0);
-      for (let i = 0; i < SIZE; i++) {
-        for (let j = 0; j < SIZE - i; j++) {
-          c[i] = c[i] + buf[j] * buf[j + i];
-        }
-      }
-
-      let d = 0;
-      while (c[d] > c[d + 1]) d++;
-      let maxval = -1, maxpos = -1;
-      for (let i = d; i < SIZE; i++) {
-        if (c[i] > maxval) {
-          maxval = c[i];
-          maxpos = i;
-        }
-      }
-      let T0 = maxpos;
-
-      return sampleRate / T0;
+    // 次のカードに進む関数
+    function nextCard() {
+      // 一旦表に戻してから切り替え
+      container.classList.remove('flipped');
+      
+      setTimeout(() => {
+        currentIndex = (currentIndex + 1) % cards.length;
+        imgFront.src = cards[currentIndex].front;
+        imgBack.src = cards[currentIndex].back;
+      }, 300);
     }
   </script>
 </body>
 </html>
-
