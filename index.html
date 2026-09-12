@@ -2,166 +2,286 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>リズムカード - レベル1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>リズムカード学習アプリ</title>
   <style>
     body {
       margin: 0;
-      padding: 20px;
+      padding: 0;
       font-family: sans-serif;
-      background-color: #f7f9fc;
+      background-color: #f0f4f8;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      min-height: 90vh;
-      box-sizing: border-box;
-    }
-    .header { text-align: center; }
-    .header h1 { font-size: 22px; color: #333; margin: 0 0 5px; }
-    .header p { font-size: 14px; color: #666; margin: 0; }
-    
-    .card-container {
-      width: 280px;
-      height: 280px;
-      perspective: 1000px;
-      margin: 15px 0;
-      cursor: pointer;
-    }
-    .card-inner {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-      transition: transform 0.6s ease;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      border-radius: 20px;
-    }
-    .card-container.flipped .card-inner {
-      transform: rotateY(180deg);
-    }
-    .card-front, .card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      border-radius: 20px;
-      background: #ffffff;
-      display: flex;
-      align-items: center;
       justify-content: center;
-      border: 3px solid #e0e0e0;
-      box-sizing: border-box;
-    }
-    .card-back {
-      transform: rotateY(180deg);
-    }
-    .card-img {
-      width: 90%;
-      height: 90%;
-      object-fit: contain;
+      height: 100vh;
+      overflow: hidden;
     }
 
-    .controls {
+    /* 画面切り替え用の共通設定 */
+    .screen {
+      display: none;
+      width: 100%;
+      height: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      padding: 20px 10px;
+    }
+    .active { display: flex; }
+
+    /* メニュー画面スタイル */
+    .menu-title { font-size: 24px; color: #333; margin-top: 20px; }
+    .level-list { width: 90%; max-width: 320px; display: flex; flex-direction: column; gap: 15px; }
+    .level-btn {
+      background: #ffffff;
+      border: 3px solid #4ea8de;
+      padding: 15px;
+      border-radius: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
       display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .btn {
-      background-color: #ff6b6b;
-      color: white;
-      font-size: 15px;
-      font-weight: bold;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 25px;
+      justify-content: space-between;
+      align-items: center;
       cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
-    .btn-prev { background-color: #74b9ff; }
-    .btn-next { background-color: #0984e3; }
-    .counter {
-      font-size: 14px;
-      color: #555;
+
+    /* 練習・トレーニング画面スタイル */
+    .header h1 { font-size: 20px; color: #333; margin: 0; text-align: center; }
+    .swiper-container { width: 100%; height: 55vh; display: flex; align-items: center; justify-content: center; }
+    .card-container { width: 85vw; max-width: 320px; height: 100%; max-height: 380px; perspective: 1000px; }
+    .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.12); border-radius: 24px; }
+    .card-container.flipped .card-inner { transform: rotateY(180deg); }
+    .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; background: #ffffff; display: flex; align-items: center; justify-content: center; border: 4px solid #e2e8f0; box-sizing: border-box; }
+    .card-back { transform: rotateY(180deg); }
+    .card-img { width: 85%; height: 85%; object-fit: contain; }
+
+    /* 震えるアニメーション（不正解時） */
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-15px); }
+      40% { transform: translateX(15px); }
+      60% { transform: translateX(-10px); }
+      80% { transform: translateX(10px); }
+      100% { transform: translateX(0); }
+    }
+    .shake { animation: shake 0.4s ease; }
+
+    /* ⭕️ ❌ オーバーレイ演出 */
+    .overlay {
+      position: absolute;
+      font-size: 120px;
       font-weight: bold;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
     }
+    .overlay.correct { color: #2ed573; opacity: 1; }
+    .overlay.wrong { color: #ff4757; opacity: 1; }
+
+    /* ボタン類 */
+    .btn { background: #ff6b6b; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 25px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .btn-menu { background: #a4b0be; margin-top: 5px; }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>レベル1：基本のおんぷ・きゅうふ</h1>
-    <p>タップして「うら（なまえ・ながさ）」をみよう！</p>
+  <!-- 1. メニュー画面 -->
+  <div id="screenMenu" class="screen active">
+    <h1 class="menu-title">リズムのおんがく</h1>
+    <div class="level-list">
+      <div class="level-btn" onclick="startLevel1()">
+        <span>Lv.1 おんぷのお名前</span>
+        <span>🔓</span>
+      </div>
+      <div class="level-btn" style="opacity: 0.5;">
+        <span>Lv.2 おんぷの長さ</span>
+        <span>🔒</span>
+      </div>
+      <div class="level-btn" style="opacity: 0.5;">
+        <span>Lv.3 くちリズム</span>
+        <span>🔒</span>
+      </div>
+    </div>
+    <div></div>
   </div>
 
-  <div class="card-container" id="cardContainer" onclick="flipCard()">
-    <div class="card-inner">
-      <div class="card-front">
-        <img id="imgFront" class="card-img" src="" alt="おもて">
+  <!-- 2. レベル1 練習モード（スワイプ） -->
+  <div id="screenPractice" class="screen">
+    <div class="header">
+      <h1>Lv.1 れんしゅう</h1>
+      <p style="font-size: 12px; color: #666; margin: 3px 0 0;">スワイプでめくる / タップで答え</p>
+    </div>
+    <div class="swiper-container" id="swipeArea">
+      <div class="card-container" id="cardContainer" onclick="flipCard()">
+        <div class="card-inner" id="cardInner">
+          <div class="card-front"><img id="imgFront" class="card-img" src="" alt="おもて"></div>
+          <div class="card-back"><img id="imgBack" class="card-img" src="" alt="うら"></div>
+        </div>
       </div>
-      <div class="card-back">
-        <img id="imgBack" class="card-img" src="" alt="うら">
-      </div>
+    </div>
+    <div style="text-align: center;">
+      <button class="btn" onclick="startTraining()">🎤 トレーニングへ</button><br>
+      <button class="btn btn-menu" onclick="showMenu()">メニューへもどる</button>
     </div>
   </div>
 
-  <div class="counter" id="cardCounter">1 / 10</div>
-
-  <div class="controls">
-    <button class="btn btn-prev" onclick="prevCard()">まえ</button>
-    <button class="btn" onclick="flipCard()">めくる</button>
-    <button class="btn btn-next" onclick="nextCard()">つぎ</button>
+  <!-- 3. レベル1 トレーニングモード（マイク＆演出付き） -->
+  <div id="screenTraining" class="screen">
+    <div class="header">
+      <h1>Lv.1 トレーニング</h1>
+      <p id="quizPrompt" style="font-size: 14px; color: #333; margin: 3px 0 0;">なまえを こたえてね！</p>
+    </div>
+    <div class="swiper-container" style="position: relative;">
+      <div class="card-container" id="quizCardContainer">
+        <div class="card-inner" id="quizCardInner">
+          <div class="card-front"><img id="quizImg" class="card-img" src="" alt="問題"></div>
+        </div>
+      </div>
+      <div id="markOverlay" class="overlay"></div>
+    </div>
+    <div style="text-align: center;">
+      <button class="btn" style="background:#2ed573;" onclick="listenVoice()">🎤 こたえる</button><br>
+      <button class="btn btn-menu" onclick="showMenu()">おわる</button>
+    </div>
   </div>
 
   <script>
-    // レベル1用リスト（音符5種・休符5種の計10種類）
     const cards = [
-      // 基本音符（5種）
-      { front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },         // 全音符
-      { front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },         // 2分音符
-      { front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },         // 4分音符
-      { front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },         // 8分音符
-      { front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' },     // 16分音符
-
-      // 基本休符（5種）
-      { front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },     // 全休符
-      { front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },     // 2分休符
-      { front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },     // 4分休符
-      { front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },     // 8分休符
-      { front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }    // 16分休符
+      { name: 'しぶおんぷ', front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
+      { name: 'にぶおんぷ', front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
+      { name: 'ぜんおんぷ', front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
+      { name: 'はちぶおんぷ', front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
+      { name: 'じゅうろくぶおんぷ', front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' },
+      { name: 'ぜんきゅうふ', front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
+      { name: 'にぶきゅうふ', front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
+      { name: 'しぶきゅうふ', front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
+      { name: 'はちぶきゅうふ', front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
+      { name: 'じゅうろくぶきゅうふ', front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
     ];
 
     let currentIndex = 0;
-    const container = document.getElementById('cardContainer');
-    const imgFront = document.getElementById('imgFront');
-    const imgBack = document.getElementById('imgBack');
-    const counter = document.getElementById('cardCounter');
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    function updateCard() {
+    // 効果音再生（ピンポン ＆ ポコン）
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'correct') {
+        // ピンポン音
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime); // ミ
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15); // ラ
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+      } else {
+        // ヘンテコ音（ポコン…）
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+      }
+    }
+
+    // 画面切替
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function showMenu() { showScreen('screenMenu'); }
+    function startLevel1() { showScreen('screenPractice'); updatePracticeCard(); }
+
+    // 練習モード（カード更新・スワイプ）
+    function updatePracticeCard() {
+      const container = document.getElementById('cardContainer');
       container.classList.remove('flipped');
       setTimeout(() => {
-        imgFront.src = cards[currentIndex].front;
-        imgBack.src = cards[currentIndex].back;
-        counter.innerText = `${currentIndex + 1} / ${cards.length}`;
-      }, 200);
+        document.getElementById('imgFront').src = cards[currentIndex].front;
+        document.getElementById('imgBack').src = cards[currentIndex].back;
+      }, 150);
+    }
+    function flipCard() { document.getElementById('cardContainer').classList.toggle('flipped'); }
+
+    let startX = 0;
+    const swipeArea = document.getElementById('swipeArea');
+    swipeArea.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive: true});
+    swipeArea.addEventListener('touchend', e => {
+      const diff = startX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 40) {
+        currentIndex = diff > 0 ? (currentIndex + 1) % cards.length : (currentIndex - 1 + cards.length) % cards.length;
+        updatePracticeCard();
+      }
+    });
+
+    // トレーニングモード＆マイク判定
+    let quizIndex = 0;
+    function startTraining() {
+      showScreen('screenTraining');
+      quizIndex = Math.floor(Math.random() * cards.length);
+      document.getElementById('quizImg').src = cards[quizIndex].front;
+      document.getElementById('quizPrompt').innerText = "「🎤 こたえる」を押して話してね！";
     }
 
-    function flipCard() {
-      container.classList.toggle('flipped');
+    function listenVoice() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("お使いのブラウザは音声認識に対応していません（Safari/Chrome推奨）");
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'ja-JP';
+      document.getElementById('quizPrompt').innerText = "きいています...";
+      recognition.start();
+
+      recognition.onresult = (e) => {
+        const text = e.results[0][0].transcript;
+        const target = cards[quizIndex].name;
+        document.getElementById('quizPrompt').innerText = `あなたのこたえ: 「${text}」`;
+
+        if (text.includes(target) || target.includes(text)) {
+          showResult(true);
+        } else {
+          showResult(false);
+        }
+      };
+
+      recognition.onerror = () => {
+        document.getElementById('quizPrompt').innerText = "よくきこえなかったよ。もういちど！";
+      };
     }
 
-    function nextCard() {
-      currentIndex = (currentIndex + 1) % cards.length;
-      updateCard();
-    }
+    // ⭕️ ❌ の結果演出
+    function showResult(isCorrect) {
+      const overlay = document.getElementById('markOverlay');
+      const cardInner = document.getElementById('quizCardInner');
 
-    function prevCard() {
-      currentIndex = (currentIndex - 1 + cards.length) % cards.length;
-      updateCard();
-    }
+      if (isCorrect) {
+        overlay.innerText = '⭕️';
+        overlay.className = 'overlay correct';
+        playSound('correct');
+      } else {
+        overlay.innerText = '❌';
+        overlay.className = 'overlay wrong';
+        cardInner.classList.add('shake');
+        playSound('wrong');
+      }
 
-    // 初回読み込み
-    updateCard();
+      setTimeout(() => {
+        overlay.className = 'overlay';
+        cardInner.classList.remove('shake');
+        startTraining(); // 次の問題へ
+      }, 1200);
+    }
   </script>
 </body>
 </html>
