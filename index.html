@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>リズムカード学習アプリ</title>
+  <title>リズムカード</title>
   <style>
     body {
       margin: 0;
@@ -29,18 +29,19 @@
       align-items: center;
       justify-content: space-between;
       box-sizing: border-box;
-      padding: 20px 10px;
+      padding: 15px 10px;
     }
     .active { display: flex; }
 
-    .menu-title { font-size: 24px; color: #333; margin-top: 20px; }
-    .level-list { width: 90%; max-width: 320px; display: flex; flex-direction: column; gap: 15px; }
+    /* 文字サイズを大幅に大きく変更 */
+    .menu-title { font-size: 32px; font-weight: bold; color: #333; margin-top: 20px; }
+    .level-list { width: 90%; max-width: 340px; display: flex; flex-direction: column; gap: 15px; }
     .level-btn {
       background: #ffffff;
-      border: 3px solid #4ea8de;
-      padding: 15px;
-      border-radius: 15px;
-      font-size: 18px;
+      border: 4px solid #4ea8de;
+      padding: 18px;
+      border-radius: 20px;
+      font-size: 22px;
       font-weight: bold;
       color: #333;
       display: flex;
@@ -50,8 +51,8 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
 
-    .header h1 { font-size: 20px; color: #333; margin: 0; text-align: center; }
-    .swiper-container { width: 100%; height: 50vh; display: flex; align-items: center; justify-content: center; }
+    .header-title { font-size: 28px; font-weight: bold; color: #333; margin: 0; text-align: center; }
+    .swiper-container { width: 100%; height: 48vh; display: flex; align-items: center; justify-content: center; }
     .card-container { width: 85vw; max-width: 320px; height: 100%; max-height: 380px; perspective: 1000px; cursor: pointer; }
     .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.12); border-radius: 24px; }
     .card-container.flipped .card-inner { transform: rotateY(180deg); }
@@ -71,7 +72,7 @@
 
     .overlay {
       position: absolute;
-      font-size: 120px;
+      font-size: 140px;
       font-weight: bold;
       pointer-events: none;
       opacity: 0;
@@ -84,10 +85,10 @@
       background: #ff6b6b;
       color: white;
       border: none;
-      padding: 12px 24px;
-      font-size: 16px;
+      padding: 14px 28px;
+      font-size: 20px;
       font-weight: bold;
-      border-radius: 25px;
+      border-radius: 30px;
       cursor: pointer;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       -webkit-touch-callout: none;
@@ -97,18 +98,26 @@
       touch-action: manipulation;
     }
     .btn:active { transform: scale(0.95); background: #ff4757; }
-    .btn-menu { background: #a4b0be; margin-top: 5px; }
+    .btn-menu { background: #a4b0be; margin-top: 8px; }
 
+    /* 表示テキスト枠を大きく見やすく */
     .debug-box {
-      font-size: 15px;
+      font-size: 22px;
       font-weight: bold;
       color: #2d3748;
       background: #edf2f7;
-      padding: 8px 12px;
-      border-radius: 8px;
-      margin-top: 5px;
-      min-height: 24px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      margin-top: 8px;
+      min-height: 32px;
       text-align: center;
+    }
+    
+    .score-box {
+      font-size: 18px;
+      font-weight: bold;
+      color: #4a5568;
+      margin-top: 4px;
     }
   </style>
 </head>
@@ -118,27 +127,26 @@
   <div id="screenMenu" class="screen active">
     <h1 class="menu-title">リズムのおんがく</h1>
     <div class="level-list">
-      <div class="level-btn" onclick="startLevel1()">
-        <span>Lv.1 おんぷのお名前</span>
+      <div class="level-btn" onclick="startLevel(1)">
+        <span>Lv.1 おんぷ</span>
         <span>🔓</span>
       </div>
-      <div class="level-btn" style="opacity: 0.5;">
-        <span>Lv.2 きゅうふのお名前</span>
-        <span>🔒</span>
+      <div class="level-btn" id="btnLv2" style="opacity: 0.5;" onclick="startLevel(2)">
+        <span>Lv.2 きゅうふ</span>
+        <span id="lockLv2">🔒</span>
       </div>
-      <div class="level-btn" style="opacity: 0.5;">
-        <span>Lv.3 ふてんおんぷ</span>
-        <span>🔒</span>
+      <div class="level-btn" id="btnLv3" style="opacity: 0.5;" onclick="startLevel(3)">
+        <span>Lv.3 ふてん</span>
+        <span id="lockLv3">🔒</span>
       </div>
     </div>
     <div></div>
   </div>
 
-  <!-- 2. レベル1 練習モード -->
+  <!-- 2. 練習モード -->
   <div id="screenPractice" class="screen">
-    <div class="header">
-      <h1>Lv.1 おんぷのお名前</h1>
-      <p style="font-size: 12px; color: #666; margin: 3px 0 0;">スワイプでめくる / タップで答え</p>
+    <div style="text-align:center;">
+      <h1 class="header-title" id="practiceTitle">Lv.1 れんしゅう</h1>
     </div>
     <div class="swiper-container" id="swipeArea">
       <div class="card-container" id="cardContainer" onclick="flipCard()">
@@ -149,17 +157,17 @@
       </div>
     </div>
     <div style="text-align: center; margin-bottom: 20px;">
-      <button class="btn" onclick="startTraining()">🎤 トレーニングへ</button><br>
-      <button class="btn btn-menu" onclick="showMenu()">メニューへもどる</button>
+      <button class="btn" onclick="startTraining()">🎤 トレーニング</button><br>
+      <button class="btn btn-menu" onclick="showMenu()">もどる</button>
     </div>
   </div>
 
-  <!-- 3. レベル1 トレーニングモード -->
+  <!-- 3. トレーニングモード -->
   <div id="screenTraining" class="screen">
-    <div class="header">
-      <h1>Lv.1 トレーニング</h1>
-      <p id="quizPrompt" style="font-size: 14px; color: #333; margin: 3px 0 0;">カードをタップすると「いちじていし」できるよ！</p>
-      <div id="debugBox" class="debug-box">きいています...</div>
+    <div style="text-align:center;">
+      <h1 class="header-title" id="trainingTitle">Lv.1 トレーニング</h1>
+      <div id="scoreBox" class="score-box">1 / 10 もんめ</div>
+      <div id="debugBox" class="debug-box">こたえてね</div>
     </div>
     <div class="swiper-container" style="position: relative;">
       <div class="card-container" id="quizCardContainer" onclick="togglePause()">
@@ -176,14 +184,27 @@
   </div>
 
   <script>
-    // Lv.1は「音符」に絞り込み
-    const cards = [
-      { id: '4bu', hiraganaAnswers: ['しぶおんぷ', 'しぶんおんぷ', 'しぶ', 'しぶん'], rescueAnswers: ['ぶおんぷ', 'ぶんおんぷ', 'ぶ', 'ぶん'], front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
-      { id: '2bu', hiraganaAnswers: ['にぶおんぷ', 'にぶんおんぷ', 'にぶ', 'にぶん'], rescueAnswers: [], front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
-      { id: 'zen', hiraganaAnswers: ['ぜんおんぷ', 'ぜん'], rescueAnswers: [], front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
-      { id: '8bu', hiraganaAnswers: ['はちぶおんぷ', 'はちぶんおんぷ', 'はちぶ', 'はちぶん'], rescueAnswers: [], front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
-      { id: '16bu', hiraganaAnswers: ['じゅうろくぶおんぷ', 'じゅうろくぶんおんぷ', 'じゅうろくぶ', 'じゅうろくぶん'], rescueAnswers: [], front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' }
-    ];
+    // カードデータ構造
+    const allCards = {
+      1: [
+        { id: '4bu', hiraganaAnswers: ['しぶおんぷ', 'しぶんおんぷ', 'しぶ', 'しぶん'], rescueAnswers: ['ぶおんぷ', 'ぶんおんぷ', 'ぶ', 'ぶん'], front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
+        { id: '2bu', hiraganaAnswers: ['にぶおんぷ', 'にぶんおんぷ', 'にぶ', 'にぶん'], rescueAnswers: [], front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
+        { id: 'zen', hiraganaAnswers: ['ぜんおんぷ', 'ぜん'], rescueAnswers: [], front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
+        { id: '8bu', hiraganaAnswers: ['はちぶおんぷ', 'はちぶんおんぷ', 'はちぶ', 'はちぶん'], rescueAnswers: [], front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
+        { id: '16bu', hiraganaAnswers: ['じゅうろくぶおんぷ', 'じゅうろくぶんおんぷ', 'じゅうろくぶ', 'じゅうろくぶん'], rescueAnswers: [], front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' }
+      ],
+      2: [
+        { id: '4kyu', hiraganaAnswers: ['しぶきゅうふ', 'しぶんきゅうふ', 'しぶ', 'しぶん'], rescueAnswers: ['ぶきゅうふ', 'ぶんきゅうふ'], front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
+        { id: '2kyu', hiraganaAnswers: ['にぶきゅうふ', 'にぶんきゅうふ', 'にぶ', 'にぶん'], rescueAnswers: [], front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
+        { id: 'zenkyu', hiraganaAnswers: ['ぜんきゅうふ', 'ぜん'], rescueAnswers: [], front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
+        { id: '8kyu', hiraganaAnswers: ['はちぶきゅうふ', 'はちぶんきゅうふ', 'はちぶ', 'はちぶん'], rescueAnswers: [], front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
+        { id: '16kyu', hiraganaAnswers: ['じゅうろくぶきゅうふ', 'じゅうろくぶんきゅうふ', 'じゅうろくぶ', 'じゅうろくぶん'], rescueAnswers: [], front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
+      ]
+    };
+
+    let currentLevel = 1;
+    let unlockedLevel = 1;
+    let cards = [];
 
     let currentIndex = 0;
     let quizIndex = -1;
@@ -193,8 +214,14 @@
     let nextTimer = null;
     let isTrainingActive = false;
 
+    // チャレンジ達成用カウント
+    let questionCount = 0;
+    let correctCount = 0;
+    let totalQuestions = 10;
+
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+    // サウンド再生（ピンポンを追加）
     function playSound(type) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
@@ -208,11 +235,27 @@
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
         osc.start(); osc.stop(audioCtx.currentTime + 0.05);
       } else if (type === 'correct') {
-        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime);
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        // 明るい高音の「ピンポン♪」（2音連続）
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        const gain2 = audioCtx.createGain();
+
+        osc1.connect(gain1); gain1.connect(audioCtx.destination);
+        osc2.connect(gain2); gain2.connect(audioCtx.destination);
+
+        // ミ (E5) ➔ ラ (A5)
+        osc1.frequency.setValueAtTime(659.25, audioCtx.currentTime);
+        gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+        osc2.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
+        gain2.gain.setValueAtTime(0.3, audioCtx.currentTime + 0.15);
+        gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.55);
+
+        osc1.start(audioCtx.currentTime); osc1.stop(audioCtx.currentTime + 0.3);
+        osc2.start(audioCtx.currentTime + 0.15); osc2.stop(audioCtx.currentTime + 0.55);
+
       } else if (type === 'wrong') {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(150, audioCtx.currentTime);
@@ -235,7 +278,19 @@
       showScreen('screenMenu');
     }
 
-    function startLevel1() { showScreen('screenPractice'); updatePracticeCard(); }
+    function startLevel(lv) {
+      if (lv > unlockedLevel) return;
+      currentLevel = lv;
+      cards = allCards[lv] || allCards[1];
+      totalQuestions = (lv === 3) ? 20 : 10;
+
+      document.getElementById('practiceTitle').innerText = `Lv.${lv} れんしゅう`;
+      document.getElementById('trainingTitle').innerText = `Lv.${lv} トレーニング`;
+
+      showScreen('screenPractice');
+      currentIndex = 0;
+      updatePracticeCard();
+    }
 
     function updatePracticeCard() {
       const container = document.getElementById('cardContainer');
@@ -258,30 +313,49 @@
       }
     });
 
-    // テキストのひらがな正規化ロジック
+    // 文字正規化（不自然な文字化け防止）
     function normalizeToHiragana(text) {
-      return text
+      let t = text
         .replace(/4|四/g, 'し')
         .replace(/2|二/g, 'に')
         .replace(/8|八/g, 'はち')
         .replace(/16|十六/g, 'じゅうろく')
         .replace(/分|部|支部|市部|私部|渋/g, 'ぶ')
         .replace(/全/g, 'ぜん')
+        .replace(/休符|給付/g, 'きゅうふ')
         .replace(/音符/g, 'おんぷ');
+
+      // 「8ぶおんぷ」等の数字混ざりを綺麗に整形
+      if (t.includes('はちぶ')) return t.includes('きゅうふ') ? 'はちぶきゅうふ' : 'はちぶおんぷ';
+      if (t.includes('しぶ')) return t.includes('きゅうふ') ? 'しぶきゅうふ' : 'しぶおんぷ';
+      if (t.includes('にぶ')) return t.includes('きゅうふ') ? 'にぶきゅうふ' : 'にぶおんぷ';
+      if (t.includes('じゅうろくぶ')) return t.includes('きゅうふ') ? 'じゅうろくぶきゅうふ' : 'じゅうろくぶおんぷ';
+      if (t.includes('ぜん')) return t.includes('きゅうふ') ? 'ぜんきゅうふ' : 'ぜんおんぷ';
+
+      return t;
     }
 
     function startTraining() {
       isTrainingActive = true;
       isPaused = false;
+      questionCount = 0;
+      correctCount = 0;
       lastQuizIndex = -1;
       document.getElementById('pauseBtn').innerText = "⏸️ いちじていし";
       showScreen('screenTraining');
       nextQuestion();
     }
 
-    // 問題切り替え（直前と同問の連続防止）
     function nextQuestion() {
       if (!isTrainingActive || isPaused) return;
+
+      if (questionCount >= totalQuestions) {
+        finishTraining();
+        return;
+      }
+
+      questionCount++;
+      document.getElementById('scoreBox').innerText = `${questionCount} / ${totalQuestions} もんめ`;
 
       let newIndex;
       do {
@@ -292,7 +366,7 @@
       lastQuizIndex = quizIndex;
 
       document.getElementById('quizImg').src = cards[quizIndex].front;
-      document.getElementById('debugBox').innerText = "きいています...（お話ししてね）";
+      document.getElementById('debugBox').innerText = "こたえてね";
       
       startListening();
     }
@@ -316,9 +390,8 @@
         const normalizedText = normalizeToHiragana(rawText);
         const card = cards[quizIndex];
 
-        document.getElementById('debugBox').innerText = `あなたのこたえ: 「${normalizedText}」`;
+        document.getElementById('debugBox').innerText = normalizedText;
 
-        // 通常判定と「し」抜け救済判定
         const isMatchStandard = card.hiraganaAnswers.some(ans => normalizedText.includes(ans));
         const isMatchRescue = card.rescueAnswers.some(ans => normalizedText === ans || normalizedText.includes(ans));
         
@@ -341,20 +414,20 @@
       const cardInner = document.getElementById('quizCardInner');
 
       if (isCorrect) {
+        correctCount++;
         overlay.innerText = '⭕️';
         overlay.className = 'overlay correct';
         playSound('correct');
 
-        // 正解時は2秒後に自動で次へ
         nextTimer = setTimeout(() => {
           overlay.className = 'overlay';
           if (!isPaused && isTrainingActive) {
             nextQuestion();
           }
-        }, 2000);
+        }, 1800);
 
       } else {
-        // 不正解時は自動遷移させず一時停止
+        // 不正解時は自動進行させず、同じ問題で言い直し
         overlay.innerText = '❌';
         overlay.className = 'overlay wrong';
         cardInner.classList.add('shake');
@@ -362,13 +435,35 @@
 
         isPaused = true;
         document.getElementById('pauseBtn').innerText = "▶️ つづける";
-        document.getElementById('debugBox').innerText = `あなたのこたえ: 「${userText}」 （もういちど確認してね）`;
 
         setTimeout(() => {
           overlay.className = 'overlay';
           cardInner.classList.remove('shake');
         }, 1500);
       }
+    }
+
+    function finishTraining() {
+      isTrainingActive = false;
+      const passRate = (correctCount / totalQuestions) * 100;
+
+      if (passRate >= 90) {
+        alert(`すごーい！ ${totalQuestions}もんちゅう ${correctCount}もん せいかい！\nクリアおめでとう！🎉`);
+        if (currentLevel === unlockedLevel && unlockedLevel < 3) {
+          unlockedLevel++;
+          if (unlockedLevel >= 2) {
+            document.getElementById('btnLv2').style.opacity = '1';
+            document.getElementById('lockLv2').innerText = '🔓';
+          }
+          if (unlockedLevel >= 3) {
+            document.getElementById('btnLv3').style.opacity = '1';
+            document.getElementById('lockLv3').innerText = '🔓';
+          }
+        }
+      } else {
+        alert(`${totalQuestions}もんちゅう ${correctCount}もん せいかい！\nあとすこし！もういちど チャレンジしよう！`);
+      }
+      showMenu();
     }
 
     function togglePause() {
@@ -382,7 +477,7 @@
         pauseBtn.innerText = "▶️ つづける";
       } else {
         pauseBtn.innerText = "⏸️ いちじていし";
-        nextQuestion();
+        startListening(); // 同じ問題でマイクを再開
       }
     }
 
