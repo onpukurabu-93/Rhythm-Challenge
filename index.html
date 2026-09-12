@@ -16,13 +16,11 @@
       justify-content: center;
       height: 100vh;
       overflow: hidden;
-      /* アプリ全体でテキスト長押し選択を防止 */
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
     }
 
-    /* 画面切り替え用の共通設定 */
     .screen {
       display: none;
       width: 100%;
@@ -35,7 +33,6 @@
     }
     .active { display: flex; }
 
-    /* メニュー画面スタイル */
     .menu-title { font-size: 24px; color: #333; margin-top: 20px; }
     .level-list { width: 90%; max-width: 320px; display: flex; flex-direction: column; gap: 15px; }
     .level-btn {
@@ -53,7 +50,6 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
 
-    /* 練習・トレーニング画面スタイル */
     .header h1 { font-size: 20px; color: #333; margin: 0; text-align: center; }
     .swiper-container { width: 100%; height: 55vh; display: flex; align-items: center; justify-content: center; }
     .card-container { width: 85vw; max-width: 320px; height: 100%; max-height: 380px; perspective: 1000px; }
@@ -63,7 +59,6 @@
     .card-back { transform: rotateY(180deg); }
     .card-img { width: 85%; height: 85%; object-fit: contain; }
 
-    /* 震えるアニメーション（不正解時） */
     @keyframes shake {
       0% { transform: translateX(0); }
       20% { transform: translateX(-15px); }
@@ -74,7 +69,6 @@
     }
     .shake { animation: shake 0.4s ease; }
 
-    /* ⭕️ ❌ オーバーレイ演出 */
     .overlay {
       position: absolute;
       font-size: 120px;
@@ -86,7 +80,6 @@
     .overlay.correct { color: #2ed573; opacity: 1; }
     .overlay.wrong { color: #ff4757; opacity: 1; }
 
-    /* ボタン類（長押し範囲指定対策を追加） */
     .btn {
       background: #ff6b6b;
       color: white;
@@ -101,6 +94,11 @@
       -webkit-user-select: none;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .btn:active {
+      transform: scale(0.95);
+      background: #ff4757;
     }
     .btn-menu { background: #a4b0be; margin-top: 5px; }
   </style>
@@ -127,7 +125,7 @@
     <div></div>
   </div>
 
-  <!-- 2. レベル1 練習モード（スワイプ） -->
+  <!-- 2. レベル1 練習モード -->
   <div id="screenPractice" class="screen">
     <div class="header">
       <h1>Lv.1 れんしゅう</h1>
@@ -147,7 +145,7 @@
     </div>
   </div>
 
-  <!-- 3. レベル1 トレーニングモード（マイク＆演出付き） -->
+  <!-- 3. レベル1 トレーニングモード -->
   <div id="screenTraining" class="screen">
     <div class="header">
       <h1>Lv.1 トレーニング</h1>
@@ -162,29 +160,30 @@
       <div id="markOverlay" class="overlay"></div>
     </div>
     <div style="text-align: center;">
-      <button class="btn" style="background:#2ed573;" onclick="listenVoice()">🎤 こたえる</button><br>
+      <button class="btn" style="background:#2ed573;" ontouchstart="btnPress()" onclick="listenVoice()">🎤 こたえる</button><br>
       <button class="btn btn-menu" onclick="showMenu()">おわる</button>
     </div>
   </div>
 
   <script>
+    // 正解キーワード（漢字・ひらがな・数字表記すべてに対応）
     const cards = [
-      { name: 'しぶおんぷ', front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
-      { name: 'にぶおんぷ', front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
-      { name: 'ぜんおんぷ', front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
-      { name: 'はちぶおんぷ', front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
-      { name: 'じゅうろくぶおんぷ', front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' },
-      { name: 'ぜんきゅうふ', front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
-      { name: 'にぶきゅうふ', front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
-      { name: 'しぶきゅうふ', front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
-      { name: 'はちぶきゅうふ', front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
-      { name: 'じゅうろくぶきゅうふ', front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
+      { keywords: ['しぶおんぷ', '4分音符', '四分音符', 'しぶ'], front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
+      { keywords: ['にぶおんぷ', '2分音符', '二分音符', 'にぶ'], front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
+      { keywords: ['ぜんおんぷ', '全音符', 'ぜん'], front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
+      { keywords: ['はちぶおんぷ', '8分音符', '八分音符', 'はちぶ'], front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
+      { keywords: ['じゅうろくぶおんぷ', '16分音符', '十六分音符', 'じゅうろくぶ'], front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' },
+      { keywords: ['ぜんきゅうふ', '全休符'], front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
+      { keywords: ['にぶきゅうふ', '2分休符', '二分休符'], front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
+      { keywords: ['しぶきゅうふ', '4分休符', '四分休符'], front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
+      { keywords: ['はちぶきゅうふ', '8分休符', '八分休符'], front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
+      { keywords: ['じゅうろくぶきゅうふ', '16分休符', '十六分休符'], front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
     ];
 
     let currentIndex = 0;
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    // 効果音再生（ピンポン ＆ ポコン）
+    // ボタンタップ音（ピッ）＆ 効果音再生
     function playSound(type) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
@@ -192,13 +191,21 @@
       osc.connect(gain);
       gain.connect(audioCtx.destination);
 
-      if (type === 'correct') {
+      if (type === 'tap') {
+        // タップ音（ピッ）
+        osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+      } else if (type === 'correct') {
+        // ピンポン♪
         osc.frequency.setValueAtTime(659.25, audioCtx.currentTime);
         osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
         gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
         osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-      } else {
+      } else if (type === 'wrong') {
+        // ポコン…（不正解）
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(150, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.3);
@@ -208,8 +215,12 @@
       }
     }
 
-    // 画面切替
+    function btnPress() {
+      playSound('tap');
+    }
+
     function showScreen(id) {
+      playSound('tap');
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
     }
@@ -217,7 +228,6 @@
     function showMenu() { showScreen('screenMenu'); }
     function startLevel1() { showScreen('screenPractice'); updatePracticeCard(); }
 
-    // 練習モード
     function updatePracticeCard() {
       const container = document.getElementById('cardContainer');
       container.classList.remove('flipped');
@@ -226,7 +236,7 @@
         document.getElementById('imgBack').src = cards[currentIndex].back;
       }, 150);
     }
-    function flipCard() { document.getElementById('cardContainer').classList.toggle('flipped'); }
+    function flipCard() { playSound('tap'); document.getElementById('cardContainer').classList.toggle('flipped'); }
 
     let startX = 0;
     const swipeArea = document.getElementById('swipeArea');
@@ -239,7 +249,6 @@
       }
     });
 
-    // トレーニングモード＆マイク判定
     let quizIndex = 0;
     function startTraining() {
       showScreen('screenTraining');
@@ -249,9 +258,10 @@
     }
 
     function listenVoice() {
+      playSound('tap');
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("お使いのブラウザは音声認識に対応していません（Safari/Chrome推奨）");
+        alert("お使いのブラウザは音声認識に対応していません");
         return;
       }
       const recognition = new SpeechRecognition();
@@ -261,14 +271,12 @@
 
       recognition.onresult = (e) => {
         const text = e.results[0][0].transcript;
-        const target = cards[quizIndex].name;
+        const validKeywords = cards[quizIndex].keywords;
         document.getElementById('quizPrompt').innerText = `あなたのこたえ: 「${text}」`;
 
-        if (text.includes(target) || target.includes(text)) {
-          showResult(true);
-        } else {
-          showResult(false);
-        }
+        // キーワードに部分一致するかチェック
+        const isCorrect = validKeywords.some(key => text.includes(key));
+        showResult(isCorrect);
       };
 
       recognition.onerror = () => {
@@ -276,7 +284,6 @@
       };
     }
 
-    // ⭕️ ❌ の結果演出
     function showResult(isCorrect) {
       const overlay = document.getElementById('markOverlay');
       const cardInner = document.getElementById('quizCardInner');
