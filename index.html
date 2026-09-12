@@ -33,13 +33,17 @@
     .profile-select { width: 100%; padding: 8px; border-radius: 10px; border: 1px solid #eadcc8; font-size: 14px; color: #5b4636; background: #fdf8ed; margin-bottom: 6px; }
     .profile-edit-btn { background: transparent; border: none; color: #b28bb9; font-size: 13px; cursor: pointer; font-weight: bold; }
 
-    .level-list { width: 90%; max-width: 340px; display: flex; flex-direction: column; gap: 12px; }
-    .level-btn {
-      background: #ffffff; border: 3px solid #78a9c8; padding: 14px 18px; border-radius: 18px;
-      font-size: 20px; font-weight: bold; color: #5b4636;
+    /* トップメニューボタン群 */
+    .level-list { width: 90%; max-width: 340px; display: flex; flex-direction: column; gap: 10px; }
+    .menu-btn {
+      background: #ffffff; border: 3px solid #78a9c8; padding: 12px 16px; border-radius: 18px;
+      font-size: 18px; font-weight: bold; color: #5b4636;
       display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05); text-decoration: none;
     }
+    .menu-btn.type-name { border-color: #78a9c8; }
+    .menu-btn.type-len { border-color: #8dbb8d; }
+    .menu-btn.type-sing { border-color: #e6b26a; }
 
     .header-title { font-size: 24px; font-weight: bold; color: #5b4636; margin: 0; text-align: center; }
     .swiper-container { width: 100%; height: 42vh; display: flex; align-items: center; justify-content: center; }
@@ -81,7 +85,6 @@
       flex: 1; background: #8dbb8d; color: white; border: none; padding: 14px 0; font-size: 20px; font-weight: bold; border-radius: 15px; cursor: pointer; box-shadow: 0 4px 0 #699769; touch-action: manipulation;
     }
     .btn-type.kyuufu { background: #e99595; box-shadow: 0 4px 0 #c46d6d; }
-    .btn-type:active { transform: translateY(2px); }
 
     .score-box { font-size: 18px; font-weight: bold; color: #806c5a; }
 
@@ -99,29 +102,29 @@
 
   <!-- 1. メニュー画面 -->
   <div id="screenMenu" class="screen active">
-    <h1 class="menu-title">リズムのおんがく</h1>
+    <h1 class="menu-title">おんぷカード</h1>
 
     <div class="profile-box">
-      <div class="profile-label">プレイ中のプレイヤー</div>
+      <div class="profile-label">プレイ中のプレイヤー (教室ネーム)</div>
       <div class="profile-current" id="currentProfileName">未設定</div>
       <select id="profileSelect" class="profile-select" onchange="switchProfile(this.value)">
         <option value="">-- プレイヤーを選択 --</option>
       </select>
-      <button class="profile-edit-btn" onclick="openAdminModal()">🔒 プレイヤー登録・変更（先生）</button>
+      <button class="profile-edit-btn" onclick="openAdminModal()">🔒 教室ネームの登録・変更（先生）</button>
     </div>
 
     <div class="level-list">
-      <div class="level-btn" onclick="startLevel(1)">
-        <span>Lv.1 おんぷ</span>
+      <div class="menu-btn type-name" onclick="selectMode('name')">
+        <span>🎵 しゅるい と なまえ</span>
         <span>🔓</span>
       </div>
-      <div class="level-btn" id="btnLv2" style="opacity: 0.5;" onclick="startLevel(2)">
-        <span>Lv.2 きゅうふ</span>
-        <span id="lockLv2">🔒</span>
+      <div class="menu-btn type-len" onclick="selectMode('length')">
+        <span>⏱️ ながさ</span>
+        <span>🔓</span>
       </div>
-      <div class="level-btn" id="btnLv3" style="opacity: 0.5;" onclick="startLevel(3)">
-        <span>Lv.3 ふてん</span>
-        <span id="lockLv3">🔒</span>
+      <div class="menu-btn type-sing" onclick="selectMode('sing')">
+        <span>🎤 うたう</span>
+        <span>🔓</span>
       </div>
     </div>
     <div></div>
@@ -130,7 +133,7 @@
   <!-- 2. 練習モード -->
   <div id="screenPractice" class="screen">
     <div style="text-align:center;">
-      <h1 class="header-title" id="practiceTitle">Lv.1 れんしゅう</h1>
+      <h1 class="header-title" id="practiceTitle">れんしゅう</h1>
     </div>
     <div class="swiper-container" id="swipeArea">
       <div class="card-container" id="cardContainer" onclick="flipCard()">
@@ -175,7 +178,7 @@
       </div>
       <div class="type-buttons">
         <button class="btn-type" onclick="submitAnswer('おんぷ')">おんぷ</button>
-        <button class="btn-type kyuufu" id="btnKyuufu" style="display:none;" onclick="submitAnswer('きゅうふ')">きゅうふ</button>
+        <button class="btn-type kyuufu" id="btnKyuufu" onclick="submitAnswer('きゅうふ')">きゅうふ</button>
       </div>
     </div>
   </div>
@@ -195,7 +198,7 @@
           <option value="1">プレイヤー 2</option>
           <option value="2">プレイヤー 3</option>
         </select>
-        <input type="text" id="profileInputName" class="modal-input" placeholder="例: たろう">
+        <input type="text" id="profileInputName" class="modal-input" placeholder="例: くみ">
         <button class="modal-btn" onclick="saveProfile()">保存する</button>
         <button class="modal-btn cancel" onclick="closeAdminModal()">閉じる</button>
       </div>
@@ -203,30 +206,24 @@
   </div>
 
   <script>
-    const allCards = {
-      1: [
-        { id: '4bu', length: '4ぶ', type: 'おんぷ', read: 'しぶおんぷ', front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
-        { id: '2bu', length: '2ぶ', type: 'おんぷ', read: 'にぶおんぷ', front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
-        { id: 'zen', length: 'ぜん', type: 'おんぷ', read: 'ぜんおんぷ', front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
-        { id: '8bu', length: '8ぶ', type: 'おんぷ', read: 'はちぶおんぷ', front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
-        { id: '16bu', length: '16ぶ', type: 'おんぷ', read: 'じゅうろくぶおんぷ', front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' }
-      ],
-      2: [
-        { id: '4kyu', length: '4ぶ', type: 'きゅうふ', read: 'しぶきゅうふ', front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
-        { id: '2kyu', length: '2ぶ', type: 'きゅうふ', read: 'にぶきゅうふ', front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
-        { id: 'zenkyu', length: 'ぜん', type: 'きゅうふ', read: 'ぜんきゅうふ', front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
-        { id: '8kyu', length: '8ぶ', type: 'きゅうふ', read: 'はちぶきゅうふ', front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
-        { id: '16kyu', length: '16ぶ', type: 'きゅうふ', read: 'じゅうろくぶきゅうふ', front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
-      ]
-    };
+    // カードデータ（MP3ファイル対応）
+    const allCards = [
+      { id: '4bu_onpu', length: '4ぶ', type: 'おんぷ', name_audio: 'audio/name_4bu_onpu.mp3', len_audio: 'audio/len_1haku.mp3', sing_audio: 'audio/sing_takoyaki.mp3', front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
+      { id: '2bu_onpu', length: '2ぶ', type: 'おんぷ', name_audio: 'audio/name_2bu_onpu.mp3', len_audio: 'audio/len_2haku.mp3', sing_audio: 'audio/sing_ramen.mp3', front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
+      { id: 'zen_onpu', length: 'ぜん', type: 'おんぷ', name_audio: 'audio/name_zen_onpu.mp3', len_audio: 'audio/len_4haku.mp3', sing_audio: 'audio/sing_bikkuri.mp3', front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
+      { id: '8bu_onpu', length: '8ぶ', type: 'おんぷ', name_audio: 'audio/name_8bu_onpu.mp3', len_audio: 'audio/len_hanhaku.mp3', sing_audio: 'audio/sing_kukki.mp3', front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
+      { id: '16bu_onpu', length: '16ぶ', type: 'おんぷ', name_audio: 'audio/name_16bu_onpu.mp3', len_audio: 'audio/len_1-4haku.mp3', sing_audio: 'audio/sing_zeri.mp3', front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' },
+      { id: '4bu_kyuufu', length: '4ぶ', type: 'きゅうふ', name_audio: 'audio/name_4bu_kyuufu.mp3', len_audio: 'audio/len_1haku.mp3', sing_audio: 'audio/sing_jusu.mp3', front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
+      { id: '2bu_kyuufu', length: '2ぶ', type: 'きゅうfu', name_audio: 'audio/name_2bu_kyuufu.mp3', len_audio: 'audio/len_2haku.mp3', sing_audio: 'audio/sing_korokke.mp3', front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' }
+    ];
 
-    /* プレイヤー情報管理 */
+    let currentMode = 'name'; // 'name', 'length', 'sing'
+    let currentAudio = null;
+
     let profiles = JSON.parse(localStorage.getItem("rhythm_profiles")) || ["", "", ""];
     let activeProfileIndex = parseInt(localStorage.getItem("rhythm_active_profile")) || 0;
 
-    let currentLevel = 1;
-    let cards = [];
-
+    let cards = allCards;
     let currentIndex = 0;
     let quizIndex = -1;
     let lastQuizIndex = -1;
@@ -237,16 +234,14 @@
     let totalQuestions = 10;
     let isChecking = false;
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    function speakText(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const uttr = new SpeechSynthesisUtterance(text);
-        uttr.lang = 'ja-JP';
-        uttr.rate = 1.0;
-        window.speechSynthesis.speak(uttr);
+    // MP3音声再生関数
+    function playAudioFile(src) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
       }
+      currentAudio = new Audio(src);
+      currentAudio.play().catch(e => console.log("Audio play error:", e));
     }
 
     function initProfiles() {
@@ -261,7 +256,6 @@
         }
       });
       document.getElementById("currentProfileName").textContent = profiles[activeProfileIndex] || "未登録（先生画面から登録）";
-      updateMenuLocks();
     }
 
     function switchProfile(val) {
@@ -269,24 +263,6 @@
       activeProfileIndex = parseInt(val);
       localStorage.setItem("rhythm_active_profile", activeProfileIndex);
       initProfiles();
-    }
-
-    function getUnlockedLevel() {
-      return parseInt(localStorage.getItem(`rhythm_unlocked_${activeProfileIndex}`)) || 1;
-    }
-
-    function updateMenuLocks() {
-      const unlocked = getUnlockedLevel();
-      const btnLv2 = document.getElementById('btnLv2');
-      const lockLv2 = document.getElementById('lockLv2');
-      const btnLv3 = document.getElementById('btnLv3');
-      const lockLv3 = document.getElementById('lockLv3');
-
-      if (unlocked >= 2) { btnLv2.style.opacity = '1'; lockLv2.innerText = '🔓'; }
-      else { btnLv2.style.opacity = '0.5'; lockLv2.innerText = '🔒'; }
-
-      if (unlocked >= 3) { btnLv3.style.opacity = '1'; lockLv3.innerText = '🔓'; }
-      else { btnLv3.style.opacity = '0.5'; lockLv3.innerText = '🔒'; }
     }
 
     function openAdminModal() {
@@ -314,59 +290,23 @@
     }
     function closeAdminModal() { document.getElementById("adminModal").classList.add("hidden"); }
 
-    function playSound(type) {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      if (type === 'tap') {
-        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-      } else if (type === 'correct') {
-        const osc1 = audioCtx.createOscillator(); const osc2 = audioCtx.createOscillator();
-        const gain1 = audioCtx.createGain(); const gain2 = audioCtx.createGain();
-        osc1.connect(gain1); gain1.connect(audioCtx.destination);
-        osc2.connect(gain2); gain2.connect(audioCtx.destination);
-        osc1.frequency.setValueAtTime(659.25, audioCtx.currentTime);
-        gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc2.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
-        gain2.gain.setValueAtTime(0.3, audioCtx.currentTime + 0.15);
-        gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.55);
-        osc1.start(audioCtx.currentTime); osc1.stop(audioCtx.currentTime + 0.3);
-        osc2.start(audioCtx.currentTime + 0.15); osc2.stop(audioCtx.currentTime + 0.55);
-      } else if (type === 'wrong') {
-        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.3);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-      }
-    }
-
     function showScreen(id) {
-      playSound('tap');
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
     }
 
-    function showMenu() { updateMenuLocks(); showScreen('screenMenu'); }
+    function showMenu() { showScreen('screenMenu'); }
 
-    function startLevel(lv) {
-      if (lv > getUnlockedLevel()) return;
+    function selectMode(mode) {
       if (!profiles[activeProfileIndex]) return openAdminModal();
-
-      currentLevel = lv;
-      cards = allCards[lv] || allCards[1];
-
-      const kyuufuBtn = document.getElementById('btnKyuufu');
-      if (currentLevel >= 2) { kyuufuBtn.style.display = 'block'; }
-      else { kyuufuBtn.style.display = 'none'; }
-
-      document.getElementById('practiceTitle').innerText = `Lv.${lv} れんしゅう`;
+      currentMode = mode;
+      
+      let titleText = "れんしゅう";
+      if (mode === 'name') titleText = "🎵 しゅるい と なまえ";
+      if (mode === 'length') titleText = "⏱️ ながさ";
+      if (mode === 'sing') titleText = "🎤 うたう";
+      
+      document.getElementById('practiceTitle').innerText = titleText;
       showScreen('screenPractice');
       currentIndex = 0;
       updatePracticeCard();
@@ -382,11 +322,13 @@
     }
 
     function flipCard() {
-      playSound('tap');
       const container = document.getElementById('cardContainer');
       container.classList.toggle('flipped');
       if (container.classList.contains('flipped')) {
-        speakText(cards[currentIndex].read);
+        const card = cards[currentIndex];
+        if (currentMode === 'name') playAudioFile(card.name_audio);
+        if (currentMode === 'length') playAudioFile(card.len_audio);
+        if (currentMode === 'sing') playAudioFile(card.sing_audio);
       }
     }
 
@@ -424,7 +366,7 @@
 
     function selectLength(len, btn) {
       if (isChecking) return;
-      playSound('tap'); selectedLength = len;
+      selectedLength = len;
       document.querySelectorAll('.btn-len').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       document.getElementById('answerDisplay').innerText = `${selectedLength} ...`;
@@ -432,7 +374,6 @@
 
     function submitAnswer(type) {
       if (isChecking) return;
-      playSound('tap');
       if (!selectedLength) { document.getElementById('answerDisplay').innerText = "ながさをえらんでね"; return; }
 
       isChecking = true;
@@ -445,14 +386,12 @@
       if (isCorrect) {
         correctCount++;
         overlay.innerText = '⭕️'; overlay.className = 'overlay correct';
-        playSound('correct');
-        speakText(card.read);
+        playAudioFile(card.name_audio);
 
         setTimeout(() => { overlay.className = 'overlay'; nextQuestion(); }, 1500);
       } else {
         overlay.innerText = '❌'; overlay.className = 'overlay wrong';
         cardInner.classList.add('shake');
-        playSound('wrong');
 
         setTimeout(() => {
           overlay.className = 'overlay'; cardInner.classList.remove('shake'); isChecking = false;
@@ -465,19 +404,8 @@
     }
 
     function finishTraining() {
-      const passRate = (correctCount / totalQuestions) * 100;
-      const unlocked = getUnlockedLevel();
-
-      if (passRate >= 90) {
-        if (currentLevel === unlocked) {
-          localStorage.setItem(`rhythm_unlocked_${activeProfileIndex}`, currentLevel + 1);
-        }
-        alert(`すごい！ ${totalQuestions}もんちゅう ${correctCount}もん せいかい！\nクリアおめでとう！🎉`);
-        startLevel(currentLevel + 1); // 自動で次のレベルの練習画面へ直行
-      } else {
-        alert(`${totalQuestions}もんちゅう ${correctCount}もん せいかい！\nもう一度チャレンジしよう！`);
-        showMenu();
-      }
+      alert(`${totalQuestions}もんちゅう ${correctCount}もん せいかい！`);
+      showMenu();
     }
 
     function stopTrainingAndGoMenu() { showMenu(); }
