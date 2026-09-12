@@ -52,7 +52,7 @@
 
     .header h1 { font-size: 20px; color: #333; margin: 0; text-align: center; }
     .swiper-container { width: 100%; height: 50vh; display: flex; align-items: center; justify-content: center; }
-    .card-container { width: 85vw; max-width: 320px; height: 100%; max-height: 380px; perspective: 1000px; }
+    .card-container { width: 85vw; max-width: 320px; height: 100%; max-height: 380px; perspective: 1000px; cursor: pointer; }
     .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.12); border-radius: 24px; }
     .card-container.flipped .card-inner { transform: rotateY(180deg); }
     .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; background: #ffffff; display: flex; align-items: center; justify-content: center; border: 4px solid #e2e8f0; box-sizing: border-box; }
@@ -96,21 +96,19 @@
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
-    .btn:active {
-      transform: scale(0.95);
-      background: #ff4757;
-    }
+    .btn:active { transform: scale(0.95); background: #ff4757; }
     .btn-menu { background: #a4b0be; margin-top: 5px; }
 
-    /* デバッグ用認識テキスト表示枠 */
     .debug-box {
-      font-size: 14px;
-      color: #4a5568;
+      font-size: 15px;
+      font-weight: bold;
+      color: #2d3748;
       background: #edf2f7;
       padding: 8px 12px;
       border-radius: 8px;
       margin-top: 5px;
-      min-height: 20px;
+      min-height: 24px;
+      text-align: center;
     }
   </style>
 </head>
@@ -160,11 +158,11 @@
   <div id="screenTraining" class="screen">
     <div class="header">
       <h1>Lv.1 トレーニング</h1>
-      <p id="quizPrompt" style="font-size: 14px; color: #333; margin: 3px 0 0;">なまえを こたえてね！</p>
-      <div id="debugBox" class="debug-box">こたえが ここにひらがなで出ます</div>
+      <p id="quizPrompt" style="font-size: 14px; color: #333; margin: 3px 0 0;">カードをタップすると「いちじていし」できるよ！</p>
+      <div id="debugBox" class="debug-box">きいています...</div>
     </div>
     <div class="swiper-container" style="position: relative;">
-      <div class="card-container" id="quizCardContainer">
+      <div class="card-container" id="quizCardContainer" onclick="togglePause()">
         <div class="card-inner" id="quizCardInner">
           <div class="card-front"><img id="quizImg" class="card-img" src="" alt="問題"></div>
         </div>
@@ -172,27 +170,32 @@
       <div id="markOverlay" class="overlay"></div>
     </div>
     <div style="text-align: center;">
-      <button class="btn" style="background:#2ed573;" onclick="listenVoice()">🎤 こたえる</button><br>
-      <button class="btn btn-menu" onclick="showMenu()">おわる</button>
+      <button id="pauseBtn" class="btn" style="background:#e2e8f0; color:#333;" onclick="togglePause()">⏸️ いちじていし</button><br>
+      <button class="btn btn-menu" onclick="stopTrainingAndGoMenu()">おわる</button>
     </div>
   </div>
 
   <script>
-    // 「ぶ」「ぶん」「誤変換漢字」の網羅リスト
     const cards = [
-      { keywords: ['しぶ', 'しぶん', '4分', '四分', '支部', '市部', '私部'], front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
-      { keywords: ['にぶ', 'にぶん', '2分', '二分'], front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
+      { keywords: ['しぶ', 'しぶん', '4分', '四分', '4部', '四部', '支部', '市部', '私部'], front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
+      { keywords: ['にぶ', 'にぶん', '2分', '二分', '2部', '二部'], front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
       { keywords: ['ぜん', '全'], front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
-      { keywords: ['はちぶ', 'はちぶん', '8分', '八分'], front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
-      { keywords: ['じゅうろくぶ', 'じゅうろくぶん', '16分', '十六分'], front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' },
-      { keywords: ['ぜんきゅうふ', '全休符'], front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
-      { keywords: ['にぶきゅうふ', 'にぶんきゅうふ', '2分休符', '二分休符'], front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
-      { keywords: ['しぶきゅうふ', 'しぶんきゅうふ', '4分休符', '四分休符', '支部休符'], front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
-      { keywords: ['はちぶきゅうふ', 'はちぶんきゅうふ', '8分休符', '八分休符'], front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
-      { keywords: ['じゅうろくぶきゅうふ', 'じゅうろくぶんきゅうふ', '16分休符', '十六分休符'], front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
+      { keywords: ['はちぶ', 'はちぶん', '8分', '八分', '8部', '八部'], front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
+      { keywords: ['じゅうろくぶ', 'じゅうろくぶん', '16分', '十六分', '16部', '十六部'], front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' },
+      { keywords: ['ぜんきゅうふ', '全休符', '全給付'], front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
+      { keywords: ['にぶきゅうふ', 'にぶんきゅうふ', '2分休符', '二分休符', '2部給付', '二部給付'], front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
+      { keywords: ['しぶきゅうふ', 'しぶんきゅうふ', '4分休符', '四分休符', '4部給付', '四部給付', '支部給付'], front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
+      { keywords: ['はちぶきゅうふ', 'はちぶんきゅうふ', '8分休符', '八分休符', '8部給付', '八部給付'], front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
+      { keywords: ['じゅうろくぶきゅうふ', 'じゅうろくぶんきゅうふ', '16分休符', '十六分休符', '16部給付', '十六部給付'], front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
     ];
 
     let currentIndex = 0;
+    let quizIndex = 0;
+    let recognition = null;
+    let isPaused = false;
+    let nextTimer = null;
+    let isTrainingActive = false;
+
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function playSound(type) {
@@ -229,7 +232,12 @@
       document.getElementById(id).classList.add('active');
     }
 
-    function showMenu() { showScreen('screenMenu'); }
+    function showMenu() {
+      isTrainingActive = false;
+      if (recognition) recognition.abort();
+      showScreen('screenMenu');
+    }
+
     function startLevel1() { showScreen('screenPractice'); updatePracticeCard(); }
 
     function updatePracticeCard() {
@@ -253,59 +261,71 @@
       }
     });
 
-    let quizIndex = 0;
-    function startTraining() {
-      showScreen('screenTraining');
-      quizIndex = Math.floor(Math.random() * cards.length);
-      document.getElementById('quizImg').src = cards[quizIndex].front;
-      document.getElementById('quizPrompt').innerText = "「🎤 こたえる」を押して話してね！";
-      document.getElementById('debugBox').innerText = "こたえが ここに出ます";
-    }
-
-    // 漢字や数字の表記をひらがなに統一表示する変換関数
+    // 「給付」「部」などの誤変換対策付きひらがな表示処理
     function convertToHiragana(text) {
       return text
-        .replace(/4分|四分|支部|市部|私部/g, 'しぶ')
-        .replace(/2分|二分/g, 'にぶ')
-        .replace(/8分|八分/g, 'はちぶ')
-        .replace(/16分|十六分/g, 'じゅうろくぶ')
+        .replace(/4分|四分|4部|四部|支部|市部|私部/g, 'しぶ')
+        .replace(/2分|二分|2部|二部/g, 'にぶ')
+        .replace(/8分|八分|8部|八部/g, 'はちぶ')
+        .replace(/16分|十六分|16部|十六部/g, 'じゅうろくぶ')
         .replace(/全/g, 'ぜん')
-        .replace(/音符/g, 'おんぷ')
-        .replace(/休符/g, 'きゅうふ');
+        .replace(/給付/g, 'きゅうふ')
+        .replace(/休符/g, 'きゅうふ')
+        .replace(/音符/g, 'おんぷ');
     }
 
-    function listenVoice() {
-      playSound('tap');
-      document.getElementById('quizPrompt').innerText = "じゅんび中...";
+    // トレーニングモード開始（自動マイクON）
+    function startTraining() {
+      isTrainingActive = true;
+      isPaused = false;
+      document.getElementById('pauseBtn').innerText = "⏸️ いちじていし";
+      showScreen('screenTraining');
+      nextQuestion();
+    }
 
-      setTimeout(() => {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-          alert("お使いのブラウザは音声認識に対応していません");
-          return;
+    function nextQuestion() {
+      if (!isTrainingActive || isPaused) return;
+
+      quizIndex = Math.floor(Math.random() * cards.length);
+      document.getElementById('quizImg').src = cards[quizIndex].front;
+      document.getElementById('debugBox').innerText = "きいています...（お話ししてね）";
+      
+      startListening();
+    }
+
+    function startListening() {
+      if (!isTrainingActive || isPaused) return;
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("お使いのブラウザは音声認識に対応していません");
+        return;
+      }
+
+      if (recognition) recognition.abort();
+      recognition = new SpeechRecognition();
+      recognition.lang = 'ja-JP';
+
+      recognition.onresult = (e) => {
+        if (isPaused) return;
+        const rawText = e.results[0][0].transcript;
+        const hiraganaText = convertToHiragana(rawText);
+        const validKeywords = cards[quizIndex].keywords;
+
+        document.getElementById('debugBox').innerText = `あなたのこたえ: 「${hiraganaText}」`;
+
+        const isCorrect = validKeywords.some(key => rawText.includes(key) || hiraganaText.includes(key));
+        showResult(isCorrect);
+      };
+
+      recognition.onerror = () => {
+        if (!isPaused && isTrainingActive) {
+          document.getElementById('debugBox').innerText = "もういちど お話ししてね！";
+          setTimeout(startListening, 1000);
         }
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'ja-JP';
-        document.getElementById('quizPrompt').innerText = "きいています...（話してね！）";
-        recognition.start();
+      };
 
-        recognition.onresult = (e) => {
-          const rawText = e.results[0][0].transcript;
-          const hiraganaText = convertToHiragana(rawText);
-          const validKeywords = cards[quizIndex].keywords;
-
-          // 画面にひらがな変換後のテキストを表示
-          document.getElementById('debugBox').innerText = `認識結果: 「${hiraganaText}」（元: ${rawText}）`;
-
-          // 一致チェック
-          const isCorrect = validKeywords.some(key => rawText.includes(key) || hiraganaText.includes(key));
-          showResult(isCorrect);
-        };
-
-        recognition.onerror = () => {
-          document.getElementById('quizPrompt').innerText = "よくきこえなかったよ。もういちど！";
-        };
-      }, 300);
+      recognition.start();
     }
 
     function showResult(isCorrect) {
@@ -323,11 +343,39 @@
         playSound('wrong');
       }
 
-      setTimeout(() => {
+      // 結果を3秒間しっかり表示してから次の問題へ
+      nextTimer = setTimeout(() => {
         overlay.className = 'overlay';
         cardInner.classList.remove('shake');
-        startTraining();
-      }, 1500);
+        if (!isPaused && isTrainingActive) {
+          nextQuestion();
+        }
+      }, 3000);
+    }
+
+    // 一時停止・再開切り替え
+    function togglePause() {
+      playSound('tap');
+      isPaused = !isPaused;
+      const pauseBtn = document.getElementById('pauseBtn');
+
+      if (isPaused) {
+        if (recognition) recognition.abort();
+        clearTimeout(nextTimer);
+        pauseBtn.innerText = "▶️ つづける";
+        document.getElementById('debugBox').innerText = "⏸️ いちじていし中（ゆっくりかくにんしてね）";
+      } else {
+        pauseBtn.innerText = "⏸️ いちじていし";
+        nextQuestion();
+      }
+    }
+
+    function stopTrainingAndGoMenu() {
+      isTrainingActive = false;
+      isPaused = false;
+      clearTimeout(nextTimer);
+      if (recognition) recognition.abort();
+      showMenu();
     }
   </script>
 </body>
