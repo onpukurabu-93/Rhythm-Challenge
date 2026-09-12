@@ -51,7 +51,7 @@
     }
 
     .header h1 { font-size: 20px; color: #333; margin: 0; text-align: center; }
-    .swiper-container { width: 100%; height: 55vh; display: flex; align-items: center; justify-content: center; }
+    .swiper-container { width: 100%; height: 50vh; display: flex; align-items: center; justify-content: center; }
     .card-container { width: 85vw; max-width: 320px; height: 100%; max-height: 380px; perspective: 1000px; }
     .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.12); border-radius: 24px; }
     .card-container.flipped .card-inner { transform: rotateY(180deg); }
@@ -101,6 +101,17 @@
       background: #ff4757;
     }
     .btn-menu { background: #a4b0be; margin-top: 5px; }
+
+    /* デバッグ用認識テキスト表示枠 */
+    .debug-box {
+      font-size: 14px;
+      color: #4a5568;
+      background: #edf2f7;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-top: 5px;
+      min-height: 20px;
+    }
   </style>
 </head>
 <body>
@@ -150,6 +161,7 @@
     <div class="header">
       <h1>Lv.1 トレーニング</h1>
       <p id="quizPrompt" style="font-size: 14px; color: #333; margin: 3px 0 0;">なまえを こたえてね！</p>
+      <div id="debugBox" class="debug-box">こたえが ここにひらがなで出ます</div>
     </div>
     <div class="swiper-container" style="position: relative;">
       <div class="card-container" id="quizCardContainer">
@@ -166,17 +178,18 @@
   </div>
 
   <script>
+    // 「ぶ」「ぶん」「誤変換漢字」の網羅リスト
     const cards = [
-      { keywords: ['しぶおんぷ', '4分音符', '四分音符', 'しぶ'], front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
-      { keywords: ['にぶおんぷ', '2分音符', '二分音符', 'にぶ'], front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
-      { keywords: ['ぜんおんぷ', '全音符', 'ぜん'], front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
-      { keywords: ['はちぶおんぷ', '8分音符', '八分音符', 'はちぶ'], front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
-      { keywords: ['じゅうろくぶおんぷ', '16分音符', '十六分音符', 'じゅうろくぶ'], front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' },
+      { keywords: ['しぶ', 'しぶん', '4分', '四分', '支部', '市部', '私部'], front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
+      { keywords: ['にぶ', 'にぶん', '2分', '二分'], front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
+      { keywords: ['ぜん', '全'], front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
+      { keywords: ['はちぶ', 'はちぶん', '8分', '八分'], front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
+      { keywords: ['じゅうろくぶ', 'じゅうろくぶん', '16分', '十六分'], front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' },
       { keywords: ['ぜんきゅうふ', '全休符'], front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
-      { keywords: ['にぶきゅうふ', '2分休符', '二分休符'], front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
-      { keywords: ['しぶきゅうふ', '4分休符', '四分休符'], front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
-      { keywords: ['はちぶきゅうふ', '8分休符', '八分休符'], front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
-      { keywords: ['じゅうろくぶきゅうふ', '16分休符', '十六分休符'], front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
+      { keywords: ['にぶきゅうふ', 'にぶんきゅうふ', '2分休符', '二分休符'], front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
+      { keywords: ['しぶきゅうふ', 'しぶんきゅうふ', '4分休符', '四分休符', '支部休符'], front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
+      { keywords: ['はちぶきゅうふ', 'はちぶんきゅうふ', '8分休符', '八分休符'], front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
+      { keywords: ['じゅうろくぶきゅうふ', 'じゅうろくぶんきゅうふ', '16分休符', '十六分休符'], front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
     ];
 
     let currentIndex = 0;
@@ -246,6 +259,19 @@
       quizIndex = Math.floor(Math.random() * cards.length);
       document.getElementById('quizImg').src = cards[quizIndex].front;
       document.getElementById('quizPrompt').innerText = "「🎤 こたえる」を押して話してね！";
+      document.getElementById('debugBox').innerText = "こたえが ここに出ます";
+    }
+
+    // 漢字や数字の表記をひらがなに統一表示する変換関数
+    function convertToHiragana(text) {
+      return text
+        .replace(/4分|四分|支部|市部|私部/g, 'しぶ')
+        .replace(/2分|二分/g, 'にぶ')
+        .replace(/8分|八分/g, 'はちぶ')
+        .replace(/16分|十六分/g, 'じゅうろくぶ')
+        .replace(/全/g, 'ぜん')
+        .replace(/音符/g, 'おんぷ')
+        .replace(/休符/g, 'きゅうふ');
     }
 
     function listenVoice() {
@@ -264,11 +290,15 @@
         recognition.start();
 
         recognition.onresult = (e) => {
-          const text = e.results[0][0].transcript;
+          const rawText = e.results[0][0].transcript;
+          const hiraganaText = convertToHiragana(rawText);
           const validKeywords = cards[quizIndex].keywords;
-          document.getElementById('quizPrompt').innerText = `あなたのこたえ: 「${text}」`;
 
-          const isCorrect = validKeywords.some(key => text.includes(key));
+          // 画面にひらがな変換後のテキストを表示
+          document.getElementById('debugBox').innerText = `認識結果: 「${hiraganaText}」（元: ${rawText}）`;
+
+          // 一致チェック
+          const isCorrect = validKeywords.some(key => rawText.includes(key) || hiraganaText.includes(key));
           showResult(isCorrect);
         };
 
@@ -297,7 +327,7 @@
         overlay.className = 'overlay';
         cardInner.classList.remove('shake');
         startTraining();
-      }, 1200);
+      }, 1500);
     }
   </script>
 </body>
