@@ -16,6 +16,10 @@
       justify-content: center;
       height: 100vh;
       overflow: hidden;
+      /* アプリ全体でテキスト長押し選択を防止 */
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     /* 画面切り替え用の共通設定 */
@@ -82,8 +86,22 @@
     .overlay.correct { color: #2ed573; opacity: 1; }
     .overlay.wrong { color: #ff4757; opacity: 1; }
 
-    /* ボタン類 */
-    .btn { background: #ff6b6b; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 25px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    /* ボタン類（長押し範囲指定対策を追加） */
+    .btn {
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
     .btn-menu { background: #a4b0be; margin-top: 5px; }
   </style>
 </head>
@@ -175,14 +193,12 @@
       gain.connect(audioCtx.destination);
 
       if (type === 'correct') {
-        // ピンポン音
-        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime); // ミ
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15); // ラ
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
         gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
         osc.start(); osc.stop(audioCtx.currentTime + 0.5);
       } else {
-        // ヘンテコ音（ポコン…）
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(150, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.3);
@@ -201,7 +217,7 @@
     function showMenu() { showScreen('screenMenu'); }
     function startLevel1() { showScreen('screenPractice'); updatePracticeCard(); }
 
-    // 練習モード（カード更新・スワイプ）
+    // 練習モード
     function updatePracticeCard() {
       const container = document.getElementById('cardContainer');
       container.classList.remove('flipped');
@@ -279,7 +295,7 @@
       setTimeout(() => {
         overlay.className = 'overlay';
         cardInner.classList.remove('shake');
-        startTraining(); // 次の問題へ
+        startTraining();
       }, 1200);
     }
   </script>
