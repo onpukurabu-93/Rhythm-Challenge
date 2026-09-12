@@ -6,56 +6,47 @@
   <title>リズムカード</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: sans-serif;
-      background-color: #f0f4f8;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      height: 100vh;
-      overflow: hidden;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
+      background-color: #fdf8ed;
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      height: 100vh; overflow: hidden;
+      -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
     }
 
     .screen {
-      display: none;
-      width: 100%;
-      height: 100%;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      box-sizing: border-box;
-      padding: 15px 10px;
+      display: none; width: 100%; height: 100%;
+      flex-direction: column; align-items: center; justify-content: space-between;
+      box-sizing: border-box; padding: 15px 10px;
     }
     .active { display: flex; }
 
-    .menu-title { font-size: 32px; font-weight: bold; color: #333; margin-top: 20px; }
-    .level-list { width: 90%; max-width: 340px; display: flex; flex-direction: column; gap: 15px; }
+    .menu-title { font-size: 28px; font-weight: bold; color: #5b4636; margin-top: 10px; }
+
+    /* プロフィールエリア */
+    .profile-box {
+      background: white; border-radius: 16px; padding: 12px; width: 90%; max-width: 340px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-align: center; box-sizing: border-box;
+    }
+    .profile-label { font-size: 13px; color: #806c5a; margin-bottom: 4px; }
+    .profile-current { font-size: 17px; font-weight: bold; color: #5b4636; margin-bottom: 8px; }
+    .profile-select { width: 100%; padding: 8px; border-radius: 10px; border: 1px solid #eadcc8; font-size: 14px; color: #5b4636; background: #fdf8ed; margin-bottom: 6px; }
+    .profile-edit-btn { background: transparent; border: none; color: #b28bb9; font-size: 13px; cursor: pointer; font-weight: bold; }
+
+    .level-list { width: 90%; max-width: 340px; display: flex; flex-direction: column; gap: 12px; }
     .level-btn {
-      background: #ffffff;
-      border: 4px solid #4ea8de;
-      padding: 18px;
-      border-radius: 20px;
-      font-size: 22px;
-      font-weight: bold;
-      color: #333;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      background: #ffffff; border: 3px solid #78a9c8; padding: 14px 18px; border-radius: 18px;
+      font-size: 20px; font-weight: bold; color: #5b4636;
+      display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
 
-    .header-title { font-size: 26px; font-weight: bold; color: #333; margin: 0; text-align: center; }
+    .header-title { font-size: 24px; font-weight: bold; color: #5b4636; margin: 0; text-align: center; }
     .swiper-container { width: 100%; height: 42vh; display: flex; align-items: center; justify-content: center; }
     .card-container { width: 85vw; max-width: 320px; height: 100%; max-height: 350px; perspective: 1000px; cursor: pointer; }
     .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.12); border-radius: 24px; }
     .card-container.flipped .card-inner { transform: rotateY(180deg); }
-    .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; background: #ffffff; display: flex; align-items: center; justify-content: center; border: 4px solid #e2e8f0; box-sizing: border-box; }
+    .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; background: #ffffff; display: flex; align-items: center; justify-content: center; border: 4px solid #eadcc8; box-sizing: border-box; }
     .card-back { transform: rotateY(180deg); }
     .card-img { width: 85%; height: 85%; object-fit: contain; }
 
@@ -69,108 +60,39 @@
     }
     .shake { animation: shake 0.4s ease; }
 
-    .overlay {
-      position: absolute;
-      font-size: 140px;
-      font-weight: bold;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
+    .overlay { position: absolute; font-size: 140px; font-weight: bold; pointer-events: none; opacity: 0; transition: opacity 0.2s ease; }
     .overlay.correct { color: #2ed573; opacity: 1; }
     .overlay.wrong { color: #ff4757; opacity: 1; }
 
-    .btn-menu {
-      background: #a4b0be;
-      color: white;
-      border: none;
-      padding: 8px 20px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 20px;
-      cursor: pointer;
-    }
+    .btn-menu { background: #a4b0be; color: white; border: none; padding: 8px 20px; font-size: 16px; font-weight: bold; border-radius: 20px; cursor: pointer; }
 
-    .answer-display {
-      font-size: 26px;
-      font-weight: bold;
-      color: #2d3748;
-      background: #ffffff;
-      border: 3px solid #cbd5e0;
-      padding: 8px 20px;
-      border-radius: 15px;
-      min-width: 180px;
-      min-height: 38px;
-      text-align: center;
-      margin-top: 5px;
-    }
+    .answer-display { font-size: 24px; font-weight: bold; color: #5b4636; background: #ffffff; border: 3px solid #eadcc8; padding: 6px 20px; border-radius: 15px; min-width: 180px; min-height: 36px; text-align: center; margin-top: 5px; }
 
-    .keyboard-area {
-      width: 100%;
-      max-width: 400px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding-bottom: 10px;
-    }
-
-    .length-buttons {
-      display: flex;
-      justify-content: space-between;
-      gap: 5px;
-    }
+    .keyboard-area { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; }
+    .length-buttons { display: flex; justify-content: space-between; gap: 5px; }
 
     .btn-len {
-      flex: 1;
-      background: #4ea8de;
-      color: white;
-      border: none;
-      padding: 12px 2px;
-      font-size: 18px;
-      font-weight: bold;
-      border-radius: 12px;
-      cursor: pointer;
-      box-shadow: 0 4px 0 #3a86b7;
-      touch-action: manipulation;
+      flex: 1; background: #78a9c8; color: white; border: none; padding: 12px 2px; font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 0 #5b87a4; touch-action: manipulation;
     }
-    .btn-len.selected {
-      background: #ff7f50;
-      box-shadow: 0 4px 0 #e05627;
-      transform: translateY(2px);
-    }
+    .btn-len.selected { background: #e6b26a; box-shadow: 0 4px 0 #c29048; transform: translateY(2px); }
 
-    .type-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
-
+    .type-buttons { display: flex; justify-content: center; gap: 10px; }
     .btn-type {
-      flex: 1;
-      background: #2ed573;
-      color: white;
-      border: none;
-      padding: 14px 0;
-      font-size: 22px;
-      font-weight: bold;
-      border-radius: 15px;
-      cursor: pointer;
-      box-shadow: 0 4px 0 #26af5f;
-      touch-action: manipulation;
+      flex: 1; background: #8dbb8d; color: white; border: none; padding: 14px 0; font-size: 20px; font-weight: bold; border-radius: 15px; cursor: pointer; box-shadow: 0 4px 0 #699769; touch-action: manipulation;
     }
-    .btn-type.kyuufu {
-      background: #ff6b6b;
-      box-shadow: 0 4px 0 #d63031;
-    }
-    .btn-type:active {
-      transform: translateY(2px);
-    }
+    .btn-type.kyuufu { background: #e99595; box-shadow: 0 4px 0 #c46d6d; }
+    .btn-type:active { transform: translateY(2px); }
 
-    .score-box {
-      font-size: 18px;
-      font-weight: bold;
-      color: #4a5568;
-    }
+    .score-box { font-size: 18px; font-weight: bold; color: #806c5a; }
+
+    /* モーダル */
+    .modal-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; z-index: 100; }
+    .modal-box { background: white; padding: 20px; border-radius: 20px; width: 88%; max-width: 360px; text-align: center; }
+    .modal-title { font-size: 19px; font-weight: bold; color: #5b4636; margin-bottom: 12px; }
+    .modal-input { width: 100%; padding: 10px; font-size: 16px; border: 2px solid #eadcc8; border-radius: 12px; margin-bottom: 10px; text-align: center; box-sizing: border-box; }
+    .modal-btn { background: #78a9c8; color: white; border: none; border-radius: 12px; padding: 11px; font-size: 15px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 6px; }
+    .modal-btn.cancel { background: #ccc; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -178,6 +100,16 @@
   <!-- 1. メニュー画面 -->
   <div id="screenMenu" class="screen active">
     <h1 class="menu-title">リズムのおんがく</h1>
+
+    <div class="profile-box">
+      <div class="profile-label">プレイ中のプレイヤー</div>
+      <div class="profile-current" id="currentProfileName">未設定</div>
+      <select id="profileSelect" class="profile-select" onchange="switchProfile(this.value)">
+        <option value="">-- プレイヤーを選択 --</option>
+      </select>
+      <button class="profile-edit-btn" onclick="openAdminModal()">🔒 プレイヤー登録・変更（先生）</button>
+    </div>
+
     <div class="level-list">
       <div class="level-btn" onclick="startLevel(1)">
         <span>Lv.1 おんぷ</span>
@@ -233,7 +165,6 @@
       <div id="markOverlay" class="overlay"></div>
     </div>
 
-    <!-- 2段階選択キーボード -->
     <div class="keyboard-area">
       <div class="length-buttons">
         <button class="btn-len" onclick="selectLength('ぜん', this)">ぜん</button>
@@ -249,26 +180,51 @@
     </div>
   </div>
 
+  <!-- 管理者（先生）モーダル -->
+  <div id="adminModal" class="modal-bg hidden">
+    <div class="modal-box">
+      <div class="modal-title">管理者（先生）設定</div>
+      <div id="adminAuthSection">
+        <input type="password" id="adminPassInput" class="modal-input" placeholder="パスワード (1234)">
+        <button class="modal-btn" onclick="verifyAdminPass()">認証</button>
+        <button class="modal-btn cancel" onclick="closeAdminModal()">キャンセル</button>
+      </div>
+      <div id="adminEditSection" class="hidden">
+        <select id="slotSelect" class="modal-input">
+          <option value="0">プレイヤー 1</option>
+          <option value="1">プレイヤー 2</option>
+          <option value="2">プレイヤー 3</option>
+        </select>
+        <input type="text" id="profileInputName" class="modal-input" placeholder="例: たろう">
+        <button class="modal-btn" onclick="saveProfile()">保存する</button>
+        <button class="modal-btn cancel" onclick="closeAdminModal()">閉じる</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const allCards = {
       1: [
-        { id: '4bu', length: '4ぶ', type: 'おんぷ', front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
-        { id: '2bu', length: '2ぶ', type: 'おんぷ', front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
-        { id: 'zen', length: 'ぜん', type: 'おんぷ', front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
-        { id: '8bu', length: '8ぶ', type: 'おんぷ', front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
-        { id: '16bu', length: '16ぶ', type: 'おんぷ', front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' }
+        { id: '4bu', length: '4ぶ', type: 'おんぷ', read: 'しぶおんぷ', front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
+        { id: '2bu', length: '2ぶ', type: 'おんぷ', read: 'にぶおんぷ', front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
+        { id: 'zen', length: 'ぜん', type: 'おんぷ', read: 'ぜんおんぷ', front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
+        { id: '8bu', length: '8ぶ', type: 'おんぷ', read: 'はちぶおんぷ', front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
+        { id: '16bu', length: '16ぶ', type: 'おんぷ', read: 'じゅうろくぶおんぷ', front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' }
       ],
       2: [
-        { id: '4kyu', length: '4ぶ', type: 'きゅうふ', front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
-        { id: '2kyu', length: '2ぶ', type: 'きゅうふ', front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
-        { id: 'zenkyu', length: 'ぜん', type: 'きゅうふ', front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
-        { id: '8kyu', length: '8ぶ', type: 'きゅうふ', front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
-        { id: '16kyu', length: '16ぶ', type: 'きゅうふ', front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
+        { id: '4kyu', length: '4ぶ', type: 'きゅうふ', read: 'しぶきゅうふ', front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
+        { id: '2kyu', length: '2ぶ', type: 'きゅうふ', read: 'にぶきゅうふ', front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
+        { id: 'zenkyu', length: 'ぜん', type: 'きゅうふ', read: 'ぜんきゅうふ', front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
+        { id: '8kyu', length: '8ぶ', type: 'きゅうふ', read: 'はちぶきゅうふ', front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
+        { id: '16kyu', length: '16ぶ', type: 'きゅうふ', read: 'じゅうろくぶきゅうふ', front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
       ]
     };
 
+    /* プレイヤー情報管理 */
+    let profiles = JSON.parse(localStorage.getItem("rhythm_profiles")) || ["", "", ""];
+    let activeProfileIndex = parseInt(localStorage.getItem("rhythm_active_profile")) || 0;
+
     let currentLevel = 1;
-    let unlockedLevel = 1;
     let cards = [];
 
     let currentIndex = 0;
@@ -283,42 +239,107 @@
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const uttr = new SpeechSynthesisUtterance(text);
+        uttr.lang = 'ja-JP';
+        uttr.rate = 1.0;
+        window.speechSynthesis.speak(uttr);
+      }
+    }
+
+    function initProfiles() {
+      const select = document.getElementById("profileSelect");
+      select.innerHTML = '<option value="">-- プレイヤーを選択 --</option>';
+      profiles.forEach((name, idx) => {
+        if (name) {
+          const opt = document.createElement("option");
+          opt.value = idx; opt.textContent = `プレイヤー ${idx+1}: ${name}`;
+          if (idx === activeProfileIndex) opt.selected = true;
+          select.appendChild(opt);
+        }
+      });
+      document.getElementById("currentProfileName").textContent = profiles[activeProfileIndex] || "未登録（先生画面から登録）";
+      updateMenuLocks();
+    }
+
+    function switchProfile(val) {
+      if (val === "") return;
+      activeProfileIndex = parseInt(val);
+      localStorage.setItem("rhythm_active_profile", activeProfileIndex);
+      initProfiles();
+    }
+
+    function getUnlockedLevel() {
+      return parseInt(localStorage.getItem(`rhythm_unlocked_${activeProfileIndex}`)) || 1;
+    }
+
+    function updateMenuLocks() {
+      const unlocked = getUnlockedLevel();
+      const btnLv2 = document.getElementById('btnLv2');
+      const lockLv2 = document.getElementById('lockLv2');
+      const btnLv3 = document.getElementById('btnLv3');
+      const lockLv3 = document.getElementById('lockLv3');
+
+      if (unlocked >= 2) { btnLv2.style.opacity = '1'; lockLv2.innerText = '🔓'; }
+      else { btnLv2.style.opacity = '0.5'; lockLv2.innerText = '🔒'; }
+
+      if (unlocked >= 3) { btnLv3.style.opacity = '1'; lockLv3.innerText = '🔓'; }
+      else { btnLv3.style.opacity = '0.5'; lockLv3.innerText = '🔒'; }
+    }
+
+    function openAdminModal() {
+      document.getElementById("adminAuthSection").classList.remove("hidden");
+      document.getElementById("adminEditSection").classList.add("hidden");
+      document.getElementById("adminPassInput").value = "";
+      document.getElementById("adminModal").classList.remove("hidden");
+    }
+    function verifyAdminPass() {
+      if (document.getElementById("adminPassInput").value === "1234") {
+        document.getElementById("adminAuthSection").classList.add("hidden");
+        document.getElementById("adminEditSection").classList.remove("hidden");
+        document.getElementById("slotSelect").value = activeProfileIndex;
+        document.getElementById("profileInputName").value = profiles[activeProfileIndex] || "";
+      } else { alert("パスワードが違います"); }
+    }
+    function saveProfile() {
+      const slot = parseInt(document.getElementById("slotSelect").value);
+      const name = document.getElementById("profileInputName").value.trim();
+      if (!name) return alert("名前を入力してください");
+      profiles[slot] = name; activeProfileIndex = slot;
+      localStorage.setItem("rhythm_profiles", JSON.stringify(profiles));
+      localStorage.setItem("rhythm_active_profile", activeProfileIndex);
+      closeAdminModal(); initProfiles();
+    }
+    function closeAdminModal() { document.getElementById("adminModal").classList.add("hidden"); }
+
     function playSound(type) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
-
       if (type === 'tap') {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
         gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
         osc.start(); osc.stop(audioCtx.currentTime + 0.05);
       } else if (type === 'correct') {
-        const osc1 = audioCtx.createOscillator();
-        const osc2 = audioCtx.createOscillator();
-        const gain1 = audioCtx.createGain();
-        const gain2 = audioCtx.createGain();
-
+        const osc1 = audioCtx.createOscillator(); const osc2 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain(); const gain2 = audioCtx.createGain();
         osc1.connect(gain1); gain1.connect(audioCtx.destination);
         osc2.connect(gain2); gain2.connect(audioCtx.destination);
-
         osc1.frequency.setValueAtTime(659.25, audioCtx.currentTime);
         gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
         gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-
         osc2.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
         gain2.gain.setValueAtTime(0.3, audioCtx.currentTime + 0.15);
         gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.55);
-
         osc1.start(audioCtx.currentTime); osc1.stop(audioCtx.currentTime + 0.3);
         osc2.start(audioCtx.currentTime + 0.15); osc2.stop(audioCtx.currentTime + 0.55);
       } else if (type === 'wrong') {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.3);
         gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
@@ -332,31 +353,18 @@
       document.getElementById(id).classList.add('active');
     }
 
-    function showMenu() {
-      // メニューの鍵表示の更新
-      if (unlockedLevel >= 2) {
-        document.getElementById('btnLv2').style.opacity = '1';
-        document.getElementById('lockLv2').innerText = '🔓';
-      }
-      if (unlockedLevel >= 3) {
-        document.getElementById('btnLv3').style.opacity = '1';
-        document.getElementById('lockLv3').innerText = '🔓';
-      }
-      showScreen('screenMenu');
-    }
+    function showMenu() { updateMenuLocks(); showScreen('screenMenu'); }
 
     function startLevel(lv) {
-      if (lv > unlockedLevel) return;
+      if (lv > getUnlockedLevel()) return;
+      if (!profiles[activeProfileIndex]) return openAdminModal();
+
       currentLevel = lv;
       cards = allCards[lv] || allCards[1];
 
-      // Lv.2からは「きゅうふ」ボタンも表示
       const kyuufuBtn = document.getElementById('btnKyuufu');
-      if (currentLevel >= 2) {
-        kyuufuBtn.style.display = 'block';
-      } else {
-        kyuufuBtn.style.display = 'none';
-      }
+      if (currentLevel >= 2) { kyuufuBtn.style.display = 'block'; }
+      else { kyuufuBtn.style.display = 'none'; }
 
       document.getElementById('practiceTitle').innerText = `Lv.${lv} れんしゅう`;
       showScreen('screenPractice');
@@ -372,7 +380,15 @@
         document.getElementById('imgBack').src = cards[currentIndex].back;
       }, 150);
     }
-    function flipCard() { playSound('tap'); document.getElementById('cardContainer').classList.toggle('flipped'); }
+
+    function flipCard() {
+      playSound('tap');
+      const container = document.getElementById('cardContainer');
+      container.classList.toggle('flipped');
+      if (container.classList.contains('flipped')) {
+        speakText(cards[currentIndex].read);
+      }
+    }
 
     let startX = 0;
     const swipeArea = document.getElementById('swipeArea');
@@ -386,61 +402,40 @@
     });
 
     function startTraining() {
-      questionCount = 0;
-      correctCount = 0;
-      lastQuizIndex = -1;
+      questionCount = 0; correctCount = 0; lastQuizIndex = -1;
       showScreen('screenTraining');
       nextQuestion();
     }
 
     function nextQuestion() {
-      if (questionCount >= totalQuestions) {
-        finishTraining();
-        return;
-      }
-
-      questionCount++;
-      isChecking = false;
-      selectedLength = '';
+      if (questionCount >= totalQuestions) { finishTraining(); return; }
+      questionCount++; isChecking = false; selectedLength = '';
       resetButtons();
       document.getElementById('scoreBox').innerText = `${questionCount} / ${totalQuestions} もんめ`;
       document.getElementById('answerDisplay').innerText = "えらんでね";
 
       let newIndex;
-      do {
-        newIndex = Math.floor(Math.random() * cards.length);
-      } while (cards.length > 1 && newIndex === lastQuizIndex);
+      do { newIndex = Math.floor(Math.random() * cards.length); }
+      while (cards.length > 1 && newIndex === lastQuizIndex);
 
-      quizIndex = newIndex;
-      lastQuizIndex = quizIndex;
-
+      quizIndex = newIndex; lastQuizIndex = quizIndex;
       document.getElementById('quizImg').src = cards[quizIndex].front;
     }
 
     function selectLength(len, btn) {
       if (isChecking) return;
-      playSound('tap');
-      selectedLength = len;
-      
+      playSound('tap'); selectedLength = len;
       document.querySelectorAll('.btn-len').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
-
       document.getElementById('answerDisplay').innerText = `${selectedLength} ...`;
     }
 
     function submitAnswer(type) {
       if (isChecking) return;
       playSound('tap');
-
-      if (!selectedLength) {
-        document.getElementById('answerDisplay').innerText = "ながさをえらんでね";
-        return;
-      }
+      if (!selectedLength) { document.getElementById('answerDisplay').innerText = "ながさをえらんでね"; return; }
 
       isChecking = true;
-      const fullAnswer = selectedLength + type;
-      document.getElementById('answerDisplay').innerText = fullAnswer;
-
       const card = cards[quizIndex];
       const isCorrect = (selectedLength === card.length && type === card.type);
 
@@ -449,25 +444,18 @@
 
       if (isCorrect) {
         correctCount++;
-        overlay.innerText = '⭕️';
-        overlay.className = 'overlay correct';
+        overlay.innerText = '⭕️'; overlay.className = 'overlay correct';
         playSound('correct');
+        speakText(card.read);
 
-        setTimeout(() => {
-          overlay.className = 'overlay';
-          nextQuestion();
-        }, 1500);
-
+        setTimeout(() => { overlay.className = 'overlay'; nextQuestion(); }, 1500);
       } else {
-        overlay.innerText = '❌';
-        overlay.className = 'overlay wrong';
+        overlay.innerText = '❌'; overlay.className = 'overlay wrong';
         cardInner.classList.add('shake');
         playSound('wrong');
 
         setTimeout(() => {
-          overlay.className = 'overlay';
-          cardInner.classList.remove('shake');
-          isChecking = false;
+          overlay.className = 'overlay'; cardInner.classList.remove('shake'); isChecking = false;
         }, 1200);
       }
     }
@@ -478,19 +466,24 @@
 
     function finishTraining() {
       const passRate = (correctCount / totalQuestions) * 100;
+      const unlocked = getUnlockedLevel();
 
       if (passRate >= 90) {
-        if (currentLevel === unlockedLevel) {
-          unlockedLevel++;
+        if (currentLevel === unlocked) {
+          localStorage.setItem(`rhythm_unlocked_${activeProfileIndex}`, currentLevel + 1);
         }
-        alert(`すごい！ ${totalQuestions}もんちゅう ${correctCount}もん せいかい！\nLv.${currentLevel + 1} が解放されたよ！🎉`);
+        alert(`すごい！ ${totalQuestions}もんちゅう ${correctCount}もん せいかい！\nクリアおめでとう！🎉`);
+        startLevel(currentLevel + 1); // 自動で次のレベルの練習画面へ直行
       } else {
         alert(`${totalQuestions}もんちゅう ${correctCount}もん せいかい！\nもう一度チャレンジしよう！`);
+        showMenu();
       }
-      showMenu();
     }
 
     function stopTrainingAndGoMenu() { showMenu(); }
+
+    // 初期起動
+    initProfiles();
   </script>
 </body>
 </html>
