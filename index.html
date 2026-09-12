@@ -105,7 +105,6 @@
       margin-top: 5px;
     }
 
-    /* ボタンエリアのスタイル */
     .keyboard-area {
       width: 100%;
       max-width: 400px;
@@ -143,10 +142,11 @@
     .type-buttons {
       display: flex;
       justify-content: center;
+      gap: 10px;
     }
 
     .btn-type {
-      width: 80%;
+      flex: 1;
       background: #2ed573;
       color: white;
       border: none;
@@ -158,9 +158,12 @@
       box-shadow: 0 4px 0 #26af5f;
       touch-action: manipulation;
     }
+    .btn-type.kyuufu {
+      background: #ff6b6b;
+      box-shadow: 0 4px 0 #d63031;
+    }
     .btn-type:active {
       transform: translateY(2px);
-      box-shadow: 0 2px 0 #26af5f;
     }
 
     .score-box {
@@ -241,21 +244,32 @@
       </div>
       <div class="type-buttons">
         <button class="btn-type" onclick="submitAnswer('おんぷ')">おんぷ</button>
+        <button class="btn-type kyuufu" id="btnKyuufu" style="display:none;" onclick="submitAnswer('きゅうふ')">きゅうふ</button>
       </div>
     </div>
   </div>
 
   <script>
-    const cards = [
-      { id: '4bu', length: '4ぶ', type: 'おんぷ', front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
-      { id: '2bu', length: '2ぶ', type: 'おんぷ', front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
-      { id: 'zen', length: 'ぜん', type: 'おんぷ', front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
-      { id: '8bu', length: '8ぶ', type: 'おんぷ', front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
-      { id: '16bu', length: '16ぶ', type: 'おんぷ', front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' }
-    ];
+    const allCards = {
+      1: [
+        { id: '4bu', length: '4ぶ', type: 'おんぷ', front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
+        { id: '2bu', length: '2ぶ', type: 'おんぷ', front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
+        { id: 'zen', length: 'ぜん', type: 'おんぷ', front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
+        { id: '8bu', length: '8ぶ', type: 'おんぷ', front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
+        { id: '16bu', length: '16ぶ', type: 'おんぷ', front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' }
+      ],
+      2: [
+        { id: '4kyu', length: '4ぶ', type: 'きゅうふ', front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
+        { id: '2kyu', length: '2ぶ', type: 'きゅうふ', front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
+        { id: 'zenkyu', length: 'ぜん', type: 'きゅうふ', front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
+        { id: '8kyu', length: '8ぶ', type: 'きゅうふ', front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
+        { id: '16kyu', length: '16ぶ', type: 'きゅうふ', front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
+      ]
+    };
 
     let currentLevel = 1;
     let unlockedLevel = 1;
+    let cards = [];
 
     let currentIndex = 0;
     let quizIndex = -1;
@@ -318,11 +332,32 @@
       document.getElementById(id).classList.add('active');
     }
 
-    function showMenu() { showScreen('screenMenu'); }
+    function showMenu() {
+      // メニューの鍵表示の更新
+      if (unlockedLevel >= 2) {
+        document.getElementById('btnLv2').style.opacity = '1';
+        document.getElementById('lockLv2').innerText = '🔓';
+      }
+      if (unlockedLevel >= 3) {
+        document.getElementById('btnLv3').style.opacity = '1';
+        document.getElementById('lockLv3').innerText = '🔓';
+      }
+      showScreen('screenMenu');
+    }
 
     function startLevel(lv) {
       if (lv > unlockedLevel) return;
       currentLevel = lv;
+      cards = allCards[lv] || allCards[1];
+
+      // Lv.2からは「きゅうふ」ボタンも表示
+      const kyuufuBtn = document.getElementById('btnKyuufu');
+      if (currentLevel >= 2) {
+        kyuufuBtn.style.display = 'block';
+      } else {
+        kyuufuBtn.style.display = 'none';
+      }
+
       document.getElementById('practiceTitle').innerText = `Lv.${lv} れんしゅう`;
       showScreen('screenPractice');
       currentIndex = 0;
@@ -382,7 +417,6 @@
       document.getElementById('quizImg').src = cards[quizIndex].front;
     }
 
-    // 長さ（ぜん・2ぶ 等）を選択
     function selectLength(len, btn) {
       if (isChecking) return;
       playSound('tap');
@@ -394,7 +428,6 @@
       document.getElementById('answerDisplay').innerText = `${selectedLength} ...`;
     }
 
-    // 「おんぷ」を押して最終判定
     function submitAnswer(type) {
       if (isChecking) return;
       playSound('tap');
@@ -447,7 +480,10 @@
       const passRate = (correctCount / totalQuestions) * 100;
 
       if (passRate >= 90) {
-        alert(`すごい！ ${totalQuestions}もんちゅう ${correctCount}もん せいかい！\nクリアおめでとう！🎉`);
+        if (currentLevel === unlockedLevel) {
+          unlockedLevel++;
+        }
+        alert(`すごい！ ${totalQuestions}もんちゅう ${correctCount}もん せいかい！\nLv.${currentLevel + 1} が解放されたよ！🎉`);
       } else {
         alert(`${totalQuestions}もんちゅう ${correctCount}もん せいかい！\nもう一度チャレンジしよう！`);
       }
