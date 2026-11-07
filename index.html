@@ -77,6 +77,8 @@ h2{font-size:22px;margin:6px 0 12px}
 .detail{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
 .detail .notebox{background:#fff;border-radius:22px;padding:8px 14px;box-shadow:0 4px 0 var(--line);width:100%;display:flex;justify-content:center}
 .detail .emj{font-size:40px;line-height:1}
+.pic{display:block;object-fit:contain;height:1.5em;width:auto;max-width:5em;margin:0 auto}
+.detail .emj .pic{height:min(90px,12vh)}
 .notebox svg,.nb-top svg{max-height:min(84px,11vh);width:auto !important}
 .notebox svg{max-height:min(104px,14vh)}
 .detail .word{font-size:32px;font-weight:800;letter-spacing:.04em}
@@ -207,6 +209,7 @@ h2{font-size:22px;margin:6px 0 12px}
 <!-- QUIZ PLAY -->
 <section class="view" id="v-quizPlay"><div id="qBox"></div></section>
 
+<div id="credit" style="display:none;text-align:center;color:var(--sub);font-size:12px;padding:10px 0 24px">こえ：VOICEVOX:ずんだもん</div>
 <div class="ov" id="ov"></div>
 
 <script>
@@ -214,29 +217,29 @@ h2{font-size:22px;margin:6px 0 12px}
 const N=(d,syl,r)=>({d,syl:Array.isArray(syl)?syl:[syl],r:!!r});
 const T=(n,c)=>({d:1/n,syl:[c],r:false,tp:n});
 const WORDS=[
-  {id:'q', g:1,emj:'🐕',nm:'しぶおんぷ',w:'たん',col:'var(--c1)',ev:[N(1,'たん')]},
-  {id:'h', g:1,nm:'にぶおんぷ',w:'たんにー',col:'var(--c2)',ev:[N(2,['たん','にー'])]},
-  {id:'dh',g:1,nm:'ふてん にぶおんぷ',w:'たんにーさん',col:'var(--c3)',ev:[N(3,['たん','にー','さん'])]},
-  {id:'w', g:1,emj:'🐘',nm:'ぜんおんぷ',w:'たんにーさんしー',col:'var(--c4)',ev:[N(4,['たん','にー','さん','しー'])]},
-  {id:'qr', g:2,nm:'しぶきゅうふ',w:'うん',col:'var(--c1)',ev:[N(1,'うん',1)]},
-  {id:'hr', g:2,nm:'にぶきゅうふ',w:'うんにー',col:'var(--c2)',ev:[N(2,['うん','にー'],1)]},
-  {id:'dhr',g:2,nm:'ふてん にぶきゅうふ',w:'うんにーさん',col:'var(--c3)',ev:[N(3,['うん','にー','さん'],1)]},
-  {id:'wr', g:2,nm:'ぜんきゅうふ',w:'うんにーさんしー',col:'var(--c4)',ev:[N(4,['うん','にー','さん','しー'],1)]},
-  {id:'ee',g:3,emj:'🐿️🐿️',nm:'はちぶおんぷ 2つ',w:'タカ',col:'var(--c8)',ev:[N(.5,'タ'),N(.5,'カ')]},
-  {id:'er',g:3,nm:'はちぶおんぷ と はちぶきゅうふ',w:'タウ',col:'var(--c8)',ev:[N(.5,'タ'),N(.5,'ウ',1)]},
-  {id:'re',g:3,nm:'はちぶきゅうふ と はちぶおんぷ',w:'ウカ',col:'var(--c8)',ev:[N(.5,'ウ',1),N(.5,'カ')]},
-  {nm:'じゅうろくぶおんぷ',id:'f1',g:4,w:'たこやき',emj:'🐙',col:'var(--c16)',ev:[N(.25,'た'),N(.25,'こ'),N(.25,'や'),N(.25,'き')]},
-  {nm:'じゅうろくぶおんぷ',id:'f2',g:4,w:'ラーメン',emj:'🍜',col:'var(--c16)',ev:[N(.5,'ラー'),N(.25,'メ'),N(.25,'ン')]},
-  {nm:'じゅうろくぶおんぷ',id:'f3',g:4,w:'ステーキ',emj:'🥩',col:'var(--c16)',ev:[N(.25,'ス'),N(.5,'テー'),N(.25,'キ')]},
-  {nm:'じゅうろくぶおんぷ',id:'f4',g:4,w:'ジュース',emj:'🧃',col:'var(--c16)',ev:[N(.75,'ジュー'),N(.25,'ス')]},
-  {nm:'じゅうろくぶおんぷ',id:'f5',g:4,w:'ゼリー',emj:'🍮',col:'var(--c16)',ev:[N(.25,'ゼ'),N(.75,'リー')]},
-  {nm:'じゅうろくぶおんぷ',id:'f6',g:4,w:'マンゴー',emj:'🥭',col:'var(--c16)',ev:[N(.25,'マ'),N(.25,'ン'),N(.5,'ゴー')]},
-  {nm:'じゅうろくぶおんぷ',id:'f7',g:4,w:'はっさく',emj:'🍊',col:'var(--c16)',ev:[N(.25,'は'),N(.25,'っ',1),N(.25,'さ'),N(.25,'く')]},
-  {nm:'じゅうろくぶおんぷ',id:'f8',g:4,w:'コロッケ',emj:'🥔',col:'var(--c16)',ev:[N(.25,'コ'),N(.25,'ロ'),N(.25,'っ',1),N(.25,'ケ')]},
-  {nm:'じゅうろくぶおんぷ',id:'f9',g:4,w:'クッキー',emj:'🍪',col:'var(--c16)',ev:[N(.25,'ク'),N(.25,'っ',1),N(.5,'キー')]},
-  {nm:'ごれんぷ',id:'t5',g:4,w:'オムライス',emj:'🍳',col:'var(--c16)',ev:'オムライス'.split('').map(c=>T(5,c))},
-  {nm:'ろくれんぷ',id:'t6',g:4,w:'おこのみやき',emj:'🥞',col:'var(--c16)',ev:'おこのみやき'.split('').map(c=>T(6,c))},
-  {nm:'しちれんぷ',id:'t7',g:4,w:'みたらしだんご',emj:'🍡',col:'var(--c16)',ev:'みたらしだんご'.split('').map(c=>T(7,c))},
+  {id:'q',k:'tan',nk:'shibuonpu', g:1,emj:'🐕',nm:'しぶおんぷ',w:'たん',col:'var(--c1)',ev:[N(1,'たん')]},
+  {id:'h',k:'tan2',nk:'nibuonpu', g:1,nm:'にぶおんぷ',w:'たんにー',col:'var(--c2)',ev:[N(2,['たん','にー'])]},
+  {id:'dh',k:'tan3',nk:'futen-nibuonpu',g:1,nm:'ふてん にぶおんぷ',w:'たんにーさん',col:'var(--c3)',ev:[N(3,['たん','にー','さん'])]},
+  {id:'w',k:'tan4',nk:'zenonpu', g:1,emj:'🐘',nm:'ぜんおんぷ',w:'たんにーさんしー',col:'var(--c4)',ev:[N(4,['たん','にー','さん','しー'])]},
+  {id:'qr',k:'un',nk:'shibukyuufu', g:2,nm:'しぶきゅうふ',w:'うん',col:'var(--c1)',ev:[N(1,'うん',1)]},
+  {id:'hr',k:'un2',nk:'nibukyuufu', g:2,nm:'にぶきゅうふ',w:'うんにー',col:'var(--c2)',ev:[N(2,['うん','にー'],1)]},
+  {id:'dhr',k:'un3',nk:'futen-nibukyuufu',g:2,nm:'ふてん にぶきゅうふ',w:'うんにーさん',col:'var(--c3)',ev:[N(3,['うん','にー','さん'],1)]},
+  {id:'wr',k:'un4',nk:'zenkyuufu', g:2,nm:'ぜんきゅうふ',w:'うんにーさんしー',col:'var(--c4)',ev:[N(4,['うん','にー','さん','しー'],1)]},
+  {id:'ee',k:'taka',nk:'hachibu-2',g:3,emj:'🐿️🐿️',nm:'はちぶおんぷ 2つ',w:'タカ',col:'var(--c8)',ev:[N(.5,'タ'),N(.5,'カ')]},
+  {id:'er',k:'tau',nk:'hachibu-kyuufu-ato',g:3,nm:'はちぶおんぷ と はちぶきゅうふ',w:'タウ',col:'var(--c8)',ev:[N(.5,'タ'),N(.5,'ウ',1)]},
+  {id:'re',k:'uka',nk:'hachibu-kyuufu-mae',g:3,nm:'はちぶきゅうふ と はちぶおんぷ',w:'ウカ',col:'var(--c8)',ev:[N(.5,'ウ',1),N(.5,'カ')]},
+  {nm:'じゅうろくぶおんぷ',id:'f1',k:'takoyaki',nk:'juurokubu',g:4,w:'たこやき',emj:'🐙',col:'var(--c16)',ev:[N(.25,'た'),N(.25,'こ'),N(.25,'や'),N(.25,'き')]},
+  {nm:'じゅうろくぶおんぷ',id:'f2',k:'ramen',nk:'juurokubu',g:4,w:'ラーメン',emj:'🍜',col:'var(--c16)',ev:[N(.5,'ラー'),N(.25,'メ'),N(.25,'ン')]},
+  {nm:'じゅうろくぶおんぷ',id:'f3',k:'steak',nk:'juurokubu',g:4,w:'ステーキ',emj:'🥩',col:'var(--c16)',ev:[N(.25,'ス'),N(.5,'テー'),N(.25,'キ')]},
+  {nm:'じゅうろくぶおんぷ',id:'f4',k:'juice',nk:'juurokubu',g:4,w:'ジュース',emj:'🧃',col:'var(--c16)',ev:[N(.75,'ジュー'),N(.25,'ス')]},
+  {nm:'じゅうろくぶおんぷ',id:'f5',k:'jelly',nk:'juurokubu',g:4,w:'ゼリー',emj:'🍮',col:'var(--c16)',ev:[N(.25,'ゼ'),N(.75,'リー')]},
+  {nm:'じゅうろくぶおんぷ',id:'f6',k:'mango',nk:'juurokubu',g:4,w:'マンゴー',emj:'🥭',col:'var(--c16)',ev:[N(.25,'マ'),N(.25,'ン'),N(.5,'ゴー')]},
+  {nm:'じゅうろくぶおんぷ',id:'f7',k:'hassaku',nk:'juurokubu',g:4,w:'はっさく',emj:'🍊',col:'var(--c16)',ev:[N(.25,'は'),N(.25,'っ',1),N(.25,'さ'),N(.25,'く')]},
+  {nm:'じゅうろくぶおんぷ',id:'f8',k:'korokke',nk:'juurokubu',g:4,w:'コロッケ',emj:'🥔',col:'var(--c16)',ev:[N(.25,'コ'),N(.25,'ロ'),N(.25,'っ',1),N(.25,'ケ')]},
+  {nm:'じゅうろくぶおんぷ',id:'f9',k:'cookie',nk:'juurokubu',g:4,w:'クッキー',emj:'🍪',col:'var(--c16)',ev:[N(.25,'ク'),N(.25,'っ',1),N(.5,'キー')]},
+  {nm:'ごれんぷ',id:'t5',k:'omurice',nk:'gorenpu',g:4,w:'オムライス',emj:'🍳',col:'var(--c16)',ev:'オムライス'.split('').map(c=>T(5,c))},
+  {nm:'ろくれんぷ',id:'t6',k:'okonomiyaki',nk:'rokurenpu',g:4,w:'おこのみやき',emj:'🥞',col:'var(--c16)',ev:'おこのみやき'.split('').map(c=>T(6,c))},
+  {nm:'しちれんぷ',id:'t7',k:'mitarashi',nk:'shichirenpu',g:4,w:'みたらしだんご',emj:'🍡',col:'var(--c16)',ev:'みたらしだんご'.split('').map(c=>T(7,c))},
 ];
 const GROUPS=[{g:1,name:'のばす おと'},{g:2,name:'おやすみ'},{g:3,name:'はんぶん'},{g:4,name:'たべもの'}];
 const byId=id=>WORDS.find(w=>w.id===id);
@@ -289,6 +292,37 @@ function bell(t,dest){
 function yay(){const a=ac();const t=a.currentTime;[523,659,784,1047].forEach((f,i)=>tone(t+i*.08,.14,null,f,.2));}
 function buzz(){const a=ac();const t=a.currentTime;tone(t,.18,null,220,.22);tone(t+.2,.25,null,196,.22);}
 
+/* own files (images / voices) on GitHub */
+const AV=new Set();const CLIPS={};let CLIP_NOW=null;
+const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて いうかな',
+  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
+function clipName(key){return AV.has(key+'.mp3')?key+'.mp3':AV.has(key+'.wav')?key+'.wav':AV.has(key+'.m4a')?key+'.m4a':null;}
+async function probeFiles(){
+  if(!/^https?:/.test(location.protocol))return;
+  const keys=[];WORDS.forEach(w=>{keys.push('koe-'+w.k,'na-'+w.nk);});Object.keys(PROMPTS).forEach(k=>keys.push('koe-'+k));
+  const names=[...new Set(keys)].flatMap(k=>[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.map(w=>'e-'+w.k+'.png'));
+  await Promise.all(names.map(n=>fetch(n,{method:'HEAD',cache:'no-cache'}).then(r=>{if(r.ok)AV.add(n);}).catch(()=>{})));
+  AV.forEach(n=>{if(!/\.png$/.test(n)){const a=new Audio(n);a.preload='auto';CLIPS[n]=a;}});
+  if([...AV].some(n=>!/\.png$/.test(n)))$('#credit').style.display='block';
+  if(VIEW==='list')renderList();
+  if(VIEW==='detail'&&DETAIL_ID){const b=document.querySelector('#detailBox .emj');const w=byId(DETAIL_ID);if(b&&w)b.outerHTML=pic(w,'emj');}
+}
+function pic(w,cls,style=''){
+  if(AV.has('e-'+w.k+'.png'))return `<div class="${cls}" style="${style}"><img class="pic" src="e-${w.k}.png" alt=""></div>`;
+  return w.emj?`<div class="${cls}" style="${style}">${w.emj}</div>`:'';
+}
+function speak(key,text){
+  const n=clipName(key);
+  if(!S.voice)return Promise.resolve();
+  if(!n)return say(text);
+  return new Promise(res=>{
+    try{if(window.speechSynthesis)speechSynthesis.cancel();if(CLIP_NOW){CLIP_NOW.pause();}
+      const a=CLIPS[n]||new Audio(n);CLIP_NOW=a;a.currentTime=0;let done=false;const fin=()=>{if(!done){done=true;res();}};
+      a.onended=fin;a.onerror=fin;const p=a.play();if(p&&p.catch)p.catch(()=>{fin();});setTimeout(fin,4000);
+    }catch(e){res();}
+  });
+}
+const P=k=>speak('koe-'+k,PROMPTS[k]);
 /* speech */
 function say(text){
   return new Promise(res=>{
@@ -419,7 +453,7 @@ function renderList(){
   $('#listChips').querySelectorAll('.chip').forEach(c=>c.onclick=()=>{LIST_G=+c.dataset.g;renderList();});
   const ws=WORDS.filter(w=>w.g===LIST_G);
   $('#listGrid').innerHTML=ws.map(w=>`<button class="card" data-id="${w.id}">
-      ${w.emj?`<div class="emj">${w.emj}</div>`:''}
+      ${pic(w,'emj')}
       ${notation(w.ev,1.05)}
       ${blocks(w,Math.min(34,Math.floor(120/len(w))),'nolabel')}
       <div class="w">${w.w}</div></button>`).join('');
@@ -440,7 +474,7 @@ function openDetail(id){
   const u=unitFor(w,availW(),w.g===4?170:88);
   $('#detailBox').innerHTML=`
     <div class="notebox">${notation(w.ev,w.g===4?3.2:(len(w)>=3?1.9:2.4))}</div>
-    ${w.emj?`<div class="emj">${w.emj}</div>`:''}
+    ${pic(w,'emj')}
     <div class="word">${w.w}</div>
     <div style="font-size:18px;font-weight:800;color:var(--sub);background:#fff;border-radius:999px;padding:4px 14px">${w.nm}</div>
     <div id="dBlocks">${blocks(w,u)}</div>
@@ -454,12 +488,12 @@ function openDetail(id){
       <button class="arw" id="dNext" ${i>=ws.length-1?'style="visibility:hidden"':''} aria-label="つぎ">▶</button></div>`;
   const run=()=>doPlayDetail(w);
   $('#dPlay').onclick=run;$('#dBlocks').onclick=run;
-  $('#dSay').onclick=()=>say(w.w);
-  $('#dName').onclick=()=>say(w.nm.replace(' 2つ',' ふたつ'));
+  $('#dSay').onclick=()=>speak('koe-'+w.k,w.w);
+  $('#dName').onclick=()=>speak('na-'+w.nk,w.nm.replace(' 2つ',' ふたつ'));
   DETAIL_NAV={prev:i>0?ws[i-1].id:null,next:i<ws.length-1?ws[i+1].id:null};
   $('#dPrev').onclick=()=>DETAIL_NAV.prev&&openDetail(DETAIL_NAV.prev);
   $('#dNext').onclick=()=>DETAIL_NAV.next&&openDetail(DETAIL_NAV.next);
-  (async()=>{await say(w.w);if(DETAIL_ID===id&&VIEW==='detail')run();})();
+  (async()=>{await speak('koe-'+w.k,w.w);if(DETAIL_ID===id&&VIEW==='detail')run();})();
 }
 function doPlayDetail(w){
   playWord(w,{el:$('#dBlocks .blocks')});
@@ -566,7 +600,7 @@ function nbFinish(now,auto){
   else{t='ぴったり！ 🌟';sub=NB.hint?'つぎは ヒントなしで やってみよう':'すごい！ ヒントなしで できたね';ok=true;}
   if(pressNote)sub=pressNote+'　'+sub;
   $('#nbMsg').innerHTML=`${t}<small>${sub}</small>`;
-  if(ok){yay();addStar(NB.hint?1:2);say('ぴったり');}else{say(err<0?'もうすこし':'ながすぎたよ');}
+  if(ok){yay();addStar(NB.hint?1:2);P('pittari');}else{P(err<0?'mousukoshi':'nagasugi');}
 }
 
 /* ===================== quiz ===================== */
@@ -607,7 +641,7 @@ function pickChoices(ans,k){
 function progHTML(){let h='<div class="qprog">';for(let i=0;i<QZ.total;i++)h+=`<i class="${i<QZ.i?'done':i===QZ.i?'now':''}"></i>`;return h+'</div>';}
 function choiceCard(w,mode){
   const inner=mode==='word'?`<div class="w">${w.w}</div>`:
-    `${w.emj&&QZ.show?`<div style="font-size:28px">${w.emj}</div>`:''}${notation(w.ev,len(w)<1?1.6:1.15)}${QZ.show?blocks(w,Math.min(34,Math.floor(130/len(w))),'nolabel'):''}`;
+    `${QZ.show?pic(w,'qemj','font-size:28px'):''}${notation(w.ev,len(w)<1?1.6:1.15)}${QZ.show?blocks(w,Math.min(34,Math.floor(130/len(w))),'nolabel'):''}`;
   return `<button class="qchoice" data-id="${w.id}">${inner}</button>`;
 }
 async function nextQ(){
@@ -622,7 +656,7 @@ async function nextQ(){
       <div class="qchoices">${ch.map(w=>choiceCard(w,'listen')).join('')}</div>`;
     $('#qReplay').onclick=()=>playWord(ans,{clicks:true});
     bindChoices(w=>w===ans||sameSound(w,ans));
-    await say('どの おとかな');if(!QZ.alive)return;
+    await P('dono');if(!QZ.alive)return;
     await wait(playWord(ans,{clicks:true}));QZ.lock=false;
   }else if(QZ.type==='longer'){
     const p=shuffle(pool()),A=p[0],Bw=p[1],askLong=Math.random()<.65;QZ.prev=null;
@@ -636,7 +670,7 @@ async function nextQ(){
       cards.forEach(c=>c.classList.remove('lit'));QZ.lock=false;};
     $('#qReplay').onclick=playBoth;
     bindChoices(w=>w===QZ.ans);
-    await say(askLong?'ながいのは どっち':'みじかいのは どっち');if(!QZ.alive)return;await playBoth();
+    await P(askLong?'nagai':'mijikai');if(!QZ.alive)return;await playBoth();
   }else{
     const p=pool();let ans;do{ans=p[Math.random()*p.length|0];}while(p.length>1&&ans===QZ.prev);QZ.prev=ans;QZ.ans=ans;
     const ch=pickChoices(ans,Math.max(3,QZ.choices));
@@ -651,11 +685,11 @@ function bindChoices(isRight,speakChoice){
     if(QZ.lock||!QZ.alive)return;const w=byId(c.dataset.id);
     if(isRight(w)){
       QZ.lock=true;c.classList.add('good');yay();QZ.score++;addStar();flash('⭕');
-      if(speakChoice)say(w.w);
+      if(speakChoice)speak('koe-'+w.k,w.w);
       await wait(1300);QZ.i++;nextQ();
     }else{
       c.classList.remove('bad');void c.offsetWidth;c.classList.add('bad');buzz();
-      if(speakChoice)say(w.w);
+      if(speakChoice)speak('koe-'+w.k,w.w);
       if(QZ.type==='listen'){QZ.lock=true;await wait(700);if(!QZ.alive)return;await wait(playWord(QZ.ans,{clicks:true}));QZ.lock=false;}
     }
   });
@@ -667,10 +701,11 @@ function showResult(){
     <div class="t">${all?'ぜんぶ できたね！':'よく がんばったね！'}</div>
     <div class="btns"><button class="bigbtn" id="qAgain" style="background:var(--c3)">もういちど</button>
     <button class="bigbtn gray" id="qEnd">おわり</button></div></div>`;
-  yay();say(all?'ぜんぶ できたね':'よく がんばったね');
+  yay();P(all?'zenbu':'ganbatta');
   $('#qAgain').onclick=()=>{QZ.i=0;QZ.score=0;QZ.alive=true;nextQ();};
   $('#qEnd').onclick=()=>go('home');
 }
+probeFiles();
 if(window.speechSynthesis){try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();}catch(e){}}
 </script>
 </body>
