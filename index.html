@@ -63,7 +63,7 @@ h2{font-size:22px;margin:6px 0 12px}
 /* blocks */
 .blocks{display:flex;align-items:flex-end;justify-content:center}
 .ev{display:flex;gap:2px;margin:0 3px}
-.blk{flex:none;width:calc(var(--u)*var(--d) - 2px);height:calc(var(--u)*.72);border-radius:calc(var(--u)*.12);
+.blk{flex:none;width:calc(var(--u)*var(--d) - 2px);height:var(--bh,calc(var(--u)*.72));border-radius:calc(min(var(--u),95px)*.12);
   background:var(--c);border:2px solid rgba(0,0,0,.14);border-bottom-width:5px;
   display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;
   font-size:calc(var(--u)*.27*min(1,var(--d)*1.7));text-shadow:0 1px 2px rgba(0,0,0,.25);
@@ -78,6 +78,7 @@ h2{font-size:22px;margin:6px 0 12px}
 .detail .notebox{background:#fff;border-radius:22px;padding:8px 14px;box-shadow:0 4px 0 var(--line);width:100%;display:flex;justify-content:center}
 .detail .emj{font-size:40px;line-height:1}
 .notebox svg,.nb-top svg{max-height:min(84px,11vh);width:auto !important}
+.notebox svg{max-height:min(104px,14vh)}
 .detail .word{font-size:32px;font-weight:800;letter-spacing:.04em}
 .pager{display:flex;align-items:center;gap:14px;margin-top:4px}.arw{border:none;background:#fff;border-radius:14px;width:52px;height:44px;font-size:18px;box-shadow:0 3px 0 var(--line)}
 .dots{display:flex;gap:7px;justify-content:center}.dots i{width:10px;height:10px;border-radius:50%;background:#e2d5c2}.dots i.on{background:var(--ink)}
@@ -211,6 +212,7 @@ h2{font-size:22px;margin:6px 0 12px}
 <script>
 /* ===================== data ===================== */
 const N=(d,syl,r)=>({d,syl:Array.isArray(syl)?syl:[syl],r:!!r});
+const T=(n,c)=>({d:1/n,syl:[c],r:false,tp:n});
 const WORDS=[
   {id:'q', g:1,emj:'🐕',nm:'しぶおんぷ',w:'たん',col:'var(--c1)',ev:[N(1,'たん')]},
   {id:'h', g:1,nm:'にぶおんぷ',w:'たんにー',col:'var(--c2)',ev:[N(2,['たん','にー'])]},
@@ -225,13 +227,16 @@ const WORDS=[
   {id:'re',g:3,nm:'はちぶきゅうふ と はちぶおんぷ',w:'ウカ',col:'var(--c8)',ev:[N(.5,'ウ',1),N(.5,'カ')]},
   {nm:'じゅうろくぶおんぷ',id:'f1',g:4,w:'たこやき',emj:'🐙',col:'var(--c16)',ev:[N(.25,'た'),N(.25,'こ'),N(.25,'や'),N(.25,'き')]},
   {nm:'じゅうろくぶおんぷ',id:'f2',g:4,w:'ラーメン',emj:'🍜',col:'var(--c16)',ev:[N(.5,'ラー'),N(.25,'メ'),N(.25,'ン')]},
-  {nm:'じゅうろくぶおんぷ',id:'f3',g:4,w:'スカート',emj:'👗',col:'var(--c16)',ev:[N(.25,'ス'),N(.5,'カー'),N(.25,'ト')]},
+  {nm:'じゅうろくぶおんぷ',id:'f3',g:4,w:'ステーキ',emj:'🥩',col:'var(--c16)',ev:[N(.25,'ス'),N(.5,'テー'),N(.25,'キ')]},
   {nm:'じゅうろくぶおんぷ',id:'f4',g:4,w:'ジュース',emj:'🧃',col:'var(--c16)',ev:[N(.75,'ジュー'),N(.25,'ス')]},
   {nm:'じゅうろくぶおんぷ',id:'f5',g:4,w:'ゼリー',emj:'🍮',col:'var(--c16)',ev:[N(.25,'ゼ'),N(.75,'リー')]},
   {nm:'じゅうろくぶおんぷ',id:'f6',g:4,w:'マンゴー',emj:'🥭',col:'var(--c16)',ev:[N(.25,'マ'),N(.25,'ン'),N(.5,'ゴー')]},
-  {nm:'じゅうろくぶおんぷ',id:'f7',g:4,w:'せっけん',emj:'🧼',col:'var(--c16)',ev:[N(.25,'せ'),N(.25,'っ',1),N(.25,'け'),N(.25,'ん')]},
+  {nm:'じゅうろくぶおんぷ',id:'f7',g:4,w:'はっさく',emj:'🍊',col:'var(--c16)',ev:[N(.25,'は'),N(.25,'っ',1),N(.25,'さ'),N(.25,'く')]},
   {nm:'じゅうろくぶおんぷ',id:'f8',g:4,w:'コロッケ',emj:'🥔',col:'var(--c16)',ev:[N(.25,'コ'),N(.25,'ロ'),N(.25,'っ',1),N(.25,'ケ')]},
   {nm:'じゅうろくぶおんぷ',id:'f9',g:4,w:'クッキー',emj:'🍪',col:'var(--c16)',ev:[N(.25,'ク'),N(.25,'っ',1),N(.5,'キー')]},
+  {nm:'ごれんぷ',id:'t5',g:4,w:'オムライス',emj:'🍳',col:'var(--c16)',ev:'オムライス'.split('').map(c=>T(5,c))},
+  {nm:'ろくれんぷ',id:'t6',g:4,w:'おこのみやき',emj:'🥞',col:'var(--c16)',ev:'おこのみやき'.split('').map(c=>T(6,c))},
+  {nm:'しちれんぷ',id:'t7',g:4,w:'みたらしだんご',emj:'🍡',col:'var(--c16)',ev:'みたらしだんご'.split('').map(c=>T(7,c))},
 ];
 const GROUPS=[{g:1,name:'のばす おと'},{g:2,name:'おやすみ'},{g:3,name:'はんぶん'},{g:4,name:'たべもの'}];
 const byId=id=>WORDS.find(w=>w.id===id);
@@ -311,7 +316,8 @@ function restSvg(d,x){
     `<path d="M${x+6},29 L${x-1},55" fill="none" stroke="${k}" stroke-width="2" stroke-linecap="round"/>`;
 }
 function notation(ev,scale=1.6){
-  const BW=46,PAD=14;let t=0;
+  const per={};let tt=0;ev.forEach(e=>{const b=Math.floor(tt+1e-6);per[b]=(per[b]||0)+1;tt+=e.d;});
+  const BW=Math.max(46,Math.max(...Object.values(per))*21+8),PAD=14;let t=0;
   const it=ev.map(e=>{const o=Object.assign({},e,{t});t+=e.d;return o;});
   const W=PAD*2+t*BW+(t<1?10:0),HY=55,TOP=20,SX=6,K='#2b2320';
   const X=o=>it.length===1?W/2-3:PAD+o.t*BW+(o.d>=1?12:8);
@@ -335,18 +341,20 @@ function notation(ev,scale=1.6){
     const n=g.filter(o=>!o.r);if(n.length<2)return;
     const x1=X(n[0])+SX-1,x2=X(n[n.length-1])+SX+1;
     s+=`<rect x="${x1}" y="${TOP}" width="${x2-x1}" height="5" fill="${K}"/>`;
-    const is16=o=>o&&near(o.d,.25);
+    const is16=o=>o&&(near(o.d,.25)||o.tp);
     const adj=(a,b)=>is16(a)&&is16(b)&&near(a.t+a.d,b.t);
     n.forEach((o,k)=>{
       if(!is16(o))return;const x=X(o)+SX,nx=n[k+1],pv=n[k-1];
       if(adj(o,nx))s+=`<rect x="${x-1}" y="${TOP+8}" width="${X(nx)+SX-x+2}" height="5" fill="${K}"/>`;
       else if(!adj(pv,o)){const L=11,left=k===n.length-1;s+=`<rect x="${left?x-L:x-1}" y="${TOP+8}" width="${L+1}" height="5" fill="${K}"/>`;}
     });
+    if(n[0].tp){const bx1=X(n[0])-4,bx2=X(n[n.length-1])+SX+4,mx=(bx1+bx2)/2;
+      s+=`<path d="M${bx1},15 V9 H${mx-8} M${mx+8},9 H${bx2} V15" fill="none" stroke="${K}" stroke-width="1.4"/><text x="${mx}" y="13" text-anchor="middle" font-size="12" font-weight="700" fill="${K}" font-family="serif">${n[0].tp}</text>`;}
   });
-  return `<svg viewBox="0 0 ${W} 72" style="width:${Math.round(W*scale)}px;max-width:100%;height:auto;display:block">${s}</svg>`;
+  return `<svg viewBox="0 0 ${W} 72" overflow="visible" style="width:${Math.round(W*scale)}px;max-width:100%;height:auto;display:block">${s}</svg>`;
 }
 function blocks(w,u,cls=''){
-  let h=`<div class="blocks ${cls}" style="--u:${u}px">`,t=0;
+  let h=`<div class="blocks ${cls}" style="--u:${u}px;--bh:${Math.round(Math.min(u,95)*.72)}px">`,t=0;
   w.ev.forEach(e=>{
     h+='<div class="ev">';
     if(e.d>=1){for(let k=0;k<e.d;k++)h+=blk(e,1,e.syl[k]||'',t+k,w);}
