@@ -18,7 +18,7 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;min-he
 button{font:inherit;color:inherit;touch-action:manipulation;cursor:pointer}
 header{position:sticky;top:0;z-index:10;background:var(--bg);display:flex;align-items:center;gap:10px;
   padding:10px 14px;border-bottom:2px solid var(--line)}
-header h1{font-size:20px;margin:0;font-weight:800;flex:1;display:flex;align-items:center;gap:8px}
+header h1{font-size:18px;margin:0;font-weight:800;flex:1;white-space:nowrap;display:flex;align-items:center;gap:8px}
 .logo{display:inline-flex;gap:2px}
 .logo i{display:block;width:12px;height:16px;border-radius:3px}
 #backBtn{border:none;background:#fff;border-radius:14px;width:48px;height:44px;font-size:24px;
@@ -45,9 +45,10 @@ h2{font-size:22px;margin:6px 0 12px}
 .seg button.on{background:#fff;color:var(--ink);box-shadow:0 2px 0 var(--line)}
 
 /* chips */
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.chip{border:none;background:#fff;border-radius:999px;padding:10px 16px;font-weight:800;font-size:17px;
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.chip{border:none;background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:16px;
   box-shadow:0 3px 0 var(--line);color:var(--sub)}
+#nbChips .chip{font-size:14px;padding:7px 11px}
 .chip.on{background:var(--ink);color:#fff;box-shadow:0 3px 0 #000}
 
 /* cards */
@@ -73,15 +74,18 @@ h2{font-size:22px;margin:6px 0 12px}
 .playing .blk.on{opacity:1;transform:translateY(calc(var(--u)*-.1))}
 
 /* detail */
-.detail{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.detail{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
 .detail .notebox{background:#fff;border-radius:24px;padding:14px 18px;box-shadow:0 4px 0 var(--line);width:100%;display:flex;justify-content:center}
-.detail .emj{font-size:56px;line-height:1}
-.detail .word{font-size:40px;font-weight:800;letter-spacing:.04em}
+.detail .emj{font-size:40px;line-height:1}
+.notebox svg,.nb-top svg{max-height:min(90px,13vh);width:auto !important}
+.detail .word{font-size:32px;font-weight:800;letter-spacing:.04em}
+.pager{display:flex;align-items:center;gap:14px;margin-top:4px}.arw{border:none;background:#fff;border-radius:14px;width:52px;height:44px;font-size:18px;box-shadow:0 3px 0 var(--line)}
+.dots{display:flex;gap:7px;justify-content:center}.dots i{width:10px;height:10px;border-radius:50%;background:#e2d5c2}.dots i.on{background:var(--ink)}
 .sylNow{height:56px;font-size:46px;font-weight:800;color:var(--c4)}
 .pop{animation:pop .25s}
 @keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
 .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.bigbtn{border:none;border-radius:20px;padding:14px 22px;font-size:20px;font-weight:800;color:#fff;
+.bigbtn{border:none;border-radius:18px;padding:12px 18px;font-size:19px;font-weight:800;color:#fff;
   background:var(--c4);box-shadow:0 5px 0 rgba(0,0,0,.2)}
 .bigbtn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
 .bigbtn.gray{background:#fff;color:var(--ink);box-shadow:0 5px 0 var(--line)}
@@ -99,10 +103,10 @@ h2{font-size:22px;margin:6px 0 12px}
 .track .fill{position:absolute;left:0;top:0;height:100%;width:0;border-radius:calc(var(--u)*.12);background:var(--c);z-index:1}
 .track.reach .slot.tg{border-color:#fff;border-style:solid;animation:glow .5s infinite alternate}
 @keyframes glow{to{box-shadow:0 0 0 5px rgba(79,177,114,.55)}}
-.nb-msg{min-height:64px;font-size:28px;font-weight:800;text-align:center;margin:12px 0 4px}
+.nb-msg{min-height:58px;font-size:22px;font-weight:800;text-align:center;margin:8px 0 6px}
 .nb-msg small{display:block;font-size:16px;color:var(--sub);font-weight:500}
 .holdwrap{display:flex;justify-content:center;margin:6px 0 16px}
-.hold{width:min(62vw,230px);height:min(62vw,230px);border-radius:50%;border:none;color:#fff;font-size:30px;font-weight:800;
+.hold{width:min(50vw,200px,25vh);height:min(50vw,200px,25vh);border-radius:50%;border:none;color:#fff;font-size:30px;font-weight:800;
   background:radial-gradient(circle at 35% 30%,#ff9a85,var(--c1));box-shadow:0 10px 0 #b8432f;touch-action:none;
   transition:transform .06s}
 .hold.down{transform:translateY(8px) scale(.97);box-shadow:0 2px 0 #b8432f}
@@ -180,7 +184,6 @@ h2{font-size:22px;margin:6px 0 12px}
   <div class="chips" id="nbChips" style="justify-content:center"></div>
   <div class="nb-top" id="nbTop"></div>
   <div class="nb-msg" id="nbMsg"></div>
-  <div class="nb-sylnow" id="nbSyl"></div>
   <div class="holdwrap"><button class="hold" id="holdBtn">ぎゅっ</button></div>
   <div class="opts">
     <button class="tog on" id="togHint"><span class="box"></span>ヒント</button>
@@ -413,7 +416,15 @@ function renderList(){
       <div class="w">${w.w}</div></button>`).join('');
   $('#listGrid').querySelectorAll('.card').forEach(c=>c.onclick=()=>{ac();openDetail(c.dataset.id);});
 }
-let DETAIL_ID=null;
+let DETAIL_ID=null,DETAIL_NAV={};
+(()=>{let x0=null,y0=0;const el=document.getElementById('v-detail');
+  el.addEventListener('touchstart',e=>{const t=e.touches[0];x0=t.clientX;y0=t.clientY;},{passive:true});
+  el.addEventListener('touchend',e=>{if(x0==null)return;const t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
+    if(Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.3)return;
+    const id=dx<0?DETAIL_NAV.next:DETAIL_NAV.prev;
+    if(id){const box=document.getElementById('detailBox');box.style.transition='none';box.style.transform=`translateX(${dx<0?40:-40}px)`;box.style.opacity='.3';
+      openDetail(id);requestAnimationFrame(()=>{box.style.transition='transform .2s,opacity .2s';box.style.transform='';box.style.opacity='';});}
+  });})();
 function openDetail(id){
   go('detail');DETAIL_ID=id;const w=byId(id);
   const ws=WORDS.filter(x=>x.g===w.g),i=ws.indexOf(w);
@@ -423,26 +434,26 @@ function openDetail(id){
     ${w.emj?`<div class="emj">${w.emj}</div>`:''}
     <div class="word">${w.w}</div>
     <div style="font-size:18px;font-weight:800;color:var(--sub);background:#fff;border-radius:999px;padding:4px 14px">${w.nm}</div>
-    <div class="sylNow" id="sylNow"></div>
     <div id="dBlocks">${blocks(w,u)}</div>
     <div class="btns" style="margin-top:8px">
-      <button class="bigbtn gray" id="dPrev" ${i<=0?'style="visibility:hidden"':''}>◀</button>
       <button class="bigbtn" id="dPlay" style="background:var(--c3)">▶ きく</button>
       <button class="bigbtn" id="dSay">🗣 ことば</button>
       <button class="bigbtn" id="dName" style="background:var(--c8)">📛 なまえ</button>
-      <button class="bigbtn gray" id="dNext" ${i>=ws.length-1?'style="visibility:hidden"':''}>▶</button>
-    </div>`;
+    </div>
+    <div class="pager"><button class="arw" id="dPrev" ${i<=0?'style="visibility:hidden"':''} aria-label="まえ">◀</button>
+      <div class="dots">${ws.map((x,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}</div>
+      <button class="arw" id="dNext" ${i>=ws.length-1?'style="visibility:hidden"':''} aria-label="つぎ">▶</button></div>`;
   const run=()=>doPlayDetail(w);
   $('#dPlay').onclick=run;$('#dBlocks').onclick=run;
   $('#dSay').onclick=()=>say(w.w);
   $('#dName').onclick=()=>say(w.nm.replace(' 2つ',' ふたつ'));
-  $('#dPrev').onclick=()=>openDetail(ws[i-1].id);
-  $('#dNext').onclick=()=>openDetail(ws[i+1].id);
+  DETAIL_NAV={prev:i>0?ws[i-1].id:null,next:i<ws.length-1?ws[i+1].id:null};
+  $('#dPrev').onclick=()=>DETAIL_NAV.prev&&openDetail(DETAIL_NAV.prev);
+  $('#dNext').onclick=()=>DETAIL_NAV.next&&openDetail(DETAIL_NAV.next);
   (async()=>{await say(w.w);if(DETAIL_ID===id&&VIEW==='detail')run();})();
 }
 function doPlayDetail(w){
-  const sy=$('#sylNow');
-  playWord(w,{el:$('#dBlocks .blocks'),onSyl:(t)=>{sy.textContent=t;sy.classList.remove('pop');void sy.offsetWidth;sy.classList.add('pop');}});
+  playWord(w,{el:$('#dBlocks .blocks')});
 }
 
 /* ===================== nobashi (hold game) ===================== */
@@ -456,16 +467,14 @@ function renderNobashi(){
   let slots='';
   for(let k=0;k<n+1;k++){const lab=k<n?w.ev[0].syl[k]:'';slots+=`<div class="slot ${k<n?'tg':'extra'}" style="left:${k*u}px" data-k="${k}">${lab||'・'}</div>`;}
   $('#nbTop').innerHTML=`${notation(w.ev,n>=3?1.5:1.9)}
-    <div style="font-size:30px;font-weight:800">${w.w}</div>
     <div class="track${NB.hint?' hint':''}" id="nbTrack" style="--u:${u}px;--c:${w.col};width:${(n+1)*u}px"><div class="fill" id="nbFill"></div>${slots}</div>`;
   $('#togHint').classList.toggle('on',NB.hint);$('#togCount').classList.toggle('on',NB.countIn);
   nbIdleMsg();
 }
 function nbIdleMsg(){
   const w=byId(NB.id);
-  $('#nbMsg').innerHTML=NB.countIn?`ボタンを おすと かぞえるよ<small>「はい」の つぎで ぎゅっと おして、「${w.w}」で はなそう</small>`
-    :`ぎゅっと おして、「${w.w}」で はなそう<small>カチ カチ に あわせて かぞえてね</small>`;
-  $('#nbSyl').textContent='';
+  $('#nbMsg').innerHTML=NB.countIn?`スタートで かぞえるよ<small>「はい」の つぎで ぎゅっと おそう</small>`
+    :`ぎゅっと おして のばそう<small>カチ カチ に あわせて「${w.w}」</small>`;
   const b=$('#holdBtn');b.className='hold';b.textContent=NB.countIn?'スタート':'ぎゅっ';
 }
 function nbReset(silent){
@@ -518,14 +527,14 @@ function beginHold(now,grid){
   if(!NB.countIn){NB.sess=newSess();for(let b=0;b<n+2;b++)click(now+b*B,b===0,NB.sess);}
   $('#nbMsg').innerHTML='';
   const tr=$('#nbTrack'),fill=$('#nbFill'),u=parseFloat(tr.style.getPropertyValue('--u')),slots=[...tr.querySelectorAll('.slot')];
-  const sylEl=$('#nbSyl');let lastK=-1;
+  let lastK=-1;
   const loop=()=>{
     if(NB.state!=='hold')return;
     const held=(ac().currentTime-NB.start)/B;
     fill.style.width=Math.min(held,n+1)*u+'px';
     const k=Math.floor(held);
     if(k!==lastK){lastK=k;slots.forEach((s,i)=>s.classList.toggle('passed',i<=k));
-      sylEl.textContent=k<n?w.ev[0].syl[k]:'';sylEl.classList.remove('pop');void sylEl.offsetWidth;sylEl.classList.add('pop');}
+}
     if(NB.hint&&!NB.flag&&held>=n-.12){NB.flag=true;tr.classList.add('reach');$('#nbMsg').innerHTML='はなして！';}
     if(held>=n+1){nbFinish(ac().currentTime,true);return;}
     NB.raf=requestAnimationFrame(loop);
@@ -548,7 +557,6 @@ function nbFinish(now,auto){
   else{t='ぴったり！ 🌟';sub=NB.hint?'つぎは ヒントなしで やってみよう':'すごい！ ヒントなしで できたね';ok=true;}
   if(pressNote)sub=pressNote+'　'+sub;
   $('#nbMsg').innerHTML=`${t}<small>${sub}</small>`;
-  $('#nbSyl').textContent='';
   if(ok){yay();addStar(NB.hint?1:2);say('ぴったり');}else{say(err<0?'もうすこし':'ながすぎたよ');}
 }
 
