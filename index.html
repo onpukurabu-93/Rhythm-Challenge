@@ -1,303 +1,660 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>リズムカード学習アプリ</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: sans-serif;
-      background-color: #f0f4f8;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
-      /* アプリ全体でテキスト長押し選択を防止 */
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
-    }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>リズムチャレンジ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff7ea;--ink:#3b2f2a;--sub:#8a7a70;--card:#fff;--line:#eadcc8;
+  --c1:#ec6450;--c2:#eaa317;--c3:#4fb172;--c4:#3f92dc;--c8:#f07f2e;--c16:#d4609f;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN',system-ui,sans-serif}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;min-height:100vh}
+button{font:inherit;color:inherit;touch-action:manipulation;cursor:pointer}
+header{position:sticky;top:0;z-index:10;background:var(--bg);display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border-bottom:2px solid var(--line)}
+header h1{font-size:20px;margin:0;font-weight:800;flex:1;display:flex;align-items:center;gap:8px}
+.logo{display:inline-flex;gap:2px}
+.logo i{display:block;width:12px;height:16px;border-radius:3px}
+#backBtn{border:none;background:#fff;border-radius:14px;width:48px;height:44px;font-size:24px;
+  box-shadow:0 3px 0 var(--line);visibility:hidden}
+#stars{font-weight:800;font-size:18px;background:#fff;border-radius:999px;padding:6px 12px;box-shadow:0 3px 0 var(--line)}
+.view{display:none;max-width:780px;margin:0 auto;padding:14px 14px 60px}
+.view.on{display:block}
+h2{font-size:22px;margin:6px 0 12px}
+.hint{color:var(--sub);font-size:14px;margin:4px 0 12px}
 
-    /* 画面切り替え用の共通設定 */
-    .screen {
-      display: none;
-      width: 100%;
-      height: 100%;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      box-sizing: border-box;
-      padding: 20px 10px;
-    }
-    .active { display: flex; }
+/* home */
+.tiles{display:grid;gap:14px}
+.tile{display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:26px;border:none;
+  font-size:24px;font-weight:800;color:#fff;text-align:left;box-shadow:0 6px 0 rgba(0,0,0,.18);transition:transform .08s}
+.tile:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.tile .em{font-size:44px;line-height:1}
+.tile small{display:block;font-size:14px;font-weight:500;opacity:.95;margin-top:2px}
+.tile.soon{background:#e3d8c8 !important;color:#8a7a70;box-shadow:none;cursor:default}
+.settings{margin-top:22px;background:#fff;border-radius:20px;padding:14px;display:grid;gap:10px;box-shadow:0 3px 0 var(--line)}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.row .lab{min-width:96px;font-weight:800}
+.seg{display:inline-flex;background:#f3eadc;border-radius:14px;padding:3px}
+.seg button{border:none;background:none;padding:8px 14px;border-radius:11px;font-weight:800;color:var(--sub)}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 2px 0 var(--line)}
 
-    /* メニュー画面スタイル */
-    .menu-title { font-size: 24px; color: #333; margin-top: 20px; }
-    .level-list { width: 90%; max-width: 320px; display: flex; flex-direction: column; gap: 15px; }
-    .level-btn {
-      background: #ffffff;
-      border: 3px solid #4ea8de;
-      padding: 15px;
-      border-radius: 15px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #333;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    }
+/* chips */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{border:none;background:#fff;border-radius:999px;padding:10px 16px;font-weight:800;font-size:17px;
+  box-shadow:0 3px 0 var(--line);color:var(--sub)}
+.chip.on{background:var(--ink);color:#fff;box-shadow:0 3px 0 #000}
 
-    /* 練習・トレーニング画面スタイル */
-    .header h1 { font-size: 20px; color: #333; margin: 0; text-align: center; }
-    .swiper-container { width: 100%; height: 55vh; display: flex; align-items: center; justify-content: center; }
-    .card-container { width: 85vw; max-width: 320px; height: 100%; max-height: 380px; perspective: 1000px; }
-    .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.12); border-radius: 24px; }
-    .card-container.flipped .card-inner { transform: rotateY(180deg); }
-    .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; background: #ffffff; display: flex; align-items: center; justify-content: center; border: 4px solid #e2e8f0; box-sizing: border-box; }
-    .card-back { transform: rotateY(180deg); }
-    .card-img { width: 85%; height: 85%; object-fit: contain; }
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.card{background:#fff;border:none;border-radius:20px;padding:12px 10px 14px;box-shadow:0 4px 0 var(--line);
+  display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform .1s}
+.card:active{transform:scale(.97)}
+.card .w{font-size:20px;font-weight:800}
+.card .emj{font-size:26px;line-height:1}
+.card svg{max-width:100%;height:auto}
 
-    /* 震えるアニメーション（不正解時） */
-    @keyframes shake {
-      0% { transform: translateX(0); }
-      20% { transform: translateX(-15px); }
-      40% { transform: translateX(15px); }
-      60% { transform: translateX(-10px); }
-      80% { transform: translateX(10px); }
-      100% { transform: translateX(0); }
-    }
-    .shake { animation: shake 0.4s ease; }
+/* blocks */
+.blocks{display:flex;align-items:flex-end;justify-content:center}
+.ev{display:flex;gap:2px;margin:0 3px}
+.blk{flex:none;width:calc(var(--u)*var(--d) - 2px);height:calc(var(--u)*.72);border-radius:calc(var(--u)*.12);
+  background:var(--c);border:2px solid rgba(0,0,0,.14);border-bottom-width:5px;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;
+  font-size:calc(var(--u)*.27*min(1,var(--d)*1.7));text-shadow:0 1px 2px rgba(0,0,0,.25);
+  transition:opacity .12s,transform .12s;white-space:nowrap;overflow:hidden}
+.blk.rest{background:#fff;border:3px dashed var(--c);color:var(--c);text-shadow:none}
+.nolabel .blk{font-size:0}
+.playing .blk{opacity:.28}
+.playing .blk.on{opacity:1;transform:translateY(calc(var(--u)*-.1))}
 
-    /* ⭕️ ❌ オーバーレイ演出 */
-    .overlay {
-      position: absolute;
-      font-size: 120px;
-      font-weight: bold;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-    .overlay.correct { color: #2ed573; opacity: 1; }
-    .overlay.wrong { color: #ff4757; opacity: 1; }
+/* detail */
+.detail{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.detail .notebox{background:#fff;border-radius:24px;padding:14px 18px;box-shadow:0 4px 0 var(--line);width:100%;display:flex;justify-content:center}
+.detail .emj{font-size:56px;line-height:1}
+.detail .word{font-size:40px;font-weight:800;letter-spacing:.04em}
+.sylNow{height:56px;font-size:46px;font-weight:800;color:var(--c4)}
+.pop{animation:pop .25s}
+@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.bigbtn{border:none;border-radius:20px;padding:14px 22px;font-size:20px;font-weight:800;color:#fff;
+  background:var(--c4);box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.bigbtn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.bigbtn.gray{background:#fff;color:var(--ink);box-shadow:0 5px 0 var(--line)}
 
-    /* ボタン類（長押し範囲指定対策を追加） */
-    .btn {
-      background: #ff6b6b;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 25px;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .btn-menu { background: #a4b0be; margin-top: 5px; }
-  </style>
+/* nobashi */
+.nb-top{display:flex;flex-direction:column;align-items:center;gap:8px}
+.track{position:relative;margin:10px auto 0;height:calc(var(--u)*.8)}
+.track .slot{position:absolute;top:0;height:100%;width:calc(var(--u) - 4px);border-radius:calc(var(--u)*.12);
+  border:3px dashed #d8cbb8;display:flex;align-items:center;justify-content:center;font-weight:800;
+  font-size:calc(var(--u)*.27);color:transparent;z-index:2;transition:color .1s}
+.track.hint .slot.tg{border:3px solid var(--c);border-style:dashed}
+.track .slot.extra{border-color:#eee2d2}
+.track .slot.passed{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.track .slot.passed.extra{color:#b9a995}
+.track .fill{position:absolute;left:0;top:0;height:100%;width:0;border-radius:calc(var(--u)*.12);background:var(--c);z-index:1}
+.track.reach .slot.tg{border-color:#fff;border-style:solid;animation:glow .5s infinite alternate}
+@keyframes glow{to{box-shadow:0 0 0 5px rgba(79,177,114,.55)}}
+.nb-msg{min-height:64px;font-size:28px;font-weight:800;text-align:center;margin:12px 0 4px}
+.nb-msg small{display:block;font-size:16px;color:var(--sub);font-weight:500}
+.holdwrap{display:flex;justify-content:center;margin:6px 0 16px}
+.hold{width:min(62vw,230px);height:min(62vw,230px);border-radius:50%;border:none;color:#fff;font-size:30px;font-weight:800;
+  background:radial-gradient(circle at 35% 30%,#ff9a85,var(--c1));box-shadow:0 10px 0 #b8432f;touch-action:none;
+  transition:transform .06s}
+.hold.down{transform:translateY(8px) scale(.97);box-shadow:0 2px 0 #b8432f}
+.hold.count{background:radial-gradient(circle at 35% 30%,#8ec5f2,var(--c4));box-shadow:0 10px 0 #2b6ca8;font-size:56px}
+.nb-sylnow{height:52px;font-size:44px;font-weight:800;text-align:center;color:var(--ink)}
+.opts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.tog{border:none;background:#fff;border-radius:14px;padding:10px 14px;font-weight:800;box-shadow:0 3px 0 var(--line);color:var(--sub)}
+.tog.on{color:var(--ink)}
+.tog .box{display:inline-block;width:20px;height:20px;border-radius:6px;border:2px solid #cbbba6;vertical-align:-4px;margin-right:6px}
+.tog.on .box{background:var(--c3);border-color:var(--c3)}
+
+/* quiz */
+.qtypes{display:grid;gap:12px;margin-bottom:16px}
+.qtype{display:flex;align-items:center;gap:14px;border:3px solid transparent;background:#fff;border-radius:20px;padding:14px;
+  text-align:left;box-shadow:0 4px 0 var(--line);font-size:20px;font-weight:800}
+.qtype .em{font-size:36px}
+.qtype small{display:block;font-size:13px;color:var(--sub);font-weight:500}
+.qtype.on{border-color:var(--ink)}
+.qprompt{text-align:center;font-size:26px;font-weight:800;margin:6px 0 10px}
+.qprog{display:flex;justify-content:center;gap:6px;margin-bottom:10px}
+.qprog i{width:14px;height:14px;border-radius:50%;background:#e6dac8}
+.qprog i.done{background:var(--c2)}
+.qprog i.now{background:var(--ink)}
+.qnote{display:flex;justify-content:center;background:#fff;border-radius:22px;padding:14px;box-shadow:0 4px 0 var(--line);margin-bottom:14px}
+.qchoices{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.qchoice{background:#fff;border:4px solid transparent;border-radius:22px;padding:14px 8px;box-shadow:0 4px 0 var(--line);
+  display:flex;flex-direction:column;align-items:center;gap:8px;min-height:120px;justify-content:center}
+.qchoice .w{font-size:26px;font-weight:800}
+.qchoice.lit{border-color:var(--c4)}
+.qchoice.good{border-color:var(--c3);background:#eaf8ef}
+.qchoice.bad{animation:shake .4s}
+.qchoice[disabled]{opacity:1}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.result{text-align:center;padding:30px 0}
+.result .big{font-size:64px}
+.result .t{font-size:30px;font-weight:800;margin:10px 0 24px}
+.ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:50}
+.ov span{font-size:160px;animation:pop .35s}
+</style>
 </head>
 <body>
+<header>
+  <button id="backBtn" aria-label="もどる">←</button>
+  <h1><span class="logo"><i style="background:var(--c1)"></i><i style="background:var(--c2)"></i><i style="background:var(--c3)"></i><i style="background:var(--c4)"></i></span>リズムチャレンジ</h1>
+  <div id="stars">⭐ 0</div>
+</header>
 
-  <!-- 1. メニュー画面 -->
-  <div id="screenMenu" class="screen active">
-    <h1 class="menu-title">リズムのおんがく</h1>
-    <div class="level-list">
-      <div class="level-btn" onclick="startLevel1()">
-        <span>Lv.1 おんぷのお名前</span>
-        <span>🔓</span>
-      </div>
-      <div class="level-btn" style="opacity: 0.5;">
-        <span>Lv.2 おんぷの長さ</span>
-        <span>🔒</span>
-      </div>
-      <div class="level-btn" style="opacity: 0.5;">
-        <span>Lv.3 くちリズム</span>
-        <span>🔒</span>
-      </div>
-    </div>
-    <div></div>
+<!-- HOME -->
+<section class="view on" id="v-home">
+  <div class="tiles">
+    <button class="tile" style="background:var(--c1)" data-go="list"><span class="em">🧱</span><span>つみきで おぼえよう<small>おんぷの ながさと ことば</small></span></button>
+    <button class="tile" style="background:var(--c3)" data-go="nobashi"><span class="em">🎈</span><span>のばして あそぼう<small>ちょうどの ながさで ゆびを はなそう</small></span></button>
+    <button class="tile" style="background:var(--c4)" data-go="quizSetup"><span class="em">❓</span><span>クイズ<small>きいて えらぶ・どっちが ながい</small></span></button>
+    <button class="tile soon"><span class="em">🍱</span><span>おべんとうばこ<small>つくっているよ</small></span></button>
+    <button class="tile soon"><span class="em">🥁</span><span>リズムを たたこう<small>つくっているよ</small></span></button>
   </div>
-
-  <!-- 2. レベル1 練習モード（スワイプ） -->
-  <div id="screenPractice" class="screen">
-    <div class="header">
-      <h1>Lv.1 れんしゅう</h1>
-      <p style="font-size: 12px; color: #666; margin: 3px 0 0;">スワイプでめくる / タップで答え</p>
-    </div>
-    <div class="swiper-container" id="swipeArea">
-      <div class="card-container" id="cardContainer" onclick="flipCard()">
-        <div class="card-inner" id="cardInner">
-          <div class="card-front"><img id="imgFront" class="card-img" src="" alt="おもて"></div>
-          <div class="card-back"><img id="imgBack" class="card-img" src="" alt="うら"></div>
-        </div>
-      </div>
-    </div>
-    <div style="text-align: center;">
-      <button class="btn" onclick="startTraining()">🎤 トレーニングへ</button><br>
-      <button class="btn btn-menu" onclick="showMenu()">メニューへもどる</button>
-    </div>
+  <div class="settings">
+    <div class="row"><span class="lab">はやさ</span><div class="seg" id="setSpeed"><button data-v="72">ふつう</button><button data-v="56">ゆっくり</button></div></div>
+    <div class="row"><span class="lab">こえ</span><div class="seg" id="setVoice"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
+    <div class="row"><span class="lab">カチカチ</span><div class="seg" id="setClick"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
   </div>
+</section>
 
-  <!-- 3. レベル1 トレーニングモード（マイク＆演出付き） -->
-  <div id="screenTraining" class="screen">
-    <div class="header">
-      <h1>Lv.1 トレーニング</h1>
-      <p id="quizPrompt" style="font-size: 14px; color: #333; margin: 3px 0 0;">なまえを こたえてね！</p>
-    </div>
-    <div class="swiper-container" style="position: relative;">
-      <div class="card-container" id="quizCardContainer">
-        <div class="card-inner" id="quizCardInner">
-          <div class="card-front"><img id="quizImg" class="card-img" src="" alt="問題"></div>
-        </div>
-      </div>
-      <div id="markOverlay" class="overlay"></div>
-    </div>
-    <div style="text-align: center;">
-      <button class="btn" style="background:#2ed573;" onclick="listenVoice()">🎤 こたえる</button><br>
-      <button class="btn btn-menu" onclick="showMenu()">おわる</button>
-    </div>
+<!-- LIST -->
+<section class="view" id="v-list">
+  <div class="chips" id="listChips"></div>
+  <div class="grid" id="listGrid"></div>
+</section>
+
+<!-- DETAIL -->
+<section class="view" id="v-detail"><div class="detail" id="detailBox"></div></section>
+
+<!-- NOBASHI -->
+<section class="view" id="v-nobashi">
+  <div class="chips" id="nbChips" style="justify-content:center"></div>
+  <div class="nb-top" id="nbTop"></div>
+  <div class="nb-msg" id="nbMsg"></div>
+  <div class="nb-sylnow" id="nbSyl"></div>
+  <div class="holdwrap"><button class="hold" id="holdBtn">ぎゅっ</button></div>
+  <div class="opts">
+    <button class="tog on" id="togHint"><span class="box"></span>ヒント</button>
+    <button class="tog" id="togCount"><span class="box"></span>かぞえてから</button>
   </div>
+</section>
 
-  <script>
-    const cards = [
-      { name: 'しぶおんぷ', front: 'onpu5-4bu1.png', back: 'onpu5-4bu2.png' },
-      { name: 'にぶおんぷ', front: 'onpu3-2bu1.png', back: 'onpu3-2bu2.png' },
-      { name: 'ぜんおんぷ', front: 'onpu1-zen1.png', back: 'onpu1-zen2.png' },
-      { name: 'はちぶおんぷ', front: 'onpu7-8bu1.png', back: 'onpu7-8bu2.png' },
-      { name: 'じゅうろくぶおんぷ', front: 'onpu10-16bu1.png', back: 'onpu10-16bu2.png' },
-      { name: 'ぜんきゅうふ', front: 'kyuufu1-zen1.png', back: 'kyuufu1-zen2.png' },
-      { name: 'にぶきゅうふ', front: 'kyuufu3-2bu1.png', back: 'kyuufu3-2bu2.png' },
-      { name: 'しぶきゅうふ', front: 'kyuufu5-4bu1.png', back: 'kyuufu5-4bu2.png' },
-      { name: 'はちぶきゅうふ', front: 'kyuufu7-8bu1.png', back: 'kyuufu7-8bu2.png' },
-      { name: 'じゅうろくぶきゅうふ', front: 'kyuufu9-16bu1.png', back: 'kyuufu9-16bu3.png' }
-    ];
+<!-- QUIZ SETUP -->
+<section class="view" id="v-quizSetup">
+  <div class="qtypes" id="qTypes">
+    <button class="qtype on" data-t="listen"><span class="em">👂</span><span>きいて えらぼう<small>おとを きいて、おんぷを えらぶ（じが よめなくても できる）</small></span></button>
+    <button class="qtype" data-t="longer"><span class="em">📏</span><span>どっちが ながい？<small>2つの おとを くらべる</small></span></button>
+    <button class="qtype" data-t="word"><span class="em">🔤</span><span>ことばを えらぼう<small>おんぷを みて、ことばを えらぶ</small></span></button>
+  </div>
+  <div id="qOpts"></div>
+  <div class="btns" style="margin-top:18px"><button class="bigbtn" id="qStart" style="background:var(--c3);font-size:24px;padding:16px 40px">はじめる ▶</button></div>
+</section>
 
-    let currentIndex = 0;
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+<!-- QUIZ PLAY -->
+<section class="view" id="v-quizPlay"><div id="qBox"></div></section>
 
-    // 効果音再生（ピンポン ＆ ポコン）
-    function playSound(type) {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+<div class="ov" id="ov"></div>
 
-      if (type === 'correct') {
-        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime);
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-      } else {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.3);
-        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-      }
-    }
+<script>
+/* ===================== data ===================== */
+const N=(d,syl,r)=>({d,syl:Array.isArray(syl)?syl:[syl],r:!!r});
+const WORDS=[
+  {id:'q', g:1,emj:'🐕',nm:'しぶおんぷ',w:'たん',col:'var(--c1)',ev:[N(1,'たん')]},
+  {id:'h', g:1,nm:'にぶおんぷ',w:'たんにー',col:'var(--c2)',ev:[N(2,['たん','にー'])]},
+  {id:'dh',g:1,nm:'ふてん にぶおんぷ',w:'たんにーさん',col:'var(--c3)',ev:[N(3,['たん','にー','さん'])]},
+  {id:'w', g:1,emj:'🐘',nm:'ぜんおんぷ',w:'たんにーさんしー',col:'var(--c4)',ev:[N(4,['たん','にー','さん','しー'])]},
+  {id:'qr', g:2,nm:'しぶきゅうふ',w:'うん',col:'var(--c1)',ev:[N(1,'うん',1)]},
+  {id:'hr', g:2,nm:'にぶきゅうふ',w:'うんにー',col:'var(--c2)',ev:[N(2,['うん','にー'],1)]},
+  {id:'dhr',g:2,nm:'ふてん にぶきゅうふ',w:'うんにーさん',col:'var(--c3)',ev:[N(3,['うん','にー','さん'],1)]},
+  {id:'wr', g:2,nm:'ぜんきゅうふ',w:'うんにーさんしー',col:'var(--c4)',ev:[N(4,['うん','にー','さん','しー'],1)]},
+  {id:'ee',g:3,emj:'🐿️🐿️',nm:'はちぶおんぷ 2つ',w:'タカ',col:'var(--c8)',ev:[N(.5,'タ'),N(.5,'カ')]},
+  {id:'er',g:3,nm:'はちぶおんぷ と はちぶきゅうふ',w:'タウ',col:'var(--c8)',ev:[N(.5,'タ'),N(.5,'ウ',1)]},
+  {id:'re',g:3,nm:'はちぶきゅうふ と はちぶおんぷ',w:'ウカ',col:'var(--c8)',ev:[N(.5,'ウ',1),N(.5,'カ')]},
+  {nm:'じゅうろくぶおんぷ',id:'f1',g:4,w:'たこやき',emj:'🐙',col:'var(--c16)',ev:[N(.25,'た'),N(.25,'こ'),N(.25,'や'),N(.25,'き')]},
+  {nm:'じゅうろくぶおんぷ',id:'f2',g:4,w:'ラーメン',emj:'🍜',col:'var(--c16)',ev:[N(.5,'ラー'),N(.25,'メ'),N(.25,'ン')]},
+  {nm:'じゅうろくぶおんぷ',id:'f3',g:4,w:'スカート',emj:'👗',col:'var(--c16)',ev:[N(.25,'ス'),N(.5,'カー'),N(.25,'ト')]},
+  {nm:'じゅうろくぶおんぷ',id:'f4',g:4,w:'ジュース',emj:'🧃',col:'var(--c16)',ev:[N(.75,'ジュー'),N(.25,'ス')]},
+  {nm:'じゅうろくぶおんぷ',id:'f5',g:4,w:'ゼリー',emj:'🍮',col:'var(--c16)',ev:[N(.25,'ゼ'),N(.75,'リー')]},
+  {nm:'じゅうろくぶおんぷ',id:'f6',g:4,w:'マンゴー',emj:'🥭',col:'var(--c16)',ev:[N(.25,'マ'),N(.25,'ン'),N(.5,'ゴー')]},
+  {nm:'じゅうろくぶおんぷ',id:'f7',g:4,w:'せっけん',emj:'🧼',col:'var(--c16)',ev:[N(.25,'せ'),N(.25,'っ',1),N(.25,'け'),N(.25,'ん')]},
+  {nm:'じゅうろくぶおんぷ',id:'f8',g:4,w:'コロッケ',emj:'🥔',col:'var(--c16)',ev:[N(.25,'コ'),N(.25,'ロ'),N(.25,'っ',1),N(.25,'ケ')]},
+  {nm:'じゅうろくぶおんぷ',id:'f9',g:4,w:'クッキー',emj:'🍪',col:'var(--c16)',ev:[N(.25,'ク'),N(.25,'っ',1),N(.5,'キー')]},
+];
+const GROUPS=[{g:1,name:'のばす おと'},{g:2,name:'おやすみ'},{g:3,name:'はんぶん'},{g:4,name:'たべもの'}];
+const byId=id=>WORDS.find(w=>w.id===id);
+const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
+const near=(a,b)=>Math.abs(a-b)<1e-3;
+const $=s=>document.querySelector(s);
 
-    // 画面切替
-    function showScreen(id) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
+/* ===================== storage ===================== */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const S=Object.assign({bpm:72,voice:1,click:1},store.get('rz_set',{}));
+let STARS=store.get('rz_stars',0);
+function addStar(n=1){STARS+=n;store.set('rz_stars',STARS);$('#stars').textContent='⭐ '+STARS;}
+$('#stars').textContent='⭐ '+STARS;
+const beat=()=>60/S.bpm;
 
-    function showMenu() { showScreen('screenMenu'); }
-    function startLevel1() { showScreen('screenPractice'); updatePracticeCard(); }
+/* ===================== audio ===================== */
+let AC=null;
+function ac(){if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();}if(AC.state==='suspended')AC.resume();return AC;}
+function newSess(){const a=ac();const g=a.createGain();g.connect(a.destination);return g;}
+function killSess(g){if(!g)return;try{const a=ac();g.gain.cancelScheduledValues(a.currentTime);g.gain.setValueAtTime(0,a.currentTime);setTimeout(()=>{try{g.disconnect()}catch(e){}},200)}catch(e){}}
+function tone(t,dur,dest,f=523.25,vol=.28){
+  const a=ac();const g=a.createGain();g.connect(dest||a.destination);
+  const o=a.createOscillator();o.type='triangle';o.frequency.value=f;o.connect(g);
+  const o2=a.createOscillator();o2.type='sine';o2.frequency.value=f*2;const g2=a.createGain();g2.gain.value=.22;o2.connect(g2);g2.connect(g);
+  dur=Math.max(dur,.08);const end=t+dur;const sus=Math.min(.25,dur*.5);
+  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol,t+.012);
+  g.gain.linearRampToValueAtTime(vol*.65,t+sus);g.gain.setValueAtTime(vol*.65,end-.02);
+  g.gain.linearRampToValueAtTime(.0001,end+.03);
+  o.start(t);o2.start(t);o.stop(end+.06);o2.stop(end+.06);
+}
+function holdTone(){
+  const a=ac();const t=a.currentTime;const g=a.createGain();g.connect(a.destination);
+  const o=a.createOscillator();o.type='triangle';o.frequency.value=523.25;o.connect(g);
+  const o2=a.createOscillator();o2.type='sine';o2.frequency.value=1046.5;const g2=a.createGain();g2.gain.value=.22;o2.connect(g2);g2.connect(g);
+  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.3,t+.012);g.gain.linearRampToValueAtTime(.2,t+.25);
+  o.start(t);o2.start(t);
+  return ()=>{const n=a.currentTime;g.gain.cancelScheduledValues(n);g.gain.setValueAtTime(g.gain.value,n);g.gain.linearRampToValueAtTime(.0001,n+.04);o.stop(n+.06);o2.stop(n+.06);};
+}
+function click(t,acc,dest){
+  const a=ac();const o=a.createOscillator();const g=a.createGain();o.type='sine';o.frequency.value=acc?1700:1150;
+  o.connect(g);g.connect(dest||a.destination);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(acc?.32:.2,t+.003);
+  g.gain.exponentialRampToValueAtTime(.0001,t+.06);o.start(t);o.stop(t+.08);
+}
+function bell(t,dest){
+  const a=ac();t=t||a.currentTime;[2093,3136].forEach((f,i)=>{const o=a.createOscillator();const g=a.createGain();o.type='sine';o.frequency.value=f;
+  o.connect(g);g.connect(dest||a.destination);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(i?.06:.18,t+.005);
+  g.gain.exponentialRampToValueAtTime(.0001,t+.9);o.start(t);o.stop(t+1);});
+}
+function yay(){const a=ac();const t=a.currentTime;[523,659,784,1047].forEach((f,i)=>tone(t+i*.08,.14,null,f,.2));}
+function buzz(){const a=ac();const t=a.currentTime;tone(t,.18,null,220,.22);tone(t+.2,.25,null,196,.22);}
 
-    // 練習モード
-    function updatePracticeCard() {
-      const container = document.getElementById('cardContainer');
-      container.classList.remove('flipped');
-      setTimeout(() => {
-        document.getElementById('imgFront').src = cards[currentIndex].front;
-        document.getElementById('imgBack').src = cards[currentIndex].back;
-      }, 150);
-    }
-    function flipCard() { document.getElementById('cardContainer').classList.toggle('flipped'); }
+/* speech */
+function say(text){
+  return new Promise(res=>{
+    if(!S.voice||!window.speechSynthesis){res();return;}
+    let done=false;const fin=()=>{if(!done){done=true;res();}};
+    try{
+      speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(text);u.lang='ja-JP';u.rate=.9;u.pitch=1.15;
+      const v=speechSynthesis.getVoices().find(v=>/ja/i.test(v.lang));if(v)u.voice=v;
+      u.onend=fin;u.onerror=fin;speechSynthesis.speak(u);
+      setTimeout(fin,Math.min(3000,600+text.length*260));
+    }catch(e){fin();}
+  });
+}
 
-    let startX = 0;
-    const swipeArea = document.getElementById('swipeArea');
-    swipeArea.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive: true});
-    swipeArea.addEventListener('touchend', e => {
-      const diff = startX - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 40) {
-        currentIndex = diff > 0 ? (currentIndex + 1) % cards.length : (currentIndex - 1 + cards.length) % cards.length;
-        updatePracticeCard();
-      }
+/* ===================== rendering ===================== */
+function restSvg(d,x){
+  const k='#2b2320';
+  if(near(d,4))return `<rect x="${x-7}" y="30" width="14" height="5.5" fill="${k}"/>`;
+  if(near(d,2)||near(d,3))return `<rect x="${x-7}" y="34.5" width="14" height="5.5" fill="${k}"/>`+(near(d,3)?`<circle cx="${x+12}" cy="35" r="2.4" fill="${k}"/>`:'');
+  if(near(d,1))return `<path d="M${x-3},22 L${x+4},31 L${x-1.5},38 L${x+5},47 Q${x-5},43 ${x+1},55" fill="none" stroke="${k}" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(near(d,.5))return `<circle cx="${x-3}" cy="34" r="3" fill="${k}"/><path d="M${x-3},36 Q${x+1},37 ${x+4},32 L${x-1},51" fill="none" stroke="${k}" stroke-width="2" stroke-linecap="round"/>`;
+  return `<circle cx="${x-1}" cy="31" r="2.8" fill="${k}"/><path d="M${x-1},33 Q${x+3},34 ${x+6},29" fill="none" stroke="${k}" stroke-width="2"/>`+
+    `<circle cx="${x-4}" cy="40" r="2.8" fill="${k}"/><path d="M${x-4},42 Q${x},43 ${x+3.5},38.5" fill="none" stroke="${k}" stroke-width="2"/>`+
+    `<path d="M${x+6},29 L${x-1},55" fill="none" stroke="${k}" stroke-width="2" stroke-linecap="round"/>`;
+}
+function notation(ev,scale=1.6){
+  const BW=46,PAD=14;let t=0;
+  const it=ev.map(e=>{const o=Object.assign({},e,{t});t+=e.d;return o;});
+  const W=PAD*2+t*BW+(t<1?10:0),HY=55,TOP=20,SX=6,K='#2b2320';
+  const X=o=>it.length===1?W/2-3:PAD+o.t*BW+(o.d>=1?12:8);
+  let s='';
+  for(const y of [20,30,40,50,60])s+=`<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="#a89a8f" stroke-width="1.2"/>`;
+  const groups={};
+  it.forEach(o=>{if(o.d<1){const b=Math.floor(o.t+1e-6);(groups[b]=groups[b]||[]).push(o);}});
+  const solo=new Set();
+  Object.values(groups).forEach(g=>{const n=g.filter(o=>!o.r);if(n.length===1)solo.add(n[0]);});
+  it.forEach(o=>{
+    const x=X(o);
+    if(o.r){s+=restSvg(o.d,x);return;}
+    const open=o.d>=2;
+    s+=`<ellipse cx="${x}" cy="${HY}" rx="7" ry="5.2" transform="rotate(-22 ${x} ${HY})" fill="${open?'#fff':K}" stroke="${K}" stroke-width="${open?2.6:1}"/>`;
+    if(o.d<4)s+=`<line x1="${x+SX}" y1="${HY-1}" x2="${x+SX}" y2="${TOP}" stroke="${K}" stroke-width="2"/>`;
+    if(near(o.d,3)||near(o.d,.75))s+=`<circle cx="${x+13}" cy="${HY-2}" r="2.4" fill="${K}"/>`;
+    if(solo.has(o)){const fl=near(o.d,.25)?2:1;for(let k=0;k<fl;k++){const y=TOP+k*8;
+      s+=`<path d="M${x+SX},${y} q1,7 8,11 q4,4 1,11" fill="none" stroke="${K}" stroke-width="2.4" stroke-linecap="round"/>`;}}
+  });
+  Object.values(groups).forEach(g=>{
+    const n=g.filter(o=>!o.r);if(n.length<2)return;
+    const x1=X(n[0])+SX-1,x2=X(n[n.length-1])+SX+1;
+    s+=`<rect x="${x1}" y="${TOP}" width="${x2-x1}" height="5" fill="${K}"/>`;
+    const is16=o=>o&&near(o.d,.25);
+    const adj=(a,b)=>is16(a)&&is16(b)&&near(a.t+a.d,b.t);
+    n.forEach((o,k)=>{
+      if(!is16(o))return;const x=X(o)+SX,nx=n[k+1],pv=n[k-1];
+      if(adj(o,nx))s+=`<rect x="${x-1}" y="${TOP+8}" width="${X(nx)+SX-x+2}" height="5" fill="${K}"/>`;
+      else if(!adj(pv,o)){const L=11,left=k===n.length-1;s+=`<rect x="${left?x-L:x-1}" y="${TOP+8}" width="${L+1}" height="5" fill="${K}"/>`;}
     });
+  });
+  return `<svg viewBox="0 0 ${W} 72" style="width:${Math.round(W*scale)}px;max-width:100%;height:auto;display:block">${s}</svg>`;
+}
+function blocks(w,u,cls=''){
+  let h=`<div class="blocks ${cls}" style="--u:${u}px">`,t=0;
+  w.ev.forEach(e=>{
+    h+='<div class="ev">';
+    if(e.d>=1){for(let k=0;k<e.d;k++)h+=blk(e,1,e.syl[k]||'',t+k,w);}
+    else h+=blk(e,e.d,e.syl[0],t,w);
+    h+='</div>';t+=e.d;
+  });
+  return h+'</div>';
+}
+function blk(e,d,label,t,w){return `<div class="blk${e.r?' rest':''}" data-t="${t}" style="--d:${d};--c:${w.col}">${label}</div>`;}
+function unitFor(w,avail,max){return Math.floor(Math.min(max,(avail-12*w.ev.length)/len(w)));}
+const availW=()=>Math.min(window.innerWidth-40,740);
 
-    // トレーニングモード＆マイク判定
-    let quizIndex = 0;
-    function startTraining() {
-      showScreen('screenTraining');
-      quizIndex = Math.floor(Math.random() * cards.length);
-      document.getElementById('quizImg').src = cards[quizIndex].front;
-      document.getElementById('quizPrompt').innerText = "「🎤 こたえる」を押して話してね！";
+/* ===================== playback ===================== */
+let timers=[],curSess=null;
+function stopPlay(){timers.forEach(clearTimeout);timers=[];killSess(curSess);curSess=null;
+  document.querySelectorAll('.playing').forEach(e=>e.classList.remove('playing'));}
+function playWord(w,{el=null,clicks=S.click,onSyl=null}={}){
+  stopPlay();
+  const a=ac(),B=beat(),t0=a.currentTime+.1,sess=newSess();curSess=sess;
+  let t=0;
+  w.ev.forEach(e=>{if(!e.r)tone(t0+t*B,e.d*B*(e.d<1?.8:.93),sess);t+=e.d;});
+  if(clicks)for(let b=0;b<Math.ceil(t-1e-6);b++)click(t0+b*B,b===0,sess);
+  const off=(t0-a.currentTime)*1000;
+  if(el){
+    el.classList.add('playing');el.querySelectorAll('.blk').forEach(x=>x.classList.remove('on'));
+    el.querySelectorAll('.blk').forEach(x=>{const tt=+x.dataset.t;
+      timers.push(setTimeout(()=>{x.classList.add('on');onSyl&&onSyl(x.textContent,x);},off+tt*B*1000));});
+    timers.push(setTimeout(()=>el.classList.remove('playing'),off+t*B*1000+700));
+  }
+  return off+t*B*1000;
+}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ===================== navigation ===================== */
+let VIEW='home';
+const PARENT={list:'home',detail:'list',nobashi:'home',quizSetup:'home',quizPlay:'quizSetup'};
+function go(v){
+  stopPlay();nbReset(true);if(window.speechSynthesis)try{speechSynthesis.cancel()}catch(e){}
+  QZ.alive=false;
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+  $('#v-'+v).classList.add('on');VIEW=v;
+  $('#backBtn').style.visibility=v==='home'?'hidden':'visible';
+  window.scrollTo(0,0);
+  if(v==='list')renderList();
+  if(v==='nobashi')renderNobashi();
+  if(v==='quizSetup')renderQuizSetup();
+}
+$('#backBtn').onclick=()=>go(PARENT[VIEW]||'home');
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ac();go(b.dataset.go);});
+
+/* settings */
+function bindSeg(id,key){
+  const el=$(id);const sync=()=>el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===+S[key]));
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{S[key]=+b.dataset.v;store.set('rz_set',S);sync();});sync();
+}
+bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');
+
+/* ===================== list & detail ===================== */
+let LIST_G=1;
+function renderList(){
+  $('#listChips').innerHTML=GROUPS.map(g=>`<button class="chip${g.g===LIST_G?' on':''}" data-g="${g.g}">${g.name}</button>`).join('');
+  $('#listChips').querySelectorAll('.chip').forEach(c=>c.onclick=()=>{LIST_G=+c.dataset.g;renderList();});
+  const ws=WORDS.filter(w=>w.g===LIST_G);
+  $('#listGrid').innerHTML=ws.map(w=>`<button class="card" data-id="${w.id}">
+      ${w.emj?`<div class="emj">${w.emj}</div>`:''}
+      ${notation(w.ev,1.05)}
+      ${blocks(w,Math.min(34,Math.floor(120/len(w))),'nolabel')}
+      <div class="w">${w.w}</div></button>`).join('');
+  $('#listGrid').querySelectorAll('.card').forEach(c=>c.onclick=()=>{ac();openDetail(c.dataset.id);});
+}
+let DETAIL_ID=null;
+function openDetail(id){
+  go('detail');DETAIL_ID=id;const w=byId(id);
+  const ws=WORDS.filter(x=>x.g===w.g),i=ws.indexOf(w);
+  const u=unitFor(w,availW(),w.g===4?190:120);
+  $('#detailBox').innerHTML=`
+    <div class="notebox">${notation(w.ev,w.g===4?3.2:(len(w)>=3?1.9:2.4))}</div>
+    ${w.emj?`<div class="emj">${w.emj}</div>`:''}
+    <div class="word">${w.w}</div>
+    <div style="font-size:18px;font-weight:800;color:var(--sub);background:#fff;border-radius:999px;padding:4px 14px">${w.nm}</div>
+    <div class="sylNow" id="sylNow"></div>
+    <div id="dBlocks">${blocks(w,u)}</div>
+    <div class="btns" style="margin-top:8px">
+      <button class="bigbtn gray" id="dPrev" ${i<=0?'style="visibility:hidden"':''}>◀</button>
+      <button class="bigbtn" id="dPlay" style="background:var(--c3)">▶ きく</button>
+      <button class="bigbtn" id="dSay">🗣 ことば</button>
+      <button class="bigbtn" id="dName" style="background:var(--c8)">📛 なまえ</button>
+      <button class="bigbtn gray" id="dNext" ${i>=ws.length-1?'style="visibility:hidden"':''}>▶</button>
+    </div>`;
+  const run=()=>doPlayDetail(w);
+  $('#dPlay').onclick=run;$('#dBlocks').onclick=run;
+  $('#dSay').onclick=()=>say(w.w);
+  $('#dName').onclick=()=>say(w.nm.replace(' 2つ',' ふたつ'));
+  $('#dPrev').onclick=()=>openDetail(ws[i-1].id);
+  $('#dNext').onclick=()=>openDetail(ws[i+1].id);
+  (async()=>{await say(w.w);if(DETAIL_ID===id&&VIEW==='detail')run();})();
+}
+function doPlayDetail(w){
+  const sy=$('#sylNow');
+  playWord(w,{el:$('#dBlocks .blocks'),onSyl:(t)=>{sy.textContent=t;sy.classList.remove('pop');void sy.offsetWidth;sy.classList.add('pop');}});
+}
+
+/* ===================== nobashi (hold game) ===================== */
+const NB={id:'w',hint:true,countIn:false,state:'idle',raf:0,sess:null,stopTone:null,timers:[]};
+const NB_IDS=['q','h','dh','w'];
+function renderNobashi(){
+  $('#nbChips').innerHTML=NB_IDS.map(id=>{const w=byId(id);return `<button class="chip${id===NB.id?' on':''}" data-id="${id}">${w.w}</button>`;}).join('');
+  $('#nbChips').querySelectorAll('.chip').forEach(c=>c.onclick=()=>{NB.id=c.dataset.id;nbReset(true);renderNobashi();});
+  const w=byId(NB.id),n=len(w);
+  const u=Math.floor(Math.min(92,(availW())/(n+1)));
+  let slots='';
+  for(let k=0;k<n+1;k++){const lab=k<n?w.ev[0].syl[k]:'';slots+=`<div class="slot ${k<n?'tg':'extra'}" style="left:${k*u}px" data-k="${k}">${lab||'・'}</div>`;}
+  $('#nbTop').innerHTML=`${notation(w.ev,n>=3?1.5:1.9)}
+    <div style="font-size:30px;font-weight:800">${w.w}</div>
+    <div class="track${NB.hint?' hint':''}" id="nbTrack" style="--u:${u}px;--c:${w.col};width:${(n+1)*u}px"><div class="fill" id="nbFill"></div>${slots}</div>`;
+  $('#togHint').classList.toggle('on',NB.hint);$('#togCount').classList.toggle('on',NB.countIn);
+  nbIdleMsg();
+}
+function nbIdleMsg(){
+  const w=byId(NB.id);
+  $('#nbMsg').innerHTML=NB.countIn?`ボタンを おすと かぞえるよ<small>「はい」の つぎで ぎゅっと おして、「${w.w}」で はなそう</small>`
+    :`ぎゅっと おして、「${w.w}」で はなそう<small>カチ カチ に あわせて かぞえてね</small>`;
+  $('#nbSyl').textContent='';
+  const b=$('#holdBtn');b.className='hold';b.textContent=NB.countIn?'スタート':'ぎゅっ';
+}
+function nbReset(silent){
+  cancelAnimationFrame(NB.raf);NB.timers.forEach(clearTimeout);NB.timers=[];
+  if(NB.stopTone){NB.stopTone();NB.stopTone=null;}killSess(NB.sess);NB.sess=null;NB.state='idle';
+  const tr=$('#nbTrack');if(tr){tr.classList.remove('reach');tr.querySelectorAll('.slot').forEach(s=>s.classList.remove('passed'));$('#nbFill').style.width='0';}
+  if(!silent)nbIdleMsg();
+}
+$('#togHint').onclick=()=>{NB.hint=!NB.hint;nbReset(true);renderNobashi();};
+$('#togCount').onclick=()=>{NB.countIn=!NB.countIn;nbReset(true);renderNobashi();};
+const holdBtn=$('#holdBtn');
+holdBtn.addEventListener('contextmenu',e=>e.preventDefault());
+holdBtn.addEventListener('pointerdown',e=>{
+  e.preventDefault();try{holdBtn.setPointerCapture(e.pointerId)}catch(_){}
+  const a=ac(),now=a.currentTime,B=beat();
+  if(NB.state==='idle'||NB.state==='done'){
+    nbReset(true);
+    if(NB.countIn){startCount();return;}
+    beginHold(now,now);return;
+  }
+  if(NB.state==='count'){
+    if(now<NB.D-.5*B){$('#nbMsg').innerHTML='まだだよ<small>「はい」の つぎで おしてね</small>';return;}
+    beginHold(now,NB.D);
+  }
+});
+['pointerup','pointercancel'].forEach(t=>holdBtn.addEventListener(t,()=>{if(NB.state==='hold')nbFinish(ac().currentTime,false);}));
+
+function startCount(){
+  const a=ac(),B=beat(),t0=a.currentTime+.15,w=byId(NB.id),n=len(w);
+  NB.state='count';NB.sess=newSess();
+  for(let b=0;b<4;b++)click(t0+b*B,b===0,NB.sess);
+  bell(t0+3*B,NB.sess);
+  NB.D=t0+4*B;
+  for(let b=0;b<n+2;b++)click(NB.D+b*B,b===0,NB.sess);
+  const btn=$('#holdBtn');btn.className='hold count';btn.textContent='';
+  $('#nbMsg').innerHTML='かぞえるよ<small>「はい」の つぎで おしてね</small>';
+  const off=(t0-a.currentTime)*1000;
+  ['1','2','3','はい'].forEach((x,i)=>NB.timers.push(setTimeout(()=>{if(NB.state!=='count')return;btn.textContent=x;
+    btn.style.background=x==='はい'?'radial-gradient(circle at 35% 30%,#ff9a85,var(--c1))':'';},off+i*B*1000)));
+  NB.timers.push(setTimeout(()=>{if(NB.state!=='count')return;btn.className='hold';btn.style.background='';btn.textContent='いま！';},off+4*B*1000));
+  NB.timers.push(setTimeout(()=>{if(NB.state!=='count')return;nbReset(true);
+    $('#nbMsg').innerHTML='あれれ？<small>「はい」の つぎで ぎゅっと おしてね。もういちど！</small>';
+    const b=$('#holdBtn');b.className='hold';b.style.background='';b.textContent='スタート';},off+5.6*B*1000));
+}
+function beginHold(now,grid){
+  const B=beat(),w=byId(NB.id),n=len(w);
+  NB.timers.forEach(clearTimeout);NB.timers=[];
+  NB.state='hold';NB.start=now;NB.grid=grid;NB.flag=false;NB.stopTone=holdTone();
+  const btn=$('#holdBtn');btn.className='hold down';btn.style.background='';btn.textContent='';
+  if(!NB.countIn){NB.sess=newSess();for(let b=0;b<n+2;b++)click(now+b*B,b===0,NB.sess);}
+  $('#nbMsg').innerHTML='';
+  const tr=$('#nbTrack'),fill=$('#nbFill'),u=parseFloat(tr.style.getPropertyValue('--u')),slots=[...tr.querySelectorAll('.slot')];
+  const sylEl=$('#nbSyl');let lastK=-1;
+  const loop=()=>{
+    if(NB.state!=='hold')return;
+    const held=(ac().currentTime-NB.start)/B;
+    fill.style.width=Math.min(held,n+1)*u+'px';
+    const k=Math.floor(held);
+    if(k!==lastK){lastK=k;slots.forEach((s,i)=>s.classList.toggle('passed',i<=k));
+      sylEl.textContent=k<n?w.ev[0].syl[k]:'';sylEl.classList.remove('pop');void sylEl.offsetWidth;sylEl.classList.add('pop');}
+    if(NB.hint&&!NB.flag&&held>=n-.12){NB.flag=true;tr.classList.add('reach');$('#nbMsg').innerHTML='はなして！';}
+    if(held>=n+1){nbFinish(ac().currentTime,true);return;}
+    NB.raf=requestAnimationFrame(loop);
+  };
+  loop();
+}
+function nbFinish(now,auto){
+  const B=beat(),w=byId(NB.id),n=len(w);
+  NB.state='done';cancelAnimationFrame(NB.raf);
+  if(NB.stopTone){NB.stopTone();NB.stopTone=null;}killSess(NB.sess);NB.sess=null;
+  $('#nbTrack').classList.remove('reach');
+  const held=(now-NB.start)/B,err=held-n,tol=n===1?.28:.33;
+  let pressNote='';
+  if(NB.countIn){const off=(NB.start-NB.grid)/B;
+    pressNote=Math.abs(off)<=.3?'おすのも ぴったり！':off<0?'おすのが ちょっと はやかったよ':'おすのが ちょっと おそかったよ';}
+  const btn=$('#holdBtn');btn.className='hold';btn.textContent=NB.countIn?'もういちど':'ぎゅっ';
+  let t,sub,ok=false;
+  if(auto||err>tol){t='ちょっと ながすぎたよ';sub=`「${w.ev[0].syl[n-1]}」の つぎで はなそう`;}
+  else if(err<-tol){t='もうすこし ながーく！';sub=`「${w.w}」まで のばそう`;}
+  else{t='ぴったり！ 🌟';sub=NB.hint?'つぎは ヒントなしで やってみよう':'すごい！ ヒントなしで できたね';ok=true;}
+  if(pressNote)sub=pressNote+'　'+sub;
+  $('#nbMsg').innerHTML=`${t}<small>${sub}</small>`;
+  $('#nbSyl').textContent='';
+  if(ok){yay();addStar(NB.hint?1:2);say('ぴったり');}else{say(err<0?'もうすこし':'ながすぎたよ');}
+}
+
+/* ===================== quiz ===================== */
+const QZ={type:'listen',groups:new Set([1]),choices:2,show:true,i:0,total:5,score:0,alive:false,lock:false,prev:null};
+function renderQuizSetup(){
+  $('#qTypes').querySelectorAll('.qtype').forEach(b=>{b.classList.toggle('on',b.dataset.t===QZ.type);
+    b.onclick=()=>{QZ.type=b.dataset.t;renderQuizSetup();};});
+  let h='';
+  if(QZ.type!=='longer'){
+    h+=`<div class="hint">どの なかまで あそぶ？（いくつでも）</div><div class="chips" id="qGroups">`+
+      GROUPS.map(g=>`<button class="chip${QZ.groups.has(g.g)?' on':''}" data-g="${g.g}">${g.name}</button>`).join('')+'</div>';
+    h+=`<div class="row" style="margin-bottom:10px"><span class="lab">えらぶ かず</span><div class="seg" id="qN">
+      <button data-v="2" class="${QZ.choices===2?'on':''}">2つ</button><button data-v="3" class="${QZ.choices===3?'on':''}">3つ</button></div></div>`;
+  }else h+=`<div class="hint">「のばす おと」（たん〜たんにーさんしー）で くらべるよ</div>`;
+  if(QZ.type!=='word')h+=`<button class="tog${QZ.show?' on':''}" id="qShow"><span class="box"></span>つみきを みせる</button>`;
+  if(QZ.type==='listen'&&QZ.groups.has(2)&&QZ.groups.size===1)h+=`<div class="hint" style="color:var(--c1)">「おやすみ」だけだと おとが ならないので、ほかの なかまも えらんでね</div>`;
+  $('#qOpts').innerHTML=h;
+  $('#qOpts').querySelectorAll('#qGroups .chip').forEach(c=>c.onclick=()=>{const g=+c.dataset.g;
+    if(QZ.groups.has(g)){if(QZ.groups.size>1)QZ.groups.delete(g);}else QZ.groups.add(g);renderQuizSetup();});
+  $('#qOpts').querySelectorAll('#qN button').forEach(b=>b.onclick=()=>{QZ.choices=+b.dataset.v;renderQuizSetup();});
+  const qs=$('#qShow');if(qs)qs.onclick=()=>{QZ.show=!QZ.show;renderQuizSetup();};
+}
+$('#qStart').onclick=()=>{ac();if(window.speechSynthesis)try{speechSynthesis.speak(new SpeechSynthesisUtterance(''))}catch(e){}
+  go('quizPlay');QZ.i=0;QZ.score=0;QZ.alive=true;QZ.prev=null;nextQ();};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
+const sameSound=(a,b)=>JSON.stringify(a.ev.map(e=>[e.d,e.r]))===JSON.stringify(b.ev.map(e=>[e.d,e.r]));
+function pool(){
+  if(QZ.type==='longer')return WORDS.filter(w=>w.g===1);
+  let p=WORDS.filter(w=>QZ.groups.has(w.g));
+  if(QZ.type==='listen'){const q=p.filter(w=>w.ev.some(e=>!e.r));if(q.length>=2)p=q;}
+  return p;
+}
+function pickChoices(ans,k){
+  let others=shuffle(pool().filter(w=>w!==ans&&!sameSound(w,ans)));
+  if(others.length<k-1)others=others.concat(shuffle(WORDS.filter(w=>w!==ans&&!others.includes(w)&&w.g!==2)));
+  return shuffle([ans].concat(others.slice(0,k-1)));
+}
+function progHTML(){let h='<div class="qprog">';for(let i=0;i<QZ.total;i++)h+=`<i class="${i<QZ.i?'done':i===QZ.i?'now':''}"></i>`;return h+'</div>';}
+function choiceCard(w,mode){
+  const inner=mode==='word'?`<div class="w">${w.w}</div>`:
+    `${w.emj&&QZ.show?`<div style="font-size:28px">${w.emj}</div>`:''}${notation(w.ev,len(w)<1?1.6:1.15)}${QZ.show?blocks(w,Math.min(34,Math.floor(130/len(w))),'nolabel'):''}`;
+  return `<button class="qchoice" data-id="${w.id}">${inner}</button>`;
+}
+async function nextQ(){
+  if(!QZ.alive)return;
+  if(QZ.i>=QZ.total){showResult();return;}
+  QZ.lock=true;const box=$('#qBox');
+  if(QZ.type==='listen'){
+    const p=pool();let ans;do{ans=p[Math.random()*p.length|0];}while(p.length>1&&ans===QZ.prev);QZ.prev=ans;
+    const ch=pickChoices(ans,QZ.choices);QZ.ans=ans;
+    box.innerHTML=progHTML()+`<div class="qprompt">どの おとかな？</div>
+      <div class="btns" style="margin-bottom:14px"><button class="bigbtn" id="qReplay" style="font-size:26px">🔊 もういちど きく</button></div>
+      <div class="qchoices">${ch.map(w=>choiceCard(w,'listen')).join('')}</div>`;
+    $('#qReplay').onclick=()=>playWord(ans,{clicks:true});
+    bindChoices(w=>w===ans||sameSound(w,ans));
+    await say('どの おとかな');if(!QZ.alive)return;
+    await wait(playWord(ans,{clicks:true}));QZ.lock=false;
+  }else if(QZ.type==='longer'){
+    const p=shuffle(pool()),A=p[0],Bw=p[1],askLong=Math.random()<.65;QZ.prev=null;
+    QZ.ans=askLong?(len(A)>len(Bw)?A:Bw):(len(A)<len(Bw)?A:Bw);
+    box.innerHTML=progHTML()+`<div class="qprompt">${askLong?'ながいのは どっち？':'みじかいのは どっち？'}</div>
+      <div class="btns" style="margin-bottom:14px"><button class="bigbtn" id="qReplay" style="font-size:24px">🔊 もういちど きく</button></div>
+      <div class="qchoices" style="grid-template-columns:1fr 1fr">${[A,Bw].map(w=>choiceCard(w,'longer')).join('')}</div>`;
+    const cards=[...box.querySelectorAll('.qchoice')];
+    const playBoth=async()=>{QZ.lock=true;for(let i=0;i<2;i++){if(!QZ.alive)return;cards.forEach(c=>c.classList.remove('lit'));cards[i].classList.add('lit');
+      await wait(playWord([A,Bw][i],{clicks:true,el:QZ.show?cards[i].querySelector('.blocks'):null}));await wait(350);}
+      cards.forEach(c=>c.classList.remove('lit'));QZ.lock=false;};
+    $('#qReplay').onclick=playBoth;
+    bindChoices(w=>w===QZ.ans);
+    await say(askLong?'ながいのは どっち':'みじかいのは どっち');if(!QZ.alive)return;await playBoth();
+  }else{
+    const p=pool();let ans;do{ans=p[Math.random()*p.length|0];}while(p.length>1&&ans===QZ.prev);QZ.prev=ans;QZ.ans=ans;
+    const ch=pickChoices(ans,Math.max(3,QZ.choices));
+    box.innerHTML=progHTML()+`<div class="qprompt">なんて いうかな？</div>
+      <div class="qnote">${notation(ans.ev,len(ans)<1?3:2)}</div>
+      <div class="qchoices">${ch.map(w=>choiceCard(w,'word')).join('')}</div>`;
+    bindChoices(w=>w===ans,true);QZ.lock=false;
+  }
+}
+function bindChoices(isRight,speakChoice){
+  $('#qBox').querySelectorAll('.qchoice').forEach(c=>c.onclick=async()=>{
+    if(QZ.lock||!QZ.alive)return;const w=byId(c.dataset.id);
+    if(isRight(w)){
+      QZ.lock=true;c.classList.add('good');yay();QZ.score++;addStar();flash('⭕');
+      if(speakChoice)say(w.w);
+      await wait(1300);QZ.i++;nextQ();
+    }else{
+      c.classList.remove('bad');void c.offsetWidth;c.classList.add('bad');buzz();
+      if(speakChoice)say(w.w);
+      if(QZ.type==='listen'){QZ.lock=true;await wait(700);if(!QZ.alive)return;await wait(playWord(QZ.ans,{clicks:true}));QZ.lock=false;}
     }
-
-    function listenVoice() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("お使いのブラウザは音声認識に対応していません（Safari/Chrome推奨）");
-        return;
-      }
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'ja-JP';
-      document.getElementById('quizPrompt').innerText = "きいています...";
-      recognition.start();
-
-      recognition.onresult = (e) => {
-        const text = e.results[0][0].transcript;
-        const target = cards[quizIndex].name;
-        document.getElementById('quizPrompt').innerText = `あなたのこたえ: 「${text}」`;
-
-        if (text.includes(target) || target.includes(text)) {
-          showResult(true);
-        } else {
-          showResult(false);
-        }
-      };
-
-      recognition.onerror = () => {
-        document.getElementById('quizPrompt').innerText = "よくきこえなかったよ。もういちど！";
-      };
-    }
-
-    // ⭕️ ❌ の結果演出
-    function showResult(isCorrect) {
-      const overlay = document.getElementById('markOverlay');
-      const cardInner = document.getElementById('quizCardInner');
-
-      if (isCorrect) {
-        overlay.innerText = '⭕️';
-        overlay.className = 'overlay correct';
-        playSound('correct');
-      } else {
-        overlay.innerText = '❌';
-        overlay.className = 'overlay wrong';
-        cardInner.classList.add('shake');
-        playSound('wrong');
-      }
-
-      setTimeout(() => {
-        overlay.className = 'overlay';
-        cardInner.classList.remove('shake');
-        startTraining();
-      }, 1200);
-    }
-  </script>
+  });
+}
+function flash(t){const o=$('#ov');o.innerHTML=`<span>${t}</span>`;setTimeout(()=>o.innerHTML='',800);}
+function showResult(){
+  QZ.alive=false;const all=QZ.score===QZ.total;
+  $('#qBox').innerHTML=`<div class="result"><div class="big">${'⭐'.repeat(QZ.score)||'🌱'}</div>
+    <div class="t">${all?'ぜんぶ できたね！':'よく がんばったね！'}</div>
+    <div class="btns"><button class="bigbtn" id="qAgain" style="background:var(--c3)">もういちど</button>
+    <button class="bigbtn gray" id="qEnd">おわり</button></div></div>`;
+  yay();say(all?'ぜんぶ できたね':'よく がんばったね');
+  $('#qAgain').onclick=()=>{QZ.i=0;QZ.score=0;QZ.alive=true;nextQ();};
+  $('#qEnd').onclick=()=>go('home');
+}
+if(window.speechSynthesis){try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();}catch(e){}}
+</script>
 </body>
 </html>
