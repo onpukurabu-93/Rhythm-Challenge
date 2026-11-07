@@ -24,7 +24,7 @@ header h1{font-size:18px;margin:0;font-weight:800;flex:1;white-space:nowrap;disp
 #backBtn{border:none;background:#fff;border-radius:14px;width:48px;height:44px;font-size:24px;
   box-shadow:0 3px 0 var(--line);visibility:hidden}
 #stars{font-weight:800;font-size:18px;background:#fff;border-radius:999px;padding:6px 12px;box-shadow:0 3px 0 var(--line)}
-.view{display:none;max-width:780px;margin:0 auto;padding:14px 14px 60px}
+.view{display:none;max-width:780px;margin:0 auto;padding:12px 14px calc(40px + env(safe-area-inset-bottom))}
 .view.on{display:block}
 h2{font-size:22px;margin:6px 0 12px}
 .hint{color:var(--sub);font-size:14px;margin:4px 0 12px}
@@ -75,9 +75,9 @@ h2{font-size:22px;margin:6px 0 12px}
 
 /* detail */
 .detail{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
-.detail .notebox{background:#fff;border-radius:24px;padding:14px 18px;box-shadow:0 4px 0 var(--line);width:100%;display:flex;justify-content:center}
+.detail .notebox{background:#fff;border-radius:22px;padding:8px 14px;box-shadow:0 4px 0 var(--line);width:100%;display:flex;justify-content:center}
 .detail .emj{font-size:40px;line-height:1}
-.notebox svg,.nb-top svg{max-height:min(90px,13vh);width:auto !important}
+.notebox svg,.nb-top svg{max-height:min(84px,11vh);width:auto !important}
 .detail .word{font-size:32px;font-weight:800;letter-spacing:.04em}
 .pager{display:flex;align-items:center;gap:14px;margin-top:4px}.arw{border:none;background:#fff;border-radius:14px;width:52px;height:44px;font-size:18px;box-shadow:0 3px 0 var(--line)}
 .dots{display:flex;gap:7px;justify-content:center}.dots i{width:10px;height:10px;border-radius:50%;background:#e2d5c2}.dots i.on{background:var(--ink)}
@@ -85,6 +85,7 @@ h2{font-size:22px;margin:6px 0 12px}
 .pop{animation:pop .25s}
 @keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
 .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.dbtns{flex-wrap:nowrap;gap:8px}.dbtns .bigbtn{padding:11px 13px;font-size:17px;white-space:nowrap}
 .bigbtn{border:none;border-radius:18px;padding:12px 18px;font-size:19px;font-weight:800;color:#fff;
   background:var(--c4);box-shadow:0 5px 0 rgba(0,0,0,.2)}
 .bigbtn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
@@ -428,14 +429,14 @@ let DETAIL_ID=null,DETAIL_NAV={};
 function openDetail(id){
   go('detail');DETAIL_ID=id;const w=byId(id);
   const ws=WORDS.filter(x=>x.g===w.g),i=ws.indexOf(w);
-  const u=unitFor(w,availW(),w.g===4?190:120);
+  const u=unitFor(w,availW(),w.g===4?170:88);
   $('#detailBox').innerHTML=`
     <div class="notebox">${notation(w.ev,w.g===4?3.2:(len(w)>=3?1.9:2.4))}</div>
     ${w.emj?`<div class="emj">${w.emj}</div>`:''}
     <div class="word">${w.w}</div>
     <div style="font-size:18px;font-weight:800;color:var(--sub);background:#fff;border-radius:999px;padding:4px 14px">${w.nm}</div>
     <div id="dBlocks">${blocks(w,u)}</div>
-    <div class="btns" style="margin-top:8px">
+    <div class="btns dbtns" style="margin-top:4px">
       <button class="bigbtn" id="dPlay" style="background:var(--c3)">▶ きく</button>
       <button class="bigbtn" id="dSay">🗣 ことば</button>
       <button class="bigbtn" id="dName" style="background:var(--c8)">📛 なまえ</button>
