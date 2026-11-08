@@ -287,6 +287,11 @@ h2{font-size:22px;margin:6px 0 12px}
 .rs-c{flex:1;background:#fff;border-radius:16px;padding:8px 4px;box-shadow:0 3px 0 var(--line)}
 .rs-t{font-weight:800;font-size:15px;margin-top:2px}.rs-t b{font-size:22px;color:var(--c1)}
 .rs-s{font-size:12px;color:var(--sub);font-weight:800;margin-top:4px}
+.ncards{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.ncard{background:#fff;border-radius:16px;padding:8px 6px 6px;box-shadow:0 3px 0 var(--line);display:flex;flex-direction:column;align-items:center;gap:4px;border:3px solid #c98b4a}
+.nc-n svg{height:52px !important;width:auto !important}
+.ncard .lay{display:flex;align-items:center;justify-content:center}
+.ncard .pc{display:flex;gap:2px}
 </style>
 </head>
 <body>
@@ -1093,18 +1098,18 @@ const COURSE=[
   {id:'c1',t:'タカ（はちぶおんぷ）',cap:4,pool:['q','qr','h','ee'],must:['ee'],need:3,say:'タカ は リス さん'},
   {id:'c2',t:'タウ・ウカ',cap:4,pool:['q','qr','h','ee','er','re'],must:['er','re'],need:3,say:'タウ と ウカ'},
   {id:'c3',t:'はちぶの ながい リズム',cap:8,pool:['q','qr','h','hr','dh','w','ee','er','re'],need:2,say:'ながい リズム'},
-  {id:'d_f1',bpm:50,t:'たこやき',seqs:[['f1'],['f1','f1'],['f1','q','f1','q']],need:3,say:'たこやき。この かたちが たこやき だよ'},
-  {id:'d_f2',bpm:50,t:'ラーメン',seqs:[['f2'],['f2','f2'],['f2','q','f2','q']],need:3,say:'ラーメン。この かたちが ラーメン だよ'},
-  {id:'d_f6',bpm:50,t:'マンゴー',seqs:[['f6'],['f6','f6'],['f6','q','f6','q']],need:3,say:'マンゴー。この かたちが マンゴー だよ'},
-  {id:'dm1',bpm:50,t:'たこやき・ラーメン・マンゴー を まぜて',cap:4,pool:['q', 'f1', 'f2', 'f6'],must:['f1', 'f2', 'f6'],need:3,say:'たこやき と ラーメン と マンゴー を まぜて よんでみよう'},
-  {id:'d_f3',bpm:50,t:'ステーキ',seqs:[['f3'],['f3','f3'],['f3','q','f3','q']],need:3,say:'ステーキ。この かたちが ステーキ だよ'},
-  {id:'d_f4',bpm:50,t:'ジュース',seqs:[['f4'],['f4','f4'],['f4','q','f4','q']],need:3,say:'ジュース。この かたちが ジュース だよ'},
-  {id:'d_f5',bpm:50,t:'ゼリー',seqs:[['f5'],['f5','f5'],['f5','q','f5','q']],need:3,say:'ゼリー。この かたちが ゼリー だよ'},
-  {id:'dm2',bpm:50,t:'ステーキ・ジュース・ゼリー を まぜて',cap:4,pool:['q', 'f1', 'f2', 'f6', 'f3', 'f4', 'f5'],must:['f3', 'f4', 'f5'],need:3,say:'ステーキ と ジュース と ゼリー を まぜて よんでみよう'},
-  {id:'d_f7',bpm:50,t:'はっさく',seqs:[['f7'],['f7','f7'],['f7','q','f7','q']],need:3,say:'はっさく。この かたちが はっさく だよ'},
-  {id:'d_f8',bpm:50,t:'コロッケ',seqs:[['f8'],['f8','f8'],['f8','q','f8','q']],need:3,say:'コロッケ。この かたちが コロッケ だよ'},
-  {id:'d_f9',bpm:50,t:'クッキー',seqs:[['f9'],['f9','f9'],['f9','q','f9','q']],need:3,say:'クッキー。この かたちが クッキー だよ'},
-  {id:'dm3',bpm:50,t:'はっさく・コロッケ・クッキー を まぜて',cap:4,pool:['q', 'f1', 'f2', 'f6', 'f3', 'f4', 'f5', 'f7', 'f8', 'f9'],must:['f7', 'f8', 'f9'],need:3,say:'はっさく と コロッケ と クッキー を まぜて よんでみよう'},
+  {id:'d_f1',cards:1,bpm:50,t:'たこやき',seqs:[['f1'],['f1','f1'],['f1','q','f1','q']],need:3,say:'たこやき。この かたちが たこやき だよ'},
+  {id:'d_f2',cards:1,bpm:50,t:'ラーメン',seqs:[['f2'],['f2','f2'],['f2','q','f2','q']],need:3,say:'ラーメン。この かたちが ラーメン だよ'},
+  {id:'d_f6',cards:1,bpm:50,t:'マンゴー',seqs:[['f6'],['f6','f6'],['f6','q','f6','q']],need:3,say:'マンゴー。この かたちが マンゴー だよ'},
+  {id:'dm1',cards:1,bpm:50,t:'たこやき・ラーメン・マンゴー を まぜて',cap:4,pool:['q', 'f1', 'f2', 'f6'],must:['f1', 'f2', 'f6'],need:3,say:'たこやき と ラーメン と マンゴー を まぜて よんでみよう'},
+  {id:'d_f3',cards:1,bpm:50,t:'ステーキ',seqs:[['f3'],['f3','f3'],['f3','q','f3','q']],need:3,say:'ステーキ。この かたちが ステーキ だよ'},
+  {id:'d_f4',cards:1,bpm:50,t:'ジュース',seqs:[['f4'],['f4','f4'],['f4','q','f4','q']],need:3,say:'ジュース。この かたちが ジュース だよ'},
+  {id:'d_f5',cards:1,bpm:50,t:'ゼリー',seqs:[['f5'],['f5','f5'],['f5','q','f5','q']],need:3,say:'ゼリー。この かたちが ゼリー だよ'},
+  {id:'dm2',cards:1,bpm:50,t:'ステーキ・ジュース・ゼリー を まぜて',cap:4,pool:['q', 'f1', 'f2', 'f6', 'f3', 'f4', 'f5'],must:['f3', 'f4', 'f5'],need:3,say:'ステーキ と ジュース と ゼリー を まぜて よんでみよう'},
+  {id:'d_f7',cards:1,bpm:50,t:'はっさく',seqs:[['f7'],['f7','f7'],['f7','q','f7','q']],need:3,say:'はっさく。この かたちが はっさく だよ'},
+  {id:'d_f8',cards:1,bpm:50,t:'コロッケ',seqs:[['f8'],['f8','f8'],['f8','q','f8','q']],need:3,say:'コロッケ。この かたちが コロッケ だよ'},
+  {id:'d_f9',cards:1,bpm:50,t:'クッキー',seqs:[['f9'],['f9','f9'],['f9','q','f9','q']],need:3,say:'クッキー。この かたちが クッキー だよ'},
+  {id:'dm3',cards:1,bpm:50,t:'はっさく・コロッケ・クッキー を まぜて',cap:4,pool:['q', 'f1', 'f2', 'f6', 'f3', 'f4', 'f5', 'f7', 'f8', 'f9'],must:['f7', 'f8', 'f9'],need:3,say:'はっさく と コロッケ と クッキー を まぜて よんでみよう'},
   {id:'e1',bpm:40,t:'れんぷ（おまけ）',cap:4,pool:['q','qr','h','t5','t6','t7'],must:['t5','t6','t7'],need:2,say:'れんぷ'},
 ];
 const NAMEQ=[{id:'w',nm:'ぜんおんぷ',ev:[N(4,'')]},{id:'h',nm:'にぶおんぷ',ev:[N(2,'')]},{id:'q',nm:'しぶおんぷ',ev:[N(1,'')]},
@@ -1191,12 +1196,21 @@ function seqHTML(items,cap){
   }
   return h+'</div>';
 }
+function cardsHTML(items){
+  const n=items.length,u=Math.floor(Math.min(90,(availW()-10-n*30)/n));
+  let t=0,on=0,h='<div class="ncards">';
+  items.forEach(w=>{let inner='';w.ev.forEach(e=>{let x=evBlkIcon(e,t,w);
+      if(!e.r){x=x.replace('<div class="blk','<div data-on="'+on+'" class="blk');on++;}inner+=x;t+=e.d;});
+    h+=`<div class="ncard"><div class="nc-n">${notation(w.ev,1,true)}</div>
+      <div class="lay blocks" style="--u:${u}px;--bh:${u}px;height:${u+6}px"><div class="pc">${inner}</div></div></div>`;});
+  return h+'</div>';
+}
 function namesOf(items){const m=new Map();items.forEach(w=>{if(w.nm&&w.g<=3)m.set(w.nm.replace(' 2つ',''),1);});return [...m.keys()].join('・');}
 function renderStep(){
   const s=COURSE[ST.i];ST.holdView=!!(s.hold&&!S.clap);
   $('#stepBox').innerHTML=`
     <div class="st-head"><span class="st-no">${ST.i+1}</span><span class="st-t">${s.t}</span><span class="pd">${stepNeedDots(s)}</span></div>
-    <div id="stSeq">${seqHTML(ST.items,s.cap||Math.ceil(patLen()-1e-6))}</div>
+    <div id="stSeq">${s.cards&&ST.items.length>1?cardsHTML(ST.items):seqHTML(ST.items,s.cap||Math.ceil(patLen()-1e-6))}</div>
     <div class="st-msg" id="stMsg"></div>
     <div class="holdwrap"><button class="hold drum" id="stBtn"></button></div>
     <div class="st-sub"><button class="tog" id="stHear">▶ おてほん</button><button class="tog" id="stPause">⏸ とめる</button><button class="tog" id="stMode">${S.clap?'👏 てびょうし':'👆 タップ'}</button></div>
