@@ -261,6 +261,9 @@ h2{font-size:22px;margin:6px 0 12px}
 .mk{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:800;white-space:nowrap;text-shadow:none;z-index:3;line-height:1}
 .mk.ok{font-size:16px}.mk.early,.mk.late{color:#d9822b}.mk.miss{color:#d43c2c;font-size:18px}
 .seq .blk{overflow:visible}
+.nic{height:78%;width:auto;display:block;overflow:visible}
+.blk.long .bt .nic{height:78%}
+.blk.long .bt:first-child{justify-content:flex-start;padding-left:6%}
 </style>
 </head>
 <body>
@@ -290,6 +293,7 @@ h2{font-size:22px;margin:6px 0 12px}
     <div class="row"><span class="lab">はやさ</span><div class="seg" id="setSpeed"><button data-v="72">ふつう</button><button data-v="56">ゆっくり</button></div></div>
     <div class="row"><span class="lab">こえ</span><div class="seg" id="setVoice"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
     <div class="row"><span class="lab">たたきかた</span><div class="seg" id="setClap"><button data-v="0">👆 タップ</button><button data-v="1">👏 てびょうし</button></div></div>
+    <div class="row"><span class="lab">つみきの もじ</span><div class="seg" id="setLbl"><button data-v="0">おんぷだけ</button><button data-v="1">ことばも だす</button></div></div>
     <div class="row"><span class="lab">かぞえかた</span><div class="seg" id="setNum"><button data-v="0">にー さん しー</button><button data-v="1">2 3 4</button></div></div>
     <div class="row"><span class="lab">カチカチ</span><div class="seg" id="setClick"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
     <div class="row" style="justify-content:flex-end"><button class="tog" id="resetBtn" style="font-size:13px">せんせいよう：おべんとうの きろくを けす</button></div>
@@ -399,7 +403,7 @@ const $=s=>document.querySelector(s);
 /* ===================== storage ===================== */
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const S=Object.assign({bpm:72,voice:1,click:1,num:0,clap:0},store.get('rz_set',{}));
+const S=Object.assign({bpm:72,voice:1,click:1,num:0,clap:0,lbl:0},store.get('rz_set',{}));
 let STARS=store.get('rz_stars',0);
 function addStar(n=1){STARS+=n;store.set('rz_stars',STARS);$('#stars').textContent='⭐ '+STARS;}
 $('#stars').textContent='⭐ '+STARS;
@@ -444,7 +448,7 @@ function buzz(){const a=ac();const t=a.currentTime;tone(t,.18,null,220,.22);tone
 /* own files (images / voices) on GitHub */
 const AV=new Set();const CLIPS={};let CLIP_NOW=null;
 const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて いうかな',
-  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは たたいてみよう。ひかってる ボタンを たたいてね',tebyoushi:'こんどは てを たたいてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',clear:'クリア おめでとう',nanko:'たん なんこ ぶん',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
+  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは たたいてみよう。ひかってる ボタンを たたいてね',tebyoushi:'こんどは てを たたいてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',clear:'クリア おめでとう',nanko:'たん なんこ ぶん',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
 function clipName(key){return AV.has(key+'.mp3')?key+'.mp3':AV.has(key+'.wav')?key+'.wav':AV.has(key+'.m4a')?key+'.m4a':null;}
 async function probeFiles(){
   if(!/^https?:/.test(location.protocol))return;
@@ -545,6 +549,26 @@ function blocks(w,u,cls=''){
   });
   return h+'</div>';
 }
+function noteIcon(e){
+  const d=e.d,r=e.r,C='currentColor';let g='';
+  if(!r){
+    if(near(d,4))g=`<ellipse cx="15" cy="22" rx="8.5" ry="5.5" transform="rotate(-18 15 22)" fill="none" stroke="${C}" stroke-width="3.6"/>`;
+    else{const open=d>=2;
+      g=`<ellipse cx="12" cy="31" rx="6.5" ry="4.8" transform="rotate(-22 12 31)" fill="${open?'none':C}" stroke="${C}" stroke-width="${open?3:1}"/><line x1="18" y1="30" x2="18" y2="4" stroke="${C}" stroke-width="2.6"/>`;
+      if(near(d,3))g+=`<circle cx="25" cy="30" r="2.6" fill="${C}"/>`;}
+  }else{
+    if(near(d,1))g=`<path d="M12,4 L19,13 L13.5,20 L20,29 Q11,25 16,36" fill="none" stroke="${C}" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+    else if(near(d,4))g=`<line x1="3" y1="15" x2="27" y2="15" stroke="${C}" stroke-width="2"/><rect x="8" y="15" width="14" height="7" fill="${C}"/>`;
+    else{g=`<line x1="3" y1="25" x2="27" y2="25" stroke="${C}" stroke-width="2"/><rect x="8" y="18" width="14" height="7" fill="${C}"/>`;if(near(d,3))g+=`<circle cx="26" cy="19" r="2.4" fill="${C}"/>`;}
+  }
+  return `<svg class="nic" viewBox="0 0 30 40">${g}</svg>`;
+}
+function evBlkIcon(e,t,w){
+  if(S.lbl||e.d<1||e.d%1)return evBlk(e,t,w,true);
+  let b='';for(let k=0;k<e.d;k++)b+=`<span class="bt" data-t="${t+k}">${k===0?noteIcon(e):''}</span>`;
+  if(e.d===1)return `<div class="blk${e.r?' rest':''}" data-t="${t}" style="--d:1;--c:${w.col}">${noteIcon(e)}</div>`;
+  return `<div class="blk long${e.r?' rest':''}" style="--d:${e.d};--c:${w.col}">${b}</div>`;
+}
 function evBlk(e,t,w,labels){
   if(e.d<1)return blk(e,e.d,labels?lab(e.syl[0]):'',t,w);
   let b='';for(let k=0;k<e.d;k++)b+=`<span class="bt" data-t="${t+k}">${labels?lab(e.syl[k]||''):''}</span>`;
@@ -608,7 +632,7 @@ function bindSeg(id,key){
   const el=$(id);const sync=()=>el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===+S[key]));
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{S[key]=+b.dataset.v;store.set('rz_set',S);sync();});sync();
 }
-bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');bindSeg('#setNum','num');bindSeg('#setClap','clap');
+bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');bindSeg('#setNum','num');bindSeg('#setLbl','lbl');bindSeg('#setClap','clap');
 $('#setClap').addEventListener('click',async()=>{if(S.clap){const ok=await micStart();if(!ok){S.clap=0;store.set('rz_set',S);$('#setClap').querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===0));}}});
 
 /* ===================== list & detail ===================== */
@@ -1100,7 +1124,7 @@ function seqHTML(items,cap){
     h+='<div class="seq-row">';
     for(let m=r;m<Math.min(r+perRow,meas.length);m++){
       const ev=meas[m].flatMap(w=>w.ev);let blks='';
-      meas[m].forEach(w=>{let inner='';w.ev.forEach(e=>{let x=evBlk(e,t,w,true);
+      meas[m].forEach(w=>{let inner='';w.ev.forEach(e=>{let x=evBlkIcon(e,t,w);
         if(!e.r){x=x.replace('<div class="blk','<div data-on="'+on+'" class="blk');on++;}inner+=x;t+=e.d;});
         blks+=`<div class="pc">${inner}</div>`;});
       const cells=Array.from({length:Math.min(cap,4)},()=>'<div class="cell"></div>').join('');
@@ -1120,10 +1144,11 @@ function renderStep(){
     <div id="stSeq">${seqHTML(ST.items,s.cap)}</div>
     <div class="st-msg" id="stMsg"></div>
     <div class="holdwrap"><button class="hold drum" id="stBtn"></button></div>
-    <div class="st-sub"><button class="tog" id="stPause">⏸ とめる</button><button class="tog" id="stMode">${S.clap?'👏 てびょうし':'👆 タップ'}</button></div>
+    <div class="st-sub"><button class="tog" id="stHear">▶ おてほん</button><button class="tog" id="stPause">⏸ とめる</button><button class="tog" id="stMode">${S.clap?'👏 てびょうし':'👆 タップ'}</button></div>
     <div class="st-names">${namesOf(ST.items)}</div>`;
   const b=$('#stBtn');
   b.addEventListener('pointerdown',stBtnDown);b.addEventListener('contextmenu',e=>e.preventDefault());
+  $('#stHear').onclick=()=>{ac();if(ST.window)return;ST.failRow=0;stBtnState('auto');stFlow(false);};
   $('#stPause').onclick=()=>{stStop();stBtnState('retry');$('#stMsg').textContent='とめたよ。ボタンを おすと つづきから';};
   $('#stMode').onclick=async()=>{S.clap=S.clap?0:1;store.set('rz_set',S);if(S.clap){const ok=await micStart();if(!ok){S.clap=0;store.set('rz_set',S);}}
     $('#stMode').textContent=S.clap?'👏 てびょうし':'👆 タップ';};
@@ -1140,7 +1165,7 @@ function stBtnDown(e){
   e.preventDefault();ac();
   if(ST.btn==='drum'){if(!S.clap)stTap(ac().currentTime);return;}
   if(ST.btn==='next'){ST.items=genPattern(COURSE[ST.i]);renderStep();stBtnState('auto');stFlow(false);return;}
-  if(ST.btn==='retry'){ST.noTap=0;stBtnState('auto');stFlow(false);return;}
+  if(ST.btn==='retry'){ST.noTap=0;ST.failRow=0;stBtnState('auto');stFlow(false);return;}
 }
 function lightSeq(t0){
   const a=ac(),el=$('#stSeq');if(!el)return;
@@ -1163,11 +1188,12 @@ function countIn(t0,sess,quiet){
   return t0+4*B;
 }
 const alive=tok=>tok===ST.run&&VIEW==='step';
-async function stFlow(first){
+async function stFlow(first,tapOnly){
   const tok=++ST.run;stClear();
   const s=COURSE[ST.i],a=ac(),B=beat();
   $('#stSeq').querySelectorAll('.mk').forEach(x=>x.remove());
   if(S.clap&&!MIC.on){const ok=await micStart();if(!ok){S.clap=0;store.set('rz_set',S);const m=$('#stMode');if(m)m.textContent='👆 タップ';}}
+  if(!tapOnly){
   // 1) お手本
   $('#stMsg').textContent='きいてね';stBtnState('auto','👂');
   if(first&&ST.first){ST.first=false;await speak('koe-step-'+s.id,s.say||s.t);}else await P('kiite');
@@ -1184,10 +1210,11 @@ async function stFlow(first){
   ST.timers.push(setTimeout(()=>{if(alive(tok))stBtnState('auto','🗣');},(D-a.currentTime)*1000));
   await wait((D-a.currentTime+patLen()*B)*1000+300);if(!alive(tok))return;
   $('#stSeq').classList.remove('playing');await wait(300);if(!alive(tok))return;
+  }
   // 3) たたこう
   $('#stMsg').textContent=S.clap?'「はい」の つぎから てを たたこう':'ひかってる ボタンを たたいてね';
   stBtnState('drum');
-  await P(S.clap?'tebyoushi':'tataku');if(!alive(tok))return;
+  await P(tapOnly?'mouichidotataku':(S.clap?'tebyoushi':'tataku'));if(!alive(tok))return;
   await wait(250);if(!alive(tok))return;
   sess=newSess();ST.sess=sess;D=countIn(a.currentTime+.25,sess,S.clap);ST.D=D;ST.taps=[];
   schedulePattern(D,sess,false,S.click&&!S.clap);lightSeq(D);
@@ -1197,13 +1224,17 @@ async function stFlow(first){
   // 4) はんてい
   const r=stJudge();
   if(r.pass){
+    ST.failRow=0;
     if(r.cleared){await wait(900);if(alive(tok))stCleared();return;}
     stBtnState('next');await wait(400);if(!alive(tok))return;P('tsugi');
   }else{
     if(r.noTap){ST.noTap++;}else ST.noTap=0;
     if(ST.noTap>=2){stBtnState('retry');$('#stMsg').textContent='ボタンを おすと もういちど できるよ';P('osuto');return;}
-    await wait(1200);if(!alive(tok))return;
-    stFlow(false);
+    if(!r.noTap)ST.failRow=(ST.failRow||0)+1;
+    const full=ST.failRow>=3;if(full)ST.failRow=0;
+    if(full){$('#stMsg').textContent='もういちど きいてみよう';await P('mouichidokiku');}
+    await wait(900);if(!alive(tok))return;
+    stFlow(false,!full);
   }
 }
 function stTap(t){
@@ -1234,8 +1265,8 @@ function stJudge(){
     P(okc===res.length?'pittari':'dekita');renderStepHead();
   }else{
     buzz();
-    $('#stMsg').textContent=taps.length===0?(S.clap?'てを たたいてね':'ひかってる ボタンを たたいてね'):extra>0&&miss===0?'うん の ところで たたいちゃったよ':'おしい！ もういちど きいてみよう';
-    if(taps.length)P('mouichido');
+    $('#stMsg').textContent=taps.length===0?(S.clap?'てを たたいてね':'ひかってる ボタンを たたいてね'):extra>0&&miss===0?'うん の ところで たたいちゃったよ':'おしい！ もういちど たたいてみよう';
+    if(taps.length)P('oshii');
   }
   return {pass,cleared,noTap:taps.length===0};
 }
