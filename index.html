@@ -59,11 +59,12 @@ h2{font-size:22px;margin:6px 0 12px}
 .card .w{font-size:20px;font-weight:800}
 .card .emj{font-size:26px;line-height:1}
 .card svg{max-width:100%;height:auto}
+.card svg,.qchoice svg,.bn-pc svg{height:54px !important;width:auto !important;max-width:none !important}
 
 /* blocks */
 .blocks{display:flex;align-items:flex-end;justify-content:center}
 .ev{display:flex;gap:2px;margin:0 3px}
-.blk{flex:none;width:calc(var(--u)*var(--d) - 2px);height:var(--bh,calc(var(--u)*.72));border-radius:calc(min(var(--u),95px)*.12);
+.blk{flex:none;width:calc(var(--u)*var(--d) - 2px);height:var(--bh,var(--u));border-radius:calc(min(var(--u),95px)*.12);
   background:var(--c);border:2px solid rgba(0,0,0,.14);border-bottom-width:5px;
   display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;
   font-size:calc(var(--u)*.27*min(1,var(--d)*1.7));text-shadow:0 1px 2px rgba(0,0,0,.25);
@@ -267,6 +268,7 @@ h2{font-size:22px;margin:6px 0 12px}
 .blk.fillb .fl{position:absolute;left:0;top:0;bottom:0;width:100%;background:var(--c);border-radius:inherit;z-index:1}
 .blk.fillb.rest .fl{background:var(--c);opacity:.28}
 .blk.fillb .bt{background:transparent !important;position:relative;z-index:2;opacity:1 !important}
+.blk.fillb:not(.long) .bt{flex:1;display:flex;align-items:center;justify-content:center;height:100%}
 .blk.fillb.rest .bt{color:var(--c)}
 .blk.fillb.over{box-shadow:0 0 0 4px #e5533d;animation:shake .4s}
 .drum .cnt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:800;color:#fff;
@@ -276,6 +278,11 @@ h2{font-size:22px;margin:6px 0 12px}
 .nic{height:78%;width:auto;display:block;overflow:visible}
 .blk.long .bt .nic{height:78%}
 .blk.long .bt:first-child{justify-content:flex-start;padding-left:6%}
+.shp{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0}
+.shp-n svg{height:70px !important;width:auto !important}
+.shp-n.big svg{height:96px !important}
+.shp-a{font-size:34px;font-weight:800;color:var(--sub)}
+.shp-l{font-size:19px;font-weight:800;margin:6px 0 4px}
 </style>
 </head>
 <body>
@@ -528,12 +535,13 @@ function restSvg(d,x){
     `<circle cx="${x-4}" cy="40" r="2.8" fill="${k}"/><path d="M${x-4},42 Q${x},43 ${x+3.5},38.5" fill="none" stroke="${k}" stroke-width="2"/>`+
     `<path d="M${x+6},29 L${x-1},55" fill="none" stroke="${k}" stroke-width="2" stroke-linecap="round"/>`;
 }
-function notation(ev,scale=1.6){
+function notation(ev,scale=1.6,compact=false){
   const per={};let tt=0;ev.forEach(e=>{const b=Math.floor(tt+1e-6);per[b]=(per[b]||0)+1;tt+=e.d;});
   const BW=Math.max(46,Math.max(...Object.values(per))*21+8),PAD=14;let t=0;
   const it=ev.map(e=>{const o=Object.assign({},e,{t});t+=e.d;return o;});
-  const W=PAD*2+t*BW+(t<1?10:0),HY=55,TOP=20,SX=6,K='#2b2320';
-  const X=o=>it.length===1?W/2-3:PAD+o.t*BW+(o.d>=1?12:8);
+  const ew=e=>compact&&e.d>=1?BW*Math.min(e.d,1.25):e.d*BW;let cum=0;it.forEach(o=>{o.x0=cum;cum+=ew(o);});
+  const W=PAD*2+cum+(cum<BW?10:0),HY=55,TOP=20,SX=6,K='#2b2320';
+  const X=o=>it.length===1?W/2-3:PAD+o.x0+(o.d>=1?12:8);
   let s='';
   for(const y of [20,30,40,50,60])s+=`<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="#a89a8f" stroke-width="1.2"/>`;
   const groups={};
@@ -567,7 +575,7 @@ function notation(ev,scale=1.6){
   return `<svg viewBox="0 0 ${W} 72" overflow="visible" style="width:${Math.round(W*scale)}px;max-width:100%;height:auto;display:block">${s}</svg>`;
 }
 function blocks(w,u,cls=''){
-  let h=`<div class="blocks ${cls}" style="--u:${u}px;--bh:${Math.round(Math.min(u,95)*.72)}px">`,t=0;
+  let h=`<div class="blocks ${cls}" style="--u:${u}px;--bh:${Math.round(Math.min(u,95))}px">`,t=0;
   w.ev.forEach(e=>{
     h+='<div class="ev">';
     h+=evBlk(e,t,w,true);
@@ -592,7 +600,8 @@ function noteIcon(e){
 function evBlkIcon(e,t,w){
   if(e.d<1||e.d%1)return evBlk(e,t,w,true);
   const lb=k=>S.lbl?lab(e.syl[k]||''):(k===0?noteIcon(e):'');
-  if(e.d===1)return `<div class="blk${e.r?' rest':''}" data-t="${t}" style="--d:1;--c:${w.col}">${lb(0)}</div>`;
+  if(e.d===1&&!ST.holdView)return `<div class="blk${e.r?' rest':''}" data-t="${t}" style="--d:1;--c:${w.col}">${lb(0)}</div>`;
+  if(e.d===1)return `<div class="blk fillb${e.r?' rest':''}" data-st="${t}" data-d="1" style="--d:1;--c:${w.col}"><span class="fl"></span><span class="bt">${lb(0)}</span></div>`;
   let b='';for(let k=0;k<e.d;k++)b+=`<span class="bt" data-tt="${t+k}">${lb(k)}</span>`;
   return `<div class="blk long fillb${e.r?' rest':''}" data-st="${t}" data-d="${e.d}" style="--d:${e.d};--c:${w.col}"><span class="fl"></span>${b}</div>`;
 }
@@ -607,7 +616,7 @@ function tanRow(w,u,big){
   const e=w.ev[0],n=e.d,r=e.r;
   const tw={col:'var(--c1)',ev:[]};let h='';
   for(let k=0;k<n;k++)h+=blk({r},1,String(k+1),k,tw);h=`<div class="ev">${h}</div>`;
-  return `<div class="tanrow"><div class="blocks" style="--u:${u}px;--bh:${Math.round(Math.min(u,95)*.5)}px">${h}</div>
+  return `<div class="tanrow"><div class="blocks" style="--u:${u}px;--bh:${Math.round(Math.min(u,95))}px">${h}</div>
     <div class="tancap">${r?'うん':'たん'} が <b>${n}</b>こ で おなじ ながさ</div></div>`;
 }
 function unitFor(w,avail,max){return Math.floor(Math.min(max,(avail-12*w.ev.length)/len(w)));}
@@ -670,7 +679,7 @@ function renderList(){
   const ws=WORDS.filter(w=>w.g===LIST_G);
   $('#listGrid').innerHTML=ws.map(w=>`<button class="card" data-id="${w.id}">
       ${pic(w,'emj')}
-      ${notation(w.ev,1.05)}
+      ${notation(w.ev,1,true)}
       ${blocks(w,Math.min(34,Math.floor(120/len(w))),'nolabel')}
       <div class="w">${W(w)}</div></button>`).join('');
   $('#listGrid').querySelectorAll('.card').forEach(c=>c.onclick=()=>{ac();openDetail(c.dataset.id);});
@@ -902,6 +911,7 @@ function bnMakeTarget(){
     out=[];let rem=BN.cap,g=0;
     while(rem>1e-6&&g++<30){
       let c=pool.filter(w=>len(w)<=rem+1e-6);
+      if(out.length&&out[out.length-1].ev.every(e=>e.r)){const c2=c.filter(w=>!w.ev.every(e=>e.r));if(c2.length)c=c2;}
       if(easy&&BP.lv>1){const old=c.filter(w=>!nw.includes(w.id));if(old.length)c=old;}
       const wt=c.map(w=>nw.includes(w.id)&&!easy?3:1);
       let r=Math.random()*wt.reduce((a,b)=>a+b,0),pick=c[0];
@@ -946,7 +956,7 @@ function bnDrawTarget(){
 }
 function bnUnit(){return Math.floor(Math.min(92,(availW()-30)/BN.cap));}
 function bnDrawBox(){
-  const u=bnUnit(),bh=Math.round(Math.min(u,95)*.72);
+  const u=bnUnit(),bh=Math.round(Math.min(u,95));
   let ghosts='';
   if(BN.mode==='odai'&&BN.hint){let t=0,g='';BN.target.forEach(w=>{let inner='';
     w.ev.forEach(e=>{inner+=evBlk(e,t,w,false);t+=e.d;});
@@ -966,7 +976,7 @@ function bnDrawPal(){
   const rem=BN.cap-bnLen(),nw=BN.mode==='odai'?bnNewIds():[];
   $('#bnPal').innerHTML=bnUnlocked().map(w=>`<button class="bn-pc${len(w)>rem+1e-6?' no':''}" data-id="${w.id}">
       ${nw.includes(w.id)&&BP.lv>1?'<span class="newb">NEW</span>':''}
-      ${notation(w.ev,len(w)<1?1.2:.9)}${blocks(w,Math.min(22,Math.floor(80/len(w))),'nolabel')}<div class="w">${W(w)}</div></button>`).join('');
+      ${notation(w.ev,1,true)}${blocks(w,Math.min(22,Math.floor(80/len(w))),'nolabel')}<div class="w">${W(w)}</div></button>`).join('');
   $('#bnPal').querySelectorAll('.bn-pc').forEach(b=>b.onclick=()=>bnAdd(byId(b.dataset.id),b));
 }
 function bnShake(el){el.classList.remove('bad');void el.offsetWidth;el.classList.add('bad');}
@@ -1028,7 +1038,7 @@ function bnLevelUp(cleared){
     html=`<h3>🎉 レベル ${BP.lv} に アップ！</h3>
       <div class="stamp got" style="width:84px;margin:6px auto;font-size:40px">${BN_STAMP[cleared-1]}</div>
       <div class="hint">スタンプ ゲット！ あたらしい おかずが ふえたよ</div>
-      <div class="grid" style="grid-template-columns:repeat(${nw.length},1fr);margin:10px 0">${nw.map(w=>`<div class="card">${notation(w.ev,1)}${blocks(w,Math.min(22,Math.floor(80/len(w))),'nolabel')}<div class="w">${W(w)}</div></div>`).join('')}</div>`;
+      <div class="grid" style="grid-template-columns:repeat(${nw.length},1fr);margin:10px 0">${nw.map(w=>`<div class="card">${notation(w.ev,1,true)}${blocks(w,Math.min(22,Math.floor(80/len(w))),'nolabel')}<div class="w">${W(w)}</div></div>`).join('')}</div>`;
     P('levelup');
   }
   yay();
@@ -1074,6 +1084,7 @@ const COURSE=[
   {id:'b3',kind:'name',t:'なまえ：しぶおんぷ',nid:'q',need:3},
   {id:'b4',kind:'name',t:'なまえ：はちぶおんぷ',nid:'ee',need:3},
   {id:'b5',kind:'name',t:'なまえ：じゅうろくぶおんぷ',nid:'f1',need:3},
+  {id:'b7',kind:'name',t:'なまえ：ふてん にぶおんぷ',nid:'dh',need:3},
   {id:'b6',kind:'name',t:'なまえ：きゅうふ',nid:'qr',need:3,rest:1},
   {id:'c1',t:'タカ（はちぶおんぷ）',cap:4,pool:['q','qr','h','ee'],must:['ee'],need:3,say:'タカ は リス さん'},
   {id:'c2',t:'タウ・ウカ',cap:4,pool:['q','qr','h','ee','er','re'],must:['er','re'],need:3,say:'タウ と ウカ'},
@@ -1084,7 +1095,7 @@ const COURSE=[
   {id:'e1',t:'れんぷ（おまけ）',cap:4,pool:['q','qr','h','t5','t6','t7'],must:['t5','t6','t7'],need:2,say:'れんぷ'},
 ];
 const NAMEQ=[{id:'w',nm:'ぜんおんぷ',ev:[N(4,'')]},{id:'h',nm:'にぶおんぷ',ev:[N(2,'')]},{id:'q',nm:'しぶおんぷ',ev:[N(1,'')]},
-  {id:'ee',nm:'はちぶおんぷ',ev:[N(.5,'')]},{id:'f1',nm:'じゅうろくぶおんぷ',ev:[N(.25,'')]}];
+  {id:'ee',nm:'はちぶおんぷ',ev:[N(.5,'')]},{id:'f1',nm:'じゅうろくぶおんぷ',ev:[N(.25,'')]},{id:'dh',nm:'ふてん にぶおんぷ',ev:[N(3,'')]}];
 const NAMEQR=[{id:'wr',nm:'ぜんきゅうふ',ev:[N(4,'',1)]},{id:'hr',nm:'にぶきゅうふ',ev:[N(2,'',1)]},{id:'qr',nm:'しぶきゅうふ',ev:[N(1,'',1)]},{id:'er8',nm:'はちぶきゅうふ',ev:[N(.5,'',1)]}];
 const CS=Object.assign({cur:0,passes:{},stamps:{}},store.get('rz_course',{}));
 const csSave=()=>store.set('rz_course',CS);
@@ -1119,10 +1130,13 @@ function genPattern(s){
   for(let tries=0;tries<60;tries++){
     let out=[];
     for(let m=0;m<s.cap/4;m++){let rem=4,g=0;
-      while(rem>1e-6&&g++<20){const c=pool.filter(w=>len(w)<=rem+1e-6);
+      let lastR=false;
+      while(rem>1e-6&&g++<20){let c=pool.filter(w=>len(w)<=rem+1e-6);const isR=w=>w.ev.every(e=>e.r);
+        if(lastR){const c2=c.filter(w=>!isR(w));if(c2.length)c=c2;}
         const wt=c.map(w=>(s.must&&s.must.includes(w.id))?2.2:w.ev.every(e=>e.r)?.7:1);
         let r=Math.random()*wt.reduce((a,b)=>a+b,0),p=c[0];for(let i=0;i<c.length;i++){r-=wt[i];if(r<=0){p=c[i];break;}}
-        out.push(p);rem-=len(p);}}
+        out.push(p);rem-=len(p);lastR=isR(p);}}
+    if(out.some((w,i)=>i&&w.ev.every(e=>e.r)&&out[i-1].ev.every(e=>e.r)&&!measStart(out,i)))continue;
     const notes=out.filter(w=>w.ev.some(e=>!e.r)).length;
     if(notes<Math.max(1,out.length/3))continue;
     if(s.must&&!out.some(w=>s.must.includes(w.id)))continue;
@@ -1142,7 +1156,7 @@ function stepNeedDots(s){const p=CS.passes[s.id]||0,n=s.need;let d='';for(let k=
 function seqHTML(items,cap){
   const perRow=cap>4?2:1,beatsRow=Math.min(cap,4)*perRow;
   const u=Math.floor(Math.min(cap<4?110:92,(availW()-24-perRow*20)/beatsRow));
-  const bh=Math.round(Math.min(u,95)*.72);
+  const bh=Math.round(Math.min(u,110));
   const meas=[];let cur=[],acc=0;
   items.forEach(w=>{cur.push(w);acc+=len(w);if(acc>=Math.min(cap,4)-1e-6){meas.push(cur);cur=[];acc=0;}});
   if(cur.length)meas.push(cur);
@@ -1165,7 +1179,7 @@ function seqHTML(items,cap){
 }
 function namesOf(items){const m=new Map();items.forEach(w=>{if(w.nm&&w.g<=3)m.set(w.nm.replace(' 2つ',''),1);});return [...m.keys()].join('・');}
 function renderStep(){
-  const s=COURSE[ST.i];
+  const s=COURSE[ST.i];ST.holdView=!!(s.hold&&!S.clap);
   $('#stepBox').innerHTML=`
     <div class="st-head"><span class="st-no">${ST.i+1}</span><span class="st-t">${s.t}</span><span class="pd">${stepNeedDots(s)}</span></div>
     <div id="stSeq">${seqHTML(ST.items,s.cap)}</div>
@@ -1329,7 +1343,8 @@ function stJudge(){
       if(Math.abs(d)>good)return d<0?'early':'late';
       if(ST.hold&&ST.ups[bi]!=null){const rel=x+durs[i]*B,u=ST.ups[bi];
         if(u>rel+.35*B)return 'long';
-        if(durs[i]>=2&&u<rel-.45*B)return 'short';}
+        if(durs[i]>=2&&u<rel-.45*B)return 'short';
+        if(durs[i]<2&&(u-ST.taps[bi])<durs[i]*B*2/3-.03)return 'short';}
       return 'ok';}
     return 'miss';});
   const extra=taps.length-used.size;
@@ -1391,12 +1406,36 @@ async function micStart(){
 }
 
 /* ---------- name steps ---------- */
+function measStart(out,i){let t=0;for(let k=0;k<i;k++)t+=len(out[k]);return Math.abs(t/4-Math.round(t/4))<1e-6;}
+const SHAPES={
+  w:{to:[N(4,'')],line:'しろい まる。これが ぜんおんぷ'},
+  h:{from:[N(4,'')],to:[N(2,'')],line:'しろい まるに ぼうを つけると にぶおんぷ'},
+  q:{from:[N(2,'')],to:[N(1,'')],line:'にぶおんぷに いろを ぬると しぶおんぷ'},
+  ee:{from:[N(1,'')],to:[N(.5,'')],line:'はたが ひらひら はちぶおんぷ',ex:[N(.5,''),N(.5,'')],exline:'たくさん あつまると 手を つないで かたちが かわるよ'},
+  f1:{from:[N(.5,'')],to:[N(.25,'')],line:'はたが もう ひとつで じゅうろくぶおんぷ',ex:[N(.25,''),N(.25,''),N(.25,''),N(.25,'')],exline:'じゅうろくぶおんぷも 手を つなぐよ'},
+  dh:{from:[N(2,'')],to:[N(3,'')],line:'まるの よこに ホクロが ついて ふてん にぶおんぷ'}
+};
+function showShape(nid){
+  const sh=SHAPES[nid];if(!sh)return Promise.resolve();
+  return new Promise(async res=>{
+    let closed=false;const done=()=>{if(closed)return;closed=true;closeModal();res();};
+    openModal(`<h3>かたちの ひみつ</h3>
+      <div class="shp">${sh.from?`<div class="shp-n">${notation(sh.from,1,true)}</div><div class="shp-a">→</div>`:''}<div class="shp-n big">${notation(sh.to,1,true)}</div></div>
+      <div class="shp-l">${sh.line}</div>
+      ${sh.ex?`<div class="shp ex" id="shpEx" style="visibility:hidden"><div class="shp-n">${notation(sh.ex,1,true)}</div></div><div class="shp-l" id="shpExL" style="visibility:hidden">${sh.exline}</div>`:''}
+      <div class="btns" style="margin-top:12px"><button class="bigbtn" id="shpGo" style="background:var(--c3)">つぎへ ▶</button></div>`);
+    $('#shpGo').onclick=done;
+    await say(sh.line.replace('。','、'));if(closed)return;
+    if(sh.ex){await wait(500);if(closed)return;$('#shpEx').style.visibility='visible';$('#shpExL').style.visibility='visible';await say(sh.exline);if(closed)return;}
+    await wait(1500);done();
+  });
+}
 function nameStepStart(){
   const s=COURSE[ST.i];ST.qn=0;
   $('#stepBox').innerHTML=`<div class="st-head"><span class="st-no">${ST.i+1}</span><span class="st-t">${s.t}</span><span class="pd">${stepNeedDots(s)}</span></div>
     <div class="st-msg">${s.rest?'きゅうふの なまえも、わける かずで きまるよ':'なまえは「いくつに わけたか」で きまるよ'}</div>
     <div class="holdwrap"><button class="hold drum" id="nmGo">▶<br><small>みてみよう</small></button></div>`;
-  $('#nmGo').onclick=()=>{ac();openNameLesson(byId(s.nid));
+  $('#nmGo').onclick=async()=>{ac();await showShape(s.nid);if(VIEW!=='step')return;openNameLesson(byId(s.nid));
     const iv=setInterval(()=>{if(!$('#modal').classList.contains('on')){clearInterval(iv);if(VIEW==='step')nameQuiz();}},400);};
   setTimeout(()=>{const g=$('#nmGo');if(g&&VIEW==='step')g.click();},700);
 }
@@ -1409,7 +1448,7 @@ function nameQuiz(){
   $('#stepBox').innerHTML=`<div class="st-head"><span class="st-no">${ST.i+1}</span><span class="st-t">${s.t}</span><span class="pd">${stepNeedDots(s)}</span></div>
     <div class="qprompt">「${ans.nm}」は どれ？</div>
     <div class="btns" style="margin-bottom:10px"><button class="bigbtn" id="nqHear">🔊 きく</button></div>
-    <div class="qchoices">${ch.map(x=>`<button class="qchoice" data-id="${x.id}">${notation(x.ev,1.6)}</button>`).join('')}</div>
+    <div class="qchoices">${ch.map(x=>`<button class="qchoice" data-id="${x.id}">${notation(x.ev,1,true)}</button>`).join('')}</div>
     <div class="btns" style="margin-top:12px"><button class="tog" id="nqLesson">📛 なまえの ひみつ を もういちど</button></div>`;
   const sayIt=()=>speak('na-'+(byId(ans.id)||{nk:''}).nk,ans.nm);
   $('#nqHear').onclick=sayIt;sayIt();
@@ -1465,7 +1504,7 @@ function pickChoices(ans,k){
 function progHTML(){let h='<div class="qprog">';for(let i=0;i<QZ.total;i++)h+=`<i class="${i<QZ.i?'done':i===QZ.i?'now':''}"></i>`;return h+'</div>';}
 function choiceCard(w,mode){
   const inner=mode==='word'?`<div class="w">${W(w)}</div>`:
-    `${QZ.show?pic(w,'qemj','font-size:28px'):''}${notation(w.ev,len(w)<1?1.6:1.15)}${QZ.show?blocks(w,Math.min(34,Math.floor(130/len(w))),'nolabel'):''}`;
+    `${QZ.show?pic(w,'qemj','font-size:28px'):''}${notation(w.ev,1,true)}${QZ.show?blocks(w,Math.min(34,Math.floor(130/len(w))),'nolabel'):''}`;
   return `<button class="qchoice" data-id="${w.id}">${inner}</button>`;
 }
 async function nextQ(){
