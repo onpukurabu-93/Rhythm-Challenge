@@ -174,6 +174,26 @@ h2{font-size:22px;margin:6px 0 12px}
 .bn-pc.no{opacity:.35}
 .bn-pc.bad,.bento.bad{animation:shake .4s}
 .bento.good{border-color:var(--c3);box-shadow:0 5px 0 #2f7d4c}
+.modal{position:fixed;inset:0;background:rgba(40,30,25,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:14px}
+.modal.on{display:flex}
+.mbox{background:var(--bg);border-radius:26px;padding:16px 14px;max-width:440px;width:100%;text-align:center;max-height:92vh;overflow:auto}
+.mbox h3{font-size:22px;margin:2px 0 10px}
+.nl-wrap{margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:3px}
+.nl-row{display:flex;gap:3px;width:100%;justify-content:flex-start;min-height:46px}
+.nl-p{height:44px;border-radius:9px;background:var(--c);border:2px solid rgba(0,0,0,.15);border-bottom-width:5px;color:#fff;font-weight:800;font-size:15px;
+  display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-shadow:0 1px 2px rgba(0,0,0,.25);flex:none}
+.nl-p.r{background:#fff;border:3px dashed var(--c);color:var(--c);text-shadow:none}
+.nl-row.top .nl-p{opacity:0;transform:translateY(-40px);transition:opacity .2s,transform .25s cubic-bezier(.3,1.6,.6,1)}
+.nl-row.top .nl-p.in{opacity:1;transform:none}
+.nl-p.base{height:50px;font-size:17px}
+.nl-cap{display:flex;gap:10px;justify-content:center;height:46px}
+.nl-cap svg{height:46px !important;width:auto !important}
+.nl-count{height:46px;font-size:40px;font-weight:800;color:var(--c4)}
+.nl-sent{min-height:90px;font-size:18px;font-weight:800}
+.nl-big{font-size:30px;margin-top:4px}
+.nl-big small{display:block;font-size:16px;color:var(--sub)}
+.nl-num{font-size:46px;color:var(--c1)}
+.nl-sub{font-size:14px;color:var(--sub);margin-top:6px}
 </style>
 </head>
 <body>
@@ -255,6 +275,7 @@ h2{font-size:22px;margin:6px 0 12px}
 <section class="view" id="v-quizPlay"><div id="qBox"></div></section>
 
 <div id="credit" style="display:none;text-align:center;color:var(--sub);font-size:12px;padding:10px 0 24px">こえ：VOICEVOX:ずんだもん</div>
+<div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
 <div class="ov" id="ov"></div>
 
 <script>
@@ -535,7 +556,7 @@ function openDetail(id){
   const run=()=>doPlayDetail(w);
   $('#dPlay').onclick=run;$('#dBlocks').onclick=run;
   $('#dSay').onclick=()=>speak('koe-'+w.k,w.w);
-  $('#dName').onclick=()=>speak('na-'+w.nk,w.nm.replace(' 2つ',' ふたつ'));
+  $('#dName').onclick=()=>{ac();openNameLesson(w);};
   DETAIL_NAV={prev:i>0?ws[i-1].id:null,next:i<ws.length-1?ws[i+1].id:null};
   $('#dPrev').onclick=()=>DETAIL_NAV.prev&&openDetail(DETAIL_NAV.prev);
   $('#dNext').onclick=()=>DETAIL_NAV.next&&openDetail(DETAIL_NAV.next);
@@ -647,6 +668,70 @@ function nbFinish(now,auto){
   if(pressNote)sub=pressNote+'　'+sub;
   $('#nbMsg').innerHTML=`${t}<small>${sub}</small>`;
   if(ok){yay();addStar(NB.hint?1:2);P('pittari');}else{P(err<0?'mousukoshi':'nagasugi');}
+}
+
+/* ===================== なまえの ひみつ ===================== */
+const NAMEINFO={
+  q:{base:'w',div:4,num:'4'},h:{base:'w',div:2,num:'2'},w:{base:'w',div:1},dh:{base:'dh',parts:['h','q']},
+  qr:{base:'wr',div:4,num:'4'},hr:{base:'wr',div:2,num:'2'},wr:{base:'wr',div:1},dhr:{base:'dhr',parts:['hr','qr']},
+  ee:{base:'w',div:8,num:'8',unit:'はちぶおんぷ'},er:{base:'w',div:8,num:'8',unit:'はちぶおんぷ'},re:{base:'wr',div:8,num:'8',unit:'はちぶきゅうふ',rest:1},
+  t5:{base:'q',div:5,tp:1},t6:{base:'q',div:6,tp:1},t7:{base:'q',div:7,tp:1}
+};
+['f1','f2','f3','f4','f5','f6','f7','f8','f9'].forEach(id=>NAMEINFO[id]={base:'w',div:16,num:'16',unit:'じゅうろくぶおんぷ'});
+const PCOL={1:'var(--c1)',2:'var(--c2)',3:'var(--c3)',4:'var(--c4)'};
+let NL_TIMERS=[];
+function closeModal(){NL_TIMERS.forEach(clearTimeout);NL_TIMERS=[];$('#modal').classList.remove('on');}
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+function openNameLesson(w){
+  const info=NAMEINFO[w.id];if(!info){speak('na-'+w.nk,w.nm);return;}
+  const base=byId(info.base),bl=len(base);
+  const W=Math.min(380,window.innerWidth-70);
+  const isRest=base.ev[0].r;
+  const unitName=info.unit||w.nm;
+  // pieces
+  let pieces=[];
+  if(info.parts)pieces=info.parts.map(id=>({len:len(byId(id)),col:byId(id).col,r:byId(id).ev[0].r,lab:byId(id).w,nm:byId(id).nm}));
+  else{const L=bl/info.div;const col=info.tp?'var(--c16)':info.div===16?'var(--c16)':info.div===8?'var(--c8)':PCOL[L]||'var(--c1)';
+    for(let i=0;i<info.div;i++)pieces.push({len:L,col,r:isRest||info.rest,lab:info.div<=4?(isRest?'うん':'たん').repeat(1):'',nm:unitName});}
+  const px=l=>W*l/bl;
+  const pieceHTML=pieces.map((p,i)=>`<div class="nl-p${p.r?' r':''}" style="width:${px(p.len)-3}px;--c:${p.col}" data-i="${i}">${px(p.len)>44&&!info.tp?(info.parts?p.lab:({1:p.r?'うん':'たん',2:p.r?'うんにー':'たんにー'})[p.len]||''):''}</div>`).join('');
+  const baseLab=info.tp?'たん（1はく）':base.w;
+  let sent,sub='',bigName;
+  if(info.parts){sent=`${pieces.map(p=>p.nm).join(' と ')} を あわせた ながさ`;bigName=w.nm;sub='てん（・）は「はんぶんを たす」しるし';}
+  else if(info.div===1){sent='わけない、まるごと ぜんぶの ながさ';bigName=w.nm;}
+  else if(info.tp){sent=`1はくを ${info.div}つに わけたから`;bigName=w.nm;}
+  else{sent=`${base.nm} を ${info.div}つに わけたから`;bigName=`<b class="nl-num">${info.num}</b>ぶ${unitName.endsWith('きゅうふ')?'きゅうふ':'おんぷ'}<small>（${unitName}）</small>`;}
+  $('#mbox').innerHTML=`<h3>なまえの ひみつ</h3>
+    <div class="nl-wrap" style="width:${W}px">
+      <div class="nl-cap">${notation(byId(info.parts?info.parts[0]:w.id).ev.slice(0,1).length&&!info.parts?unitEv(w,info):byId(info.parts[0]).ev,1)}${info.parts?notation(byId(info.parts[1]).ev,1):''}</div>
+      <div class="nl-row top">${pieceHTML}</div>
+      <div class="nl-row"><div class="nl-p base${isRest?' r':''}" style="width:${W-3}px;--c:${base.col}">${baseLab}</div></div>
+      <div class="nl-cap">${notation(base.ev,1)}</div>
+    </div>
+    <div class="nl-count" id="nlCount"></div>
+    <div class="nl-sent" id="nlSent"></div>
+    <div class="btns" style="margin-top:12px"><button class="bigbtn" id="nlAgain" style="background:var(--c3)">🔁 もういちど</button><button class="bigbtn gray" id="nlClose">とじる</button></div>`;
+  $('#modal').classList.add('on');
+  $('#nlClose').onclick=closeModal;$('#nlAgain').onclick=()=>openNameLesson(w);
+  const els=[...$('#mbox').querySelectorAll('.nl-row.top .nl-p')];
+  const step=Math.min(650,Math.max(150,2600/els.length));
+  NL_TIMERS.forEach(clearTimeout);NL_TIMERS=[];
+  NL_TIMERS.push(setTimeout(()=>{if(S.voice)speak('na-'+base.nk,info.tp?'たん':base.nm);},150));
+  els.forEach((e,i)=>NL_TIMERS.push(setTimeout(()=>{e.classList.add('in');
+    if(!info.parts&&els.length>1){const c=$('#nlCount');c.textContent=(i+1);c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');}
+    try{tone(ac().currentTime,.09,null,e.classList.contains('r')?392:659,.18);}catch(_){}},900+i*step)));
+  NL_TIMERS.push(setTimeout(()=>{
+    $('#nlCount').textContent='';
+    $('#nlSent').innerHTML=`<div>${sent}</div><div class="nl-big">${bigName}</div>${sub?`<div class="nl-sub">${sub}</div>`:''}`;
+    const say1=`${sent.replace(/\s+/g,' ')}、${w.nm.replace(' 2つ','')}`;
+    speak('hm-'+w.k,say1);
+  },900+els.length*step+300));
+}
+function unitEv(w,info){
+  if(info.tp)return w.ev;
+  if(info.div===16)return [N(.25,'')];
+  if(info.div===8)return [N(.5,'',info.rest)];
+  return w.ev.slice(0,1);
 }
 
 /* ===================== bento (1小節パズル) ===================== */
