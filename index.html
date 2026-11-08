@@ -69,9 +69,17 @@ h2{font-size:22px;margin:6px 0 12px}
   font-size:calc(var(--u)*.27*min(1,var(--d)*1.7));text-shadow:0 1px 2px rgba(0,0,0,.25);
   transition:opacity .12s,transform .12s;white-space:nowrap;overflow:hidden}
 .blk.rest{background:#fff;border:3px dashed var(--c);color:var(--c);text-shadow:none}
-.nolabel .blk{font-size:0}
-.playing .blk{opacity:.28}
-.playing .blk.on{opacity:1;transform:translateY(calc(var(--u)*-.1))}
+.nolabel .blk,.nolabel .blk.long{font-size:0}
+.playing .blk[data-t]{opacity:.28}
+.playing .blk[data-t].on{opacity:1;transform:translateY(calc(var(--u)*-.1))}
+.blk.long{background:transparent;padding:0;align-items:stretch;justify-content:stretch;font-size:calc(var(--u)*.27);border-color:rgba(0,0,0,.18)}
+.blk.long .bt{flex:1;display:flex;align-items:center;justify-content:center;background:var(--c);transition:opacity .12s}
+.blk.long .bt+.bt{border-left:2px solid rgba(255,255,255,.4)}
+.blk.long.rest{background:#fff}
+.blk.long.rest .bt{background:#fff}
+.blk.long.rest .bt+.bt{border-left:2px dashed color-mix(in srgb,var(--c) 35%,transparent)}
+.playing .blk.long .bt{opacity:.28}
+.playing .blk.long .bt.on{opacity:1}
 
 /* detail */
 .detail{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
@@ -84,6 +92,9 @@ h2{font-size:22px;margin:6px 0 12px}
 .detail .word{font-size:32px;font-weight:800;letter-spacing:.04em}
 .pager{display:flex;align-items:center;gap:14px;margin-top:4px}.arw{border:none;background:#fff;border-radius:14px;width:52px;height:44px;font-size:18px;box-shadow:0 3px 0 var(--line)}
 .dots{display:flex;gap:7px;justify-content:center}.dots i{width:10px;height:10px;border-radius:50%;background:#e2d5c2}.dots i.on{background:var(--ink)}
+.tanrow{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:6px}
+.tancap{font-size:14px;font-weight:800;color:var(--sub)}.tancap b{font-size:20px;color:var(--c1)}
+.qnum .w{font-size:44px}.qnum{min-height:90px}
 .sylNow{height:56px;font-size:46px;font-weight:800;color:var(--c4)}
 .pop{animation:pop .25s}
 @keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
@@ -231,6 +242,7 @@ h2{font-size:22px;margin:6px 0 12px}
   <div class="settings">
     <div class="row"><span class="lab">はやさ</span><div class="seg" id="setSpeed"><button data-v="72">ふつう</button><button data-v="56">ゆっくり</button></div></div>
     <div class="row"><span class="lab">こえ</span><div class="seg" id="setVoice"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
+    <div class="row"><span class="lab">かぞえかた</span><div class="seg" id="setNum"><button data-v="0">にー さん しー</button><button data-v="1">2 3 4</button></div></div>
     <div class="row"><span class="lab">カチカチ</span><div class="seg" id="setClick"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
     <div class="row" style="justify-content:flex-end"><button class="tog" id="resetBtn" style="font-size:13px">せんせいよう：おべんとうの きろくを けす</button></div>
   </div>
@@ -282,6 +294,7 @@ h2{font-size:22px;margin:6px 0 12px}
   <div class="qtypes" id="qTypes">
     <button class="qtype on" data-t="listen"><span class="em">👂</span><span>きいて えらぼう<small>おとを きいて、おんぷを えらぶ（じが よめなくても できる）</small></span></button>
     <button class="qtype" data-t="longer"><span class="em">📏</span><span>どっちが ながい？<small>2つの おとを くらべる</small></span></button>
+    <button class="qtype" data-t="count"><span class="em">🔢</span><span>たん なんこ？<small>ながい おんぷは たん いくつぶん？ すうじで こたえる</small></span></button>
     <button class="qtype" data-t="word"><span class="em">🔤</span><span>ことばを えらぼう<small>おんぷを みて、ことばを えらぶ</small></span></button>
   </div>
   <div id="qOpts"></div>
@@ -326,6 +339,9 @@ const WORDS=[
 ];
 const GROUPS=[{g:1,name:'のばす おと'},{g:2,name:'おやすみ'},{g:3,name:'はんぶん'},{g:4,name:'たべもの'},{g:5,name:'れんぷ'}];
 const byId=id=>WORDS.find(w=>w.id===id);
+const NUMMAP={'にー':'2','さん':'3','しー':'4'};
+const lab=x=>S.num&&NUMMAP[x]?NUMMAP[x]:x;
+const W=w=>S.num?w.w.replace(/にー/g,'2').replace(/さん/g,'3').replace(/しー/g,'4'):w.w;
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
@@ -333,7 +349,7 @@ const $=s=>document.querySelector(s);
 /* ===================== storage ===================== */
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const S=Object.assign({bpm:72,voice:1,click:1},store.get('rz_set',{}));
+const S=Object.assign({bpm:72,voice:1,click:1,num:0},store.get('rz_set',{}));
 let STARS=store.get('rz_stars',0);
 function addStar(n=1){STARS+=n;store.set('rz_stars',STARS);$('#stars').textContent='⭐ '+STARS;}
 $('#stars').textContent='⭐ '+STARS;
@@ -378,7 +394,7 @@ function buzz(){const a=ac();const t=a.currentTime;tone(t,.18,null,220,.22);tone
 /* own files (images / voices) on GitHub */
 const AV=new Set();const CLIPS={};let CLIP_NOW=null;
 const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて いうかな',
-  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
+  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',nanko:'たん なんこ ぶん',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
 function clipName(key){return AV.has(key+'.mp3')?key+'.mp3':AV.has(key+'.wav')?key+'.wav':AV.has(key+'.m4a')?key+'.m4a':null;}
 async function probeFiles(){
   if(!/^https?:/.test(location.protocol))return;
@@ -474,13 +490,25 @@ function blocks(w,u,cls=''){
   let h=`<div class="blocks ${cls}" style="--u:${u}px;--bh:${Math.round(Math.min(u,95)*.72)}px">`,t=0;
   w.ev.forEach(e=>{
     h+='<div class="ev">';
-    if(e.d>=1){for(let k=0;k<e.d;k++)h+=blk(e,1,e.syl[k]||'',t+k,w);}
-    else h+=blk(e,e.d,e.syl[0],t,w);
+    h+=evBlk(e,t,w,true);
     h+='</div>';t+=e.d;
   });
   return h+'</div>';
 }
+function evBlk(e,t,w,labels){
+  if(e.d<1)return blk(e,e.d,labels?lab(e.syl[0]):'',t,w);
+  let b='';for(let k=0;k<e.d;k++)b+=`<span class="bt" data-t="${t+k}">${labels?lab(e.syl[k]||''):''}</span>`;
+  return `<div class="blk long${e.r?' rest':''}" style="--d:${e.d};--c:${w.col}">${b}</div>`;
+}
 function blk(e,d,label,t,w){return `<div class="blk${e.r?' rest':''}" data-t="${t}" style="--d:${d};--c:${w.col}">${label}</div>`;}
+function tanRow(w,u,big){
+  if(w.ev.length!==1||w.ev[0].d<2)return '';
+  const e=w.ev[0],n=e.d,r=e.r;
+  const tw={col:'var(--c1)',ev:[]};let h='';
+  for(let k=0;k<n;k++)h+=blk({r},1,String(k+1),k,tw);h=`<div class="ev">${h}</div>`;
+  return `<div class="tanrow"><div class="blocks" style="--u:${u}px;--bh:${Math.round(Math.min(u,95)*.5)}px">${h}</div>
+    <div class="tancap">${r?'うん':'たん'} が <b>${n}</b>こ で おなじ ながさ</div></div>`;
+}
 function unitFor(w,avail,max){return Math.floor(Math.min(max,(avail-12*w.ev.length)/len(w)));}
 const availW=()=>Math.min(window.innerWidth-40,740);
 
@@ -496,8 +524,8 @@ function playWord(w,{el=null,clicks=S.click,onSyl=null}={}){
   if(clicks)for(let b=0;b<Math.ceil(t-1e-6);b++)click(t0+b*B,b===0,sess);
   const off=(t0-a.currentTime)*1000;
   if(el){
-    el.classList.add('playing');el.querySelectorAll('.blk').forEach(x=>x.classList.remove('on'));
-    el.querySelectorAll('.blk').forEach(x=>{const tt=+x.dataset.t;
+    el.classList.add('playing');el.querySelectorAll('[data-t]').forEach(x=>x.classList.remove('on'));
+    el.querySelectorAll('[data-t]').forEach(x=>{const tt=+x.dataset.t;
       timers.push(setTimeout(()=>{x.classList.add('on');onSyl&&onSyl(x.textContent,x);},off+tt*B*1000));});
     timers.push(setTimeout(()=>el.classList.remove('playing'),off+t*B*1000+700));
   }
@@ -528,7 +556,7 @@ function bindSeg(id,key){
   const el=$(id);const sync=()=>el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===+S[key]));
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{S[key]=+b.dataset.v;store.set('rz_set',S);sync();});sync();
 }
-bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');
+bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');bindSeg('#setNum','num');
 
 /* ===================== list & detail ===================== */
 let LIST_G=1;
@@ -540,7 +568,7 @@ function renderList(){
       ${pic(w,'emj')}
       ${notation(w.ev,1.05)}
       ${blocks(w,Math.min(34,Math.floor(120/len(w))),'nolabel')}
-      <div class="w">${w.w}</div></button>`).join('');
+      <div class="w">${W(w)}</div></button>`).join('');
   $('#listGrid').querySelectorAll('.card').forEach(c=>c.onclick=()=>{ac();openDetail(c.dataset.id);});
 }
 let DETAIL_ID=null,DETAIL_NAV={};
@@ -559,9 +587,9 @@ function openDetail(id){
   $('#detailBox').innerHTML=`
     <div class="notebox">${notation(w.ev,w.g===4?3.2:(len(w)>=3?1.9:2.4))}</div>
     ${pic(w,'emj')}
-    <div class="word">${w.w}</div>
+    <div class="word">${W(w)}</div>
     <div style="font-size:18px;font-weight:800;color:var(--sub);background:#fff;border-radius:999px;padding:4px 14px">${w.nm}</div>
-    <div id="dBlocks">${blocks(w,u)}</div>
+    <div id="dBlocks">${tanRow(w,u)}${blocks(w,u)}</div>
     <div class="btns dbtns" style="margin-top:4px">
       <button class="bigbtn" id="dPlay" style="background:var(--c3)">▶ きく</button>
       <button class="bigbtn" id="dSay">🗣 ことば</button>
@@ -580,19 +608,19 @@ function openDetail(id){
   (async()=>{await speak('koe-'+w.k,w.w);if(DETAIL_ID===id&&VIEW==='detail')run();})();
 }
 function doPlayDetail(w){
-  playWord(w,{el:$('#dBlocks .blocks')});
+  playWord(w,{el:$('#dBlocks')});
 }
 
 /* ===================== nobashi (hold game) ===================== */
 const NB={id:'w',hint:true,countIn:false,state:'idle',raf:0,sess:null,stopTone:null,timers:[]};
 const NB_IDS=['q','h','dh','w'];
 function renderNobashi(){
-  $('#nbChips').innerHTML=NB_IDS.map(id=>{const w=byId(id);return `<button class="chip${id===NB.id?' on':''}" data-id="${id}">${w.w}</button>`;}).join('');
+  $('#nbChips').innerHTML=NB_IDS.map(id=>{const w=byId(id);return `<button class="chip${id===NB.id?' on':''}" data-id="${id}">${W(w)}</button>`;}).join('');
   $('#nbChips').querySelectorAll('.chip').forEach(c=>c.onclick=()=>{NB.id=c.dataset.id;nbReset(true);renderNobashi();});
   const w=byId(NB.id),n=len(w);
   const u=Math.floor(Math.min(92,(availW())/(n+1)));
   let slots='';
-  for(let k=0;k<n+1;k++){const lab=k<n?w.ev[0].syl[k]:'';slots+=`<div class="slot ${k<n?'tg':'extra'}" style="left:${k*u}px" data-k="${k}">${lab||'・'}</div>`;}
+  for(let k=0;k<n+1;k++){const lb=k<n?lab(w.ev[0].syl[k]):'';slots+=`<div class="slot ${k<n?'tg':'extra'}" style="left:${k*u}px" data-k="${k}">${lb||'・'}</div>`;}
   $('#nbTop').innerHTML=`${notation(w.ev,n>=3?1.5:1.9)}
     <div class="track${NB.hint?' hint':''}" id="nbTrack" style="--u:${u}px;--c:${w.col};width:${(n+1)*u}px"><div class="fill" id="nbFill"></div>${slots}</div>`;
   $('#togHint').classList.toggle('on',NB.hint);$('#togCount').classList.toggle('on',NB.countIn);
@@ -601,7 +629,7 @@ function renderNobashi(){
 function nbIdleMsg(){
   const w=byId(NB.id);
   $('#nbMsg').innerHTML=NB.countIn?`スタートで かぞえるよ<small>「はい」の つぎで ぎゅっと おそう</small>`
-    :`ぎゅっと おして のばそう<small>カチ カチ に あわせて「${w.w}」</small>`;
+    :`ぎゅっと おして のばそう<small>カチ カチ に あわせて「${W(w)}」</small>`;
   const b=$('#holdBtn');b.className='hold';b.textContent=NB.countIn?'スタート':'ぎゅっ';
 }
 function nbReset(silent){
@@ -680,7 +708,7 @@ function nbFinish(now,auto){
   const btn=$('#holdBtn');btn.className='hold';btn.textContent=NB.countIn?'もういちど':'ぎゅっ';
   let t,sub,ok=false;
   if(auto||err>tol){t='ちょっと ながすぎたよ';sub=`「${w.ev[0].syl[n-1]}」の つぎで はなそう`;}
-  else if(err<-tol){t='もうすこし ながーく！';sub=`「${w.w}」まで のばそう`;}
+  else if(err<-tol){t='もうすこし ながーく！';sub=`「${W(w)}」まで のばそう`;}
   else{t='ぴったり！ 🌟';sub=NB.hint?'つぎは ヒントなしで やってみよう':'すごい！ ヒントなしで できたね';ok=true;}
   if(pressNote)sub=pressNote+'　'+sub;
   $('#nbMsg').innerHTML=`${t}<small>${sub}</small>`;
@@ -817,12 +845,12 @@ function bnDrawBox(){
   const u=bnUnit(),bh=Math.round(Math.min(u,95)*.72);
   let ghosts='';
   if(BN.mode==='odai'&&BN.hint){let t=0,g='';BN.target.forEach(w=>{let inner='';
-    w.ev.forEach(e=>{if(e.d>=1){for(let k=0;k<e.d;k++)inner+=blk(e,1,'',t+k,w);}else inner+=blk(e,e.d,'',t,w);t+=e.d;});
+    w.ev.forEach(e=>{inner+=evBlk(e,t,w,false);t+=e.d;});
     g+=`<div class="pc" style="margin-right:2px">${inner}</div>`;});
     ghosts=`<div class="ghost">${g}</div>`;}
   let pcs='',t=0;
   BN.items.forEach((w,i)=>{let inner='',tt=t;
-    w.ev.forEach(e=>{if(e.d>=1){for(let k=0;k<e.d;k++)inner+=blk(e,1,e.syl[k]||'',tt+k,w);}else inner+=blk(e,e.d,e.syl[0],tt,w);tt+=e.d;});
+    w.ev.forEach(e=>{inner+=evBlk(e,tt,w,true);tt+=e.d;});
     pcs+=`<div class="pc" data-i="${i}" style="margin-right:2px">${inner}</div>`;t+=len(w);});
   let cells='';for(let k=0;k<BN.cap;k++)cells+='<div class="cell"></div>';
   const box=$('#bnBox');box.className='bento'+(BN.done&&BN.mode==='odai'?' good':'');box.style.width=(BN.cap*u+26)+'px';
@@ -834,7 +862,7 @@ function bnDrawPal(){
   const rem=BN.cap-bnLen(),nw=BN.mode==='odai'?bnNewIds():[];
   $('#bnPal').innerHTML=bnUnlocked().map(w=>`<button class="bn-pc${len(w)>rem+1e-6?' no':''}" data-id="${w.id}">
       ${nw.includes(w.id)&&BP.lv>1?'<span class="newb">NEW</span>':''}
-      ${notation(w.ev,len(w)<1?1.2:.9)}${blocks(w,Math.min(22,Math.floor(80/len(w))),'nolabel')}<div class="w">${w.w}</div></button>`).join('');
+      ${notation(w.ev,len(w)<1?1.2:.9)}${blocks(w,Math.min(22,Math.floor(80/len(w))),'nolabel')}<div class="w">${W(w)}</div></button>`).join('');
   $('#bnPal').querySelectorAll('.bn-pc').forEach(b=>b.onclick=()=>bnAdd(byId(b.dataset.id),b));
 }
 function bnShake(el){el.classList.remove('bad');void el.offsetWidth;el.classList.add('bad');}
@@ -896,7 +924,7 @@ function bnLevelUp(cleared){
     html=`<h3>🎉 レベル ${BP.lv} に アップ！</h3>
       <div class="stamp got" style="width:84px;margin:6px auto;font-size:40px">${BN_STAMP[cleared-1]}</div>
       <div class="hint">スタンプ ゲット！ あたらしい おかずが ふえたよ</div>
-      <div class="grid" style="grid-template-columns:repeat(${nw.length},1fr);margin:10px 0">${nw.map(w=>`<div class="card">${notation(w.ev,1)}${blocks(w,Math.min(22,Math.floor(80/len(w))),'nolabel')}<div class="w">${w.w}</div></div>`).join('')}</div>`;
+      <div class="grid" style="grid-template-columns:repeat(${nw.length},1fr);margin:10px 0">${nw.map(w=>`<div class="card">${notation(w.ev,1)}${blocks(w,Math.min(22,Math.floor(80/len(w))),'nolabel')}<div class="w">${W(w)}</div></div>`).join('')}</div>`;
     P('levelup');
   }
   yay();
@@ -930,7 +958,8 @@ function renderQuizSetup(){
   $('#qTypes').querySelectorAll('.qtype').forEach(b=>{b.classList.toggle('on',b.dataset.t===QZ.type);
     b.onclick=()=>{QZ.type=b.dataset.t;renderQuizSetup();};});
   let h='';
-  if(QZ.type!=='longer'){
+  if(QZ.type==='count'){h+=`<div class="hint">たん・たんにー・たんにーさん・たんにーさんしー で あそぶよ</div><button class="tog${QZ.rest?' on':''}" id="qRest" style="margin-right:8px"><span class="box"></span>おやすみも いれる</button>`;}
+  else if(QZ.type!=='longer'){
     h+=`<div class="hint">どの なかまで あそぶ？（いくつでも）</div><div class="chips" id="qGroups">`+
       GROUPS.map(g=>`<button class="chip${QZ.groups.has(g.g)?' on':''}" data-g="${g.g}">${g.name}</button>`).join('')+'</div>';
     h+=`<div class="row" style="margin-bottom:10px"><span class="lab">えらぶ かず</span><div class="seg" id="qN">
@@ -943,6 +972,7 @@ function renderQuizSetup(){
     if(QZ.groups.has(g)){if(QZ.groups.size>1)QZ.groups.delete(g);}else QZ.groups.add(g);renderQuizSetup();});
   $('#qOpts').querySelectorAll('#qN button').forEach(b=>b.onclick=()=>{QZ.choices=+b.dataset.v;renderQuizSetup();});
   const qs=$('#qShow');if(qs)qs.onclick=()=>{QZ.show=!QZ.show;renderQuizSetup();};
+  const qr=$('#qRest');if(qr)qr.onclick=()=>{QZ.rest=!QZ.rest;renderQuizSetup();};
 }
 $('#qStart').onclick=()=>{ac();if(window.speechSynthesis)try{speechSynthesis.speak(new SpeechSynthesisUtterance(''))}catch(e){}
   go('quizPlay');QZ.i=0;QZ.score=0;QZ.alive=true;QZ.prev=null;nextQ();};
@@ -950,6 +980,7 @@ const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random(
 const sameSound=(a,b)=>JSON.stringify(a.ev.map(e=>[e.d,e.r]))===JSON.stringify(b.ev.map(e=>[e.d,e.r]));
 function pool(){
   if(QZ.type==='longer')return WORDS.filter(w=>w.g===1);
+  if(QZ.type==='count')return WORDS.filter(w=>w.g===1||(QZ.rest&&w.g===2));
   let p=WORDS.filter(w=>QZ.groups.has(w.g));
   if(QZ.type==='listen'){const q=p.filter(w=>w.ev.some(e=>!e.r));if(q.length>=2)p=q;}
   return p;
@@ -961,7 +992,7 @@ function pickChoices(ans,k){
 }
 function progHTML(){let h='<div class="qprog">';for(let i=0;i<QZ.total;i++)h+=`<i class="${i<QZ.i?'done':i===QZ.i?'now':''}"></i>`;return h+'</div>';}
 function choiceCard(w,mode){
-  const inner=mode==='word'?`<div class="w">${w.w}</div>`:
+  const inner=mode==='word'?`<div class="w">${W(w)}</div>`:
     `${QZ.show?pic(w,'qemj','font-size:28px'):''}${notation(w.ev,len(w)<1?1.6:1.15)}${QZ.show?blocks(w,Math.min(34,Math.floor(130/len(w))),'nolabel'):''}`;
   return `<button class="qchoice" data-id="${w.id}">${inner}</button>`;
 }
@@ -979,6 +1010,25 @@ async function nextQ(){
     bindChoices(w=>w===ans||sameSound(w,ans));
     await P('dono');if(!QZ.alive)return;
     await wait(playWord(ans,{clicks:true}));QZ.lock=false;
+  }else if(QZ.type==='count'){
+    const p=pool();let ans;do{ans=p[Math.random()*p.length|0];}while(p.length>1&&ans===QZ.prev);QZ.prev=ans;QZ.ans=ans;
+    const n=len(ans),r=ans.ev[0].r;
+    box.innerHTML=progHTML()+`<div class="qprompt">${r?'うん':'たん'} なんこ ぶん？</div>
+      <div class="qnote" id="qcNote" style="flex-direction:column;align-items:center;gap:8px">${notation(ans.ev,2)}${QZ.show?blocks(ans,Math.min(70,Math.floor((availW()-40)/4)),'nolabel'):''}</div>
+      <div class="btns" style="margin-bottom:12px"><button class="bigbtn" id="qReplay">🔊 きく</button></div>
+      <div class="qchoices" style="grid-template-columns:repeat(4,1fr)">${[1,2,3,4].map(k=>`<button class="qchoice qnum" data-n="${k}"><div class="w">${k}</div></button>`).join('')}</div>`;
+    const play=()=>playWord(ans,{clicks:true,el:QZ.show?$('#qcNote .blocks'):null});
+    $('#qReplay').onclick=play;
+    box.querySelectorAll('.qnum').forEach(c=>c.onclick=async()=>{
+      if(QZ.lock||!QZ.alive)return;const k=+c.dataset.n;
+      if(k===n){QZ.lock=true;c.classList.add('good');yay();QZ.score++;addStar();flash('⭕');
+        const u=Math.min(70,Math.floor((availW()-40)/4));
+        $('#qcNote').innerHTML=notation(ans.ev,2)+tanRow(ans,u)+blocks(ans,u,'nolabel');
+        speak('koe-'+ans.k,`${r?'うん':'たん'} ${n}こ`);
+        await wait(1800);QZ.i++;nextQ();}
+      else{c.classList.remove('bad');void c.offsetWidth;c.classList.add('bad');buzz();}
+    });
+    await P('nanko');if(!QZ.alive)return;await wait(play());QZ.lock=false;
   }else if(QZ.type==='longer'){
     const p=shuffle(pool()),A=p[0],Bw=p[1],askLong=Math.random()<.65;QZ.prev=null;
     QZ.ans=askLong?(len(A)>len(Bw)?A:Bw):(len(A)<len(Bw)?A:Bw);
