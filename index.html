@@ -191,13 +191,13 @@ h2{font-size:22px;margin:6px 0 12px}
 .mbox{background:var(--bg);border-radius:26px;padding:16px 14px;max-width:440px;width:100%;text-align:center;max-height:92vh;overflow:auto}
 .mbox h3{font-size:22px;margin:2px 0 10px}
 .nl-wrap{margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:3px}
-.nl-row{display:flex;gap:3px;width:100%;justify-content:flex-start;min-height:46px}
-.nl-p{height:44px;border-radius:9px;background:var(--c);border:2px solid rgba(0,0,0,.15);border-bottom-width:5px;color:#fff;font-weight:800;font-size:15px;
+.nl-row{display:flex;gap:3px;width:100%;justify-content:flex-start;min-height:var(--nh,46px)}
+.nl-p{height:var(--nh,44px);border-radius:9px;background:var(--c);border:2px solid rgba(0,0,0,.15);border-bottom-width:5px;color:#fff;font-weight:800;font-size:15px;
   display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-shadow:0 1px 2px rgba(0,0,0,.25);flex:none}
 .nl-p.r{background:#fff;border:3px dashed var(--c);color:var(--c);text-shadow:none}
 .nl-row.top .nl-p{opacity:0;transform:translateY(-40px);transition:opacity .2s,transform .25s cubic-bezier(.3,1.6,.6,1)}
 .nl-row.top .nl-p.in{opacity:1;transform:none}
-.nl-p.base{height:50px;font-size:17px}
+.nl-p.base{height:var(--nh,50px);font-size:17px}
 .nl-cap{display:flex;gap:10px;justify-content:center;height:46px}
 .nl-cap svg{height:46px !important;width:auto !important}
 .nl-count{height:46px;font-size:40px;font-weight:800;color:var(--c4)}
@@ -283,6 +283,10 @@ h2{font-size:22px;margin:6px 0 12px}
 .shp-n.big svg{height:96px !important}
 .shp-a{font-size:34px;font-weight:800;color:var(--sub)}
 .shp-l{font-size:19px;font-weight:800;margin:6px 0 4px}
+.rshp{display:flex;gap:10px;justify-content:center;margin:6px 0}
+.rs-c{flex:1;background:#fff;border-radius:16px;padding:8px 4px;box-shadow:0 3px 0 var(--line)}
+.rs-t{font-weight:800;font-size:15px;margin-top:2px}.rs-t b{font-size:22px;color:var(--c1)}
+.rs-s{font-size:12px;color:var(--sub);font-weight:800;margin-top:4px}
 </style>
 </head>
 <body>
@@ -426,7 +430,7 @@ const S=Object.assign({bpm:72,voice:1,click:1,num:0,clap:0,lbl:0},store.get('rz_
 let STARS=store.get('rz_stars',0);
 function addStar(n=1){STARS+=n;store.set('rz_stars',STARS);$('#stars').textContent='⭐ '+STARS;}
 $('#stars').textContent='⭐ '+STARS;
-const beat=()=>60/S.bpm;
+const beat=()=>{let b=S.bpm;try{if(VIEW==='step'&&COURSE[ST.i]&&COURSE[ST.i].bpm)b=Math.min(b,COURSE[ST.i].bpm);}catch(e){}return 60/b;};
 
 /* ===================== audio ===================== */
 let AC=null;
@@ -598,7 +602,7 @@ function noteIcon(e){
   return `<svg class="nic" viewBox="0 0 30 40">${g}</svg>`;
 }
 function evBlkIcon(e,t,w){
-  if(e.d<1||e.d%1)return evBlk(e,t,w,true);
+  if(e.d<1||e.d%1)return evBlk(e,t,w,!!S.lbl);
   const lb=k=>S.lbl?lab(e.syl[k]||''):(k===0?noteIcon(e):'');
   if(e.d===1&&!ST.holdView)return `<div class="blk${e.r?' rest':''}" data-t="${t}" style="--d:1;--c:${w.col}">${lb(0)}</div>`;
   if(e.d===1)return `<div class="blk fillb${e.r?' rest':''}" data-st="${t}" data-d="1" style="--d:1;--c:${w.col}"><span class="fl"></span><span class="bt">${lb(0)}</span></div>`;
@@ -860,7 +864,7 @@ function openNameLesson(w){
   else if(info.tp){sent=`1はくを ${info.div}つに わけたから`;bigName=w.nm;}
   else{sent=`${base.nm} を ${info.div}つに わけたから`;bigName=`<b class="nl-num">${info.num}</b>ぶ${unitName.endsWith('きゅうふ')?'きゅうふ':'おんぷ'}<small>（${unitName}）</small>`;}
   $('#mbox').innerHTML=`<h3>なまえの ひみつ</h3>
-    <div class="nl-wrap" style="width:${W}px">
+    <div class="nl-wrap" style="width:${W}px;--nh:${Math.round(Math.min(W/4,90))}px">
       <div class="nl-cap">${notation(byId(info.parts?info.parts[0]:w.id).ev.slice(0,1).length&&!info.parts?unitEv(w,info):byId(info.parts[0]).ev,1)}${info.parts?notation(byId(info.parts[1]).ev,1):''}</div>
       <div class="nl-row top">${pieceHTML}</div>
       <div class="nl-row"><div class="nl-p base${isRest?' r':''}" style="width:${W-3}px;--c:${base.col}">${baseLab}</div></div>
@@ -1089,10 +1093,19 @@ const COURSE=[
   {id:'c1',t:'タカ（はちぶおんぷ）',cap:4,pool:['q','qr','h','ee'],must:['ee'],need:3,say:'タカ は リス さん'},
   {id:'c2',t:'タウ・ウカ',cap:4,pool:['q','qr','h','ee','er','re'],must:['er','re'],need:3,say:'タウ と ウカ'},
   {id:'c3',t:'はちぶの ながい リズム',cap:8,pool:['q','qr','h','hr','dh','w','ee','er','re'],need:2,say:'ながい リズム'},
-  {id:'d1',t:'たこやき・ラーメン・マンゴー',cap:4,pool:['q','qr','ee','f1','f2','f6'],must:['f1','f2','f6'],need:3,say:'たべものの リズム'},
-  {id:'d2',t:'ステーキ・ジュース・ゼリー',cap:4,pool:['q','qr','ee','f1','f2','f6','f3','f4','f5'],must:['f3','f4','f5'],need:3,say:'たべものの リズム'},
-  {id:'d3',t:'はっさく・コロッケ・クッキー',cap:4,pool:['q','qr','ee','f1','f2','f3','f4','f5','f6','f7','f8','f9'],must:['f7','f8','f9'],need:3,say:'たべものの リズム'},
-  {id:'e1',t:'れんぷ（おまけ）',cap:4,pool:['q','qr','h','t5','t6','t7'],must:['t5','t6','t7'],need:2,say:'れんぷ'},
+  {id:'d_f1',bpm:50,t:'たこやき',seqs:[['f1'],['f1','f1'],['f1','q','f1','q']],need:3,say:'たこやき。この かたちが たこやき だよ'},
+  {id:'d_f2',bpm:50,t:'ラーメン',seqs:[['f2'],['f2','f2'],['f2','q','f2','q']],need:3,say:'ラーメン。この かたちが ラーメン だよ'},
+  {id:'d_f6',bpm:50,t:'マンゴー',seqs:[['f6'],['f6','f6'],['f6','q','f6','q']],need:3,say:'マンゴー。この かたちが マンゴー だよ'},
+  {id:'dm1',bpm:50,t:'たこやき・ラーメン・マンゴー を まぜて',cap:4,pool:['q', 'f1', 'f2', 'f6'],must:['f1', 'f2', 'f6'],need:3,say:'たこやき と ラーメン と マンゴー を まぜて よんでみよう'},
+  {id:'d_f3',bpm:50,t:'ステーキ',seqs:[['f3'],['f3','f3'],['f3','q','f3','q']],need:3,say:'ステーキ。この かたちが ステーキ だよ'},
+  {id:'d_f4',bpm:50,t:'ジュース',seqs:[['f4'],['f4','f4'],['f4','q','f4','q']],need:3,say:'ジュース。この かたちが ジュース だよ'},
+  {id:'d_f5',bpm:50,t:'ゼリー',seqs:[['f5'],['f5','f5'],['f5','q','f5','q']],need:3,say:'ゼリー。この かたちが ゼリー だよ'},
+  {id:'dm2',bpm:50,t:'ステーキ・ジュース・ゼリー を まぜて',cap:4,pool:['q', 'f1', 'f2', 'f6', 'f3', 'f4', 'f5'],must:['f3', 'f4', 'f5'],need:3,say:'ステーキ と ジュース と ゼリー を まぜて よんでみよう'},
+  {id:'d_f7',bpm:50,t:'はっさく',seqs:[['f7'],['f7','f7'],['f7','q','f7','q']],need:3,say:'はっさく。この かたちが はっさく だよ'},
+  {id:'d_f8',bpm:50,t:'コロッケ',seqs:[['f8'],['f8','f8'],['f8','q','f8','q']],need:3,say:'コロッケ。この かたちが コロッケ だよ'},
+  {id:'d_f9',bpm:50,t:'クッキー',seqs:[['f9'],['f9','f9'],['f9','q','f9','q']],need:3,say:'クッキー。この かたちが クッキー だよ'},
+  {id:'dm3',bpm:50,t:'はっさく・コロッケ・クッキー を まぜて',cap:4,pool:['q', 'f1', 'f2', 'f6', 'f3', 'f4', 'f5', 'f7', 'f8', 'f9'],must:['f7', 'f8', 'f9'],need:3,say:'はっさく と コロッケ と クッキー を まぜて よんでみよう'},
+  {id:'e1',bpm:40,t:'れんぷ（おまけ）',cap:4,pool:['q','qr','h','t5','t6','t7'],must:['t5','t6','t7'],need:2,say:'れんぷ'},
 ];
 const NAMEQ=[{id:'w',nm:'ぜんおんぷ',ev:[N(4,'')]},{id:'h',nm:'にぶおんぷ',ev:[N(2,'')]},{id:'q',nm:'しぶおんぷ',ev:[N(1,'')]},
   {id:'ee',nm:'はちぶおんぷ',ev:[N(.5,'')]},{id:'f1',nm:'じゅうろくぶおんぷ',ev:[N(.25,'')]},{id:'dh',nm:'ふてん にぶおんぷ',ev:[N(3,'')]}];
@@ -1111,7 +1124,7 @@ function renderHome(){
   let h='';
   COURSE.forEach((s,i)=>{
     const st=i<CS.cur?'done':i===CS.cur?'now':'lock';
-    const sec=i===0?'リズムを まねっこ':s.id==='b1'?'おんぷの なまえ':s.id==='c1'?'はちぶおんぷ':s.id==='d1'?'じゅうろくぶおんぷ':s.id==='e1'?'おまけ':'';
+    const sec=i===0?'リズムを まねっこ':s.id==='b1'?'おんぷの なまえ':s.id==='c1'?'はちぶおんぷ':s.id==='d_f1'?'じゅうろくぶおんぷ':s.id==='e1'?'おまけ':'';
     if(sec)h+=`<div class="road-sec">${sec}</div>`;
     h+=`<button class="road-st ${st}" data-i="${i}" ${st==='lock'?'disabled':''}>
       <span class="rs-dot">${st==='done'?'⭐':st==='now'?'🐕':i+1}</span><span class="rs-t">${s.t}</span></button>`;
@@ -1126,6 +1139,7 @@ function stClear(){ST.timers.forEach(clearTimeout);ST.timers=[];killSess(ST.sess
 function stStop(){ST.run++;stClear();ST.window=false;const el=$('#stSeq');if(el)el.classList.remove('playing');}
 function genPattern(s){
   if(s.fixed)return s.fixed.map(byId);
+  if(s.seqs){const p=CS.passes[s.id]||0;const k=p<s.seqs.length?p:Math.floor(Math.random()*s.seqs.length);return s.seqs[k].map(byId);}
   const pool=s.pool.map(byId);
   for(let tries=0;tries<60;tries++){
     let out=[];
@@ -1182,7 +1196,7 @@ function renderStep(){
   const s=COURSE[ST.i];ST.holdView=!!(s.hold&&!S.clap);
   $('#stepBox').innerHTML=`
     <div class="st-head"><span class="st-no">${ST.i+1}</span><span class="st-t">${s.t}</span><span class="pd">${stepNeedDots(s)}</span></div>
-    <div id="stSeq">${seqHTML(ST.items,s.cap)}</div>
+    <div id="stSeq">${seqHTML(ST.items,s.cap||Math.ceil(patLen()-1e-6))}</div>
     <div class="st-msg" id="stMsg"></div>
     <div class="holdwrap"><button class="hold drum" id="stBtn"></button></div>
     <div class="st-sub"><button class="tog" id="stHear">▶ おてほん</button><button class="tog" id="stPause">⏸ とめる</button><button class="tog" id="stMode">${S.clap?'👏 てびょうし':'👆 タップ'}</button></div>
@@ -1408,6 +1422,7 @@ async function micStart(){
 /* ---------- name steps ---------- */
 function measStart(out,i){let t=0;for(let k=0;k<i;k++)t+=len(out[k]);return Math.abs(t/4-Math.round(t/4))<1e-6;}
 const SHAPES={
+  qr:{rest:1},
   w:{to:[N(4,'')],line:'しろい まる。これが ぜんおんぷ'},
   h:{from:[N(4,'')],to:[N(2,'')],line:'しろい まるに ぼうを つけると にぶおんぷ'},
   q:{from:[N(2,'')],to:[N(1,'')],line:'にぶおんぷに いろを ぬると しぶおんぷ'},
@@ -1415,8 +1430,26 @@ const SHAPES={
   f1:{from:[N(.5,'')],to:[N(.25,'')],line:'はたが もう ひとつで じゅうろくぶおんぷ',ex:[N(.25,''),N(.25,''),N(.25,''),N(.25,'')],exline:'じゅうろくぶおんぷも 手を つなぐよ'},
   dh:{from:[N(2,'')],to:[N(3,'')],line:'まるの よこに ホクロが ついて ふてん にぶおんぷ'}
 };
+function hiLine(svg,y){return svg.replace(`y1="${y}" y2="${y}" stroke="#a89a8f" stroke-width="1.2"`,`y1="${y}" y2="${y}" stroke="#e5533d" stroke-width="3.2"`);}
+function showRestShape(){
+  return new Promise(async res=>{
+    let closed=false;const done=()=>{if(closed)return;closed=true;closeModal();res();};
+    const L1='ぜんきゅうふは テーブル。したから 4ばんめの せんに ぶらさがっているよ';
+    const L2='にぶきゅうふは ぼうし。したから 3ばんめの せんに のっているよ';
+    openModal(`<h3>きゅうふの かたち</h3>
+      <div class="rshp"><div class="rs-c" id="rs1"><div class="shp-n big">${hiLine(notation([N(4,'',1)],1,true),30)}</div><div class="rs-t">ぜんきゅうふ<br><b>テーブル</b></div><div class="rs-s">したから 4ばんめの せんに ぶらさがる</div></div>
+      <div class="rs-c" id="rs2" style="visibility:hidden"><div class="shp-n big">${hiLine(notation([N(2,'',1)],1,true),40)}</div><div class="rs-t">にぶきゅうふ<br><b>ぼうし</b></div><div class="rs-s">したから 3ばんめの せんに のる</div></div></div>
+      <div class="hint">むきと、どの せんに あるかに ちゅうい！</div>
+      <div class="btns" style="margin-top:10px"><button class="bigbtn" id="shpGo" style="background:var(--c3)">つぎへ ▶</button></div>`);
+    $('#shpGo').onclick=done;
+    await say(L1);if(closed)return;await wait(400);if(closed)return;
+    $('#rs2').style.visibility='visible';await say(L2);if(closed)return;
+    await wait(1800);done();
+  });
+}
 function showShape(nid){
   const sh=SHAPES[nid];if(!sh)return Promise.resolve();
+  if(sh.rest)return showRestShape();
   return new Promise(async res=>{
     let closed=false;const done=()=>{if(closed)return;closed=true;closeModal();res();};
     openModal(`<h3>かたちの ひみつ</h3>
