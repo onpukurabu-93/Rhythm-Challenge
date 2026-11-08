@@ -259,8 +259,20 @@ h2{font-size:22px;margin:6px 0 12px}
 .st-sub{display:flex;justify-content:center;min-height:44px}
 .st-names{text-align:center;font-size:12px;color:var(--sub);margin-top:6px}
 .mk{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:800;white-space:nowrap;text-shadow:none;z-index:3;line-height:1}
-.mk.ok{font-size:16px}.mk.early,.mk.late{color:#d9822b}.mk.miss{color:#d43c2c;font-size:18px}
+.mk.ok{font-size:16px}.mk.early,.mk.late,.mk.short,.mk.long{color:#d9822b}.mk.miss{color:#d43c2c;font-size:18px}
 .seq .blk{overflow:visible}
+.blk.fillb{position:relative;background:transparent}
+.blk.fillb::before{content:'';position:absolute;inset:0;background:var(--c);opacity:.22;border-radius:inherit}
+.blk.fillb.rest::before{background:#fff;opacity:1}
+.blk.fillb .fl{position:absolute;left:0;top:0;bottom:0;width:100%;background:var(--c);border-radius:inherit;z-index:1}
+.blk.fillb.rest .fl{background:var(--c);opacity:.28}
+.blk.fillb .bt{background:transparent !important;position:relative;z-index:2;opacity:1 !important}
+.blk.fillb.rest .bt{color:var(--c)}
+.blk.fillb.over{box-shadow:0 0 0 4px #e5533d;animation:shake .4s}
+.drum .cnt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:800;color:#fff;
+  background:inherit;border-radius:50%;pointer-events:none}
+.drum .cnt.r{color:#fff6d0}
+.drum{position:relative}
 .nic{height:78%;width:auto;display:block;overflow:visible}
 .blk.long .bt .nic{height:78%}
 .blk.long .bt:first-child{justify-content:flex-start;padding-left:6%}
@@ -448,15 +460,17 @@ function buzz(){const a=ac();const t=a.currentTime;tone(t,.18,null,220,.22);tone
 /* own files (images / voices) on GitHub */
 const AV=new Set();const CLIPS={};let CLIP_NOW=null;
 const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて いうかな',
-  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは たたいてみよう。ひかってる ボタンを たたいてね',tebyoushi:'こんどは てを たたいてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',clear:'クリア おめでとう',nanko:'たん なんこ ぶん',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
+  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは たたいてみよう。ひかってる ボタンを たたいてね',tebyoushi:'こんどは てを たたいてみよう',rhythm:'いいながら リズムを たたいてみよう',osu:'こんどは おんぷの ながさだけ ボタンを おしてみよう',mouichidoosu:'もういちど おしてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',clear:'クリア おめでとう',nanko:'たん なんこ ぶん',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
 function clipName(key){return AV.has(key+'.mp3')?key+'.mp3':AV.has(key+'.wav')?key+'.wav':AV.has(key+'.m4a')?key+'.m4a':null;}
 async function probeFiles(){
   if(!/^https?:/.test(location.protocol))return;
   const keys=[];WORDS.forEach(w=>{keys.push('koe-'+w.k,'na-'+w.nk);});Object.keys(PROMPTS).forEach(k=>keys.push('koe-'+k));
+  Object.values({tan:1,un:1,ni:1,san:1,shi:1,ta:1,ka:1,u:1}).length;['tan','un','ni','san','shi','ta','ka','u'].forEach(k=>keys.push('syl-'+k));
   const names=[...new Set(keys)].flatMap(k=>[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.map(w=>'e-'+w.k+'.png'));
   await Promise.all(names.map(n=>fetch(n,{method:'HEAD',cache:'no-cache'}).then(r=>{if(r.ok)AV.add(n);}).catch(()=>{})));
   AV.forEach(n=>{if(!/\.png$/.test(n)){const a=new Audio(n);a.preload='auto';CLIPS[n]=a;}});
   if([...AV].some(n=>!/\.png$/.test(n)))$('#credit').style.display='block';
+  loadSyl();
   if(VIEW==='list')renderList();
   if(VIEW==='detail'&&DETAIL_ID){const b=document.querySelector('#detailBox .emj');const w=byId(DETAIL_ID);if(b&&w)b.outerHTML=pic(w,'emj');}
 }
@@ -476,6 +490,18 @@ function speak(key,text){
   });
 }
 const P=k=>speak('koe-'+k,PROMPTS[k]);
+/* syllable voices (ずんだもん) scheduled in rhythm */
+const SYLMAP={'たん':'tan','うん':'un','にー':'ni','さん':'san','しー':'shi','タ':'ta','カ':'ka','ウ':'u'};
+const SYLBUF={};
+async function loadSyl(){
+  const a=ac();
+  for(const k of new Set(Object.values(SYLMAP))){const n=clipName('syl-'+k);if(!n)continue;
+    try{const r=await fetch(n);const ab=await r.arrayBuffer();SYLBUF[k]=await new Promise((res,rej)=>a.decodeAudioData(ab,res,rej));}catch(e){}}
+}
+function sylList(){const out=[];let t=0;ST.items.forEach(w=>w.ev.forEach(e=>{if(e.d>=1){for(let k=0;k<e.d;k++)out.push([t+k,e.syl[k]]);}else out.push([t,e.syl[0]]);t+=e.d;}));return out;}
+function sylReady(){return sylList().every(([t,x])=>SYLMAP[x]&&SYLBUF[SYLMAP[x]]);}
+function scheduleSyl(t0,sess){const a=ac(),B=beat();sylList().forEach(([t,x])=>{const src=a.createBufferSource();src.buffer=SYLBUF[SYLMAP[x]];src.connect(sess);src.start(t0+t*B);});}
+
 /* speech */
 function say(text){
   return new Promise(res=>{
@@ -564,10 +590,11 @@ function noteIcon(e){
   return `<svg class="nic" viewBox="0 0 30 40">${g}</svg>`;
 }
 function evBlkIcon(e,t,w){
-  if(S.lbl||e.d<1||e.d%1)return evBlk(e,t,w,true);
-  let b='';for(let k=0;k<e.d;k++)b+=`<span class="bt" data-t="${t+k}">${k===0?noteIcon(e):''}</span>`;
-  if(e.d===1)return `<div class="blk${e.r?' rest':''}" data-t="${t}" style="--d:1;--c:${w.col}">${noteIcon(e)}</div>`;
-  return `<div class="blk long${e.r?' rest':''}" style="--d:${e.d};--c:${w.col}">${b}</div>`;
+  if(e.d<1||e.d%1)return evBlk(e,t,w,true);
+  const lb=k=>S.lbl?lab(e.syl[k]||''):(k===0?noteIcon(e):'');
+  if(e.d===1)return `<div class="blk${e.r?' rest':''}" data-t="${t}" style="--d:1;--c:${w.col}">${lb(0)}</div>`;
+  let b='';for(let k=0;k<e.d;k++)b+=`<span class="bt" data-tt="${t+k}">${lb(k)}</span>`;
+  return `<div class="blk long fillb${e.r?' rest':''}" data-st="${t}" data-d="${e.d}" style="--d:${e.d};--c:${w.col}"><span class="fl"></span>${b}</div>`;
 }
 function evBlk(e,t,w,labels){
   if(e.d<1)return blk(e,e.d,labels?lab(e.syl[0]):'',t,w);
@@ -1037,11 +1064,11 @@ const COURSE=[
   {id:'a3',t:'たん 3こ',cap:3,fixed:['q','q','q'],need:2,say:'たん たん たん'},
   {id:'a4',t:'たん 4こ',cap:4,fixed:['q','q','q','q'],need:2,say:'たん たん たん たん'},
   {id:'a5',t:'うん が でてきたよ',cap:4,pool:['q','qr'],must:['qr'],need:3,say:'うん は たん と おなじ ながさの おやすみ'},
-  {id:'a6',t:'たんにー・うんにー',cap:4,pool:['q','qr','h','hr'],must:['h','hr'],need:3,say:'たんにー と うんにー'},
-  {id:'a7',t:'たんにーさん・うんにーさん',cap:4,pool:['q','qr','h','hr','dh','dhr'],must:['dh','dhr'],need:3,say:'たんにーさん と うんにーさん'},
-  {id:'a8',t:'たんにーさんしー',cap:4,pool:A4,must:['w','wr'],need:3,say:'たんにーさんしー と うんにーさんしー'},
-  {id:'a9',t:'ながい リズム（2しょうせつ）',cap:8,pool:A4,need:3,say:'ながい リズムに ちょうせん'},
-  {id:'a10',t:'ながい リズム（4しょうせつ）',cap:16,pool:A4,need:2,say:'もっと ながい リズム'},
+  {id:'a6',t:'たんにー・うんにー',cap:4,pool:['q','qr','h','hr'],must:['h','hr'],need:3,hold:1,say:'たんにー と うんにー。ここからは ながい おんぷは ながーく おしてね'},
+  {id:'a7',t:'たんにーさん・うんにーさん',cap:4,pool:['q','qr','h','hr','dh','dhr'],must:['dh','dhr'],need:3,hold:1,say:'たんにーさん と うんにーさん'},
+  {id:'a8',t:'たんにーさんしー',cap:4,pool:A4,must:['w','wr'],need:3,hold:1,say:'たんにーさんしー と うんにーさんしー'},
+  {id:'a9',t:'ながい リズム（2しょうせつ）',cap:8,pool:A4,need:3,hold:1,say:'ながい リズムに ちょうせん'},
+  {id:'a10',t:'ながい リズム（4しょうせつ）',cap:16,pool:A4,need:2,hold:1,say:'もっと ながい リズム'},
   {id:'b1',kind:'name',t:'なまえ：ぜんおんぷ',nid:'w',need:3},
   {id:'b2',kind:'name',t:'なまえ：にぶおんぷ',nid:'h',need:3},
   {id:'b3',kind:'name',t:'なまえ：しぶおんぷ',nid:'q',need:3},
@@ -1148,6 +1175,7 @@ function renderStep(){
     <div class="st-names">${namesOf(ST.items)}</div>`;
   const b=$('#stBtn');
   b.addEventListener('pointerdown',stBtnDown);b.addEventListener('contextmenu',e=>e.preventDefault());
+  ['pointerup','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>stUp(ac().currentTime)));
   $('#stHear').onclick=()=>{ac();if(ST.window)return;ST.failRow=0;stBtnState('auto');stFlow(false);};
   $('#stPause').onclick=()=>{stStop();stBtnState('retry');$('#stMsg').textContent='とめたよ。ボタンを おすと つづきから';};
   $('#stMode').onclick=async()=>{S.clap=S.clap?0:1;store.set('rz_set',S);if(S.clap){const ok=await micStart();if(!ok){S.clap=0;store.set('rz_set',S);}}
@@ -1163,14 +1191,48 @@ function stBtnState(st,label){
 }
 function stBtnDown(e){
   e.preventDefault();ac();
-  if(ST.btn==='drum'){if(!S.clap)stTap(ac().currentTime);return;}
+  if(ST.btn==='drum'){if(!S.clap){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}stTap(ac().currentTime,true);}return;}
   if(ST.btn==='next'){ST.items=genPattern(COURSE[ST.i]);renderStep();stBtnState('auto');stFlow(false);return;}
   if(ST.btn==='retry'){ST.noTap=0;ST.failRow=0;stBtnState('auto');stFlow(false);return;}
 }
-function lightSeq(t0){
-  const a=ac(),el=$('#stSeq');if(!el)return;
+function lightSeq(t0,follow){
+  const a=ac(),el=$('#stSeq');if(!el)return;const B=beat();
   el.classList.add('playing');el.querySelectorAll('[data-t]').forEach(x=>x.classList.remove('on'));
-  el.querySelectorAll('[data-t]').forEach(x=>{const tt=+x.dataset.t;ST.timers.push(setTimeout(()=>x.classList.add('on'),(t0-a.currentTime+tt*beat())*1000));});
+  el.querySelectorAll('.fillb').forEach(x=>{x.classList.remove('over');const f=x.querySelector('.fl');f.style.transition='none';f.style.width='0%';});
+  el.querySelectorAll('[data-t]').forEach(x=>{const tt=+x.dataset.t;ST.timers.push(setTimeout(()=>x.classList.add('on'),(t0-a.currentTime+tt*B)*1000));});
+  el.querySelectorAll('.fillb').forEach(x=>{const st=+x.dataset.st,d=+x.dataset.d,f=x.querySelector('.fl');
+    const isRest=x.classList.contains('rest');
+    if(follow&&!isRest)return;
+    ST.timers.push(setTimeout(()=>{f.style.transition=`width ${d*B}s linear`;f.style.width='100%';},(t0-a.currentTime+st*B)*1000));});
+  // drum count label
+  const lbls=[];let t=0;patEv().forEach(e=>{if(e.d>=1){for(let k=0;k<e.d;k++)lbls.push([t+k,k===0?(e.r?'うん':'たん'):String(k+1),e.r]);}
+    else lbls.push([t,e.syl[0],e.r]);t+=e.d;});
+  lbls.forEach(([tt,x,r])=>ST.timers.push(setTimeout(()=>{const b=$('#stBtn');if(!b)return;
+    let c=b.querySelector('.cnt');if(!c){c=document.createElement('span');c.className='cnt';b.appendChild(c);}
+    c.textContent=x;c.classList.toggle('r',!!r);c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');},(t0-a.currentTime+tt*B)*1000)));
+  ST.timers.push(setTimeout(()=>{const c=document.querySelector('#stBtn .cnt');if(c)c.remove();},(t0-a.currentTime+t*B+.2)*1000));
+  if(follow)stFollowLoop(t0);
+}
+function stFollowLoop(t0){
+  const B=beat(),el=$('#stSeq');const longs=[...el.querySelectorAll('.fillb:not(.rest)')].map(x=>({x,st:t0+(+x.dataset.st)*B,d:+x.dataset.d,f:x.querySelector('.fl'),ps:null,done:false}));
+  if(!longs.length)return;
+  const run=ST.run;
+  const loop=()=>{
+    if(run!==ST.run||VIEW!=='step')return;
+    const now=ac().currentTime;
+    longs.forEach(L=>{
+      if(L.done)return;
+      if(L.ps==null){if(ST.downOpen&&ST.taps.length){const pt=ST.taps[ST.taps.length-1];if(Math.abs(pt-L.st)<.45*B)L.ps=pt;}
+        if(L.ps==null&&now>L.st+.6*B)L.done=true;return;}
+      const end=ST.downOpen&&ST.taps[ST.taps.length-1]===L.ps?now:(ST.ups[ST.taps.indexOf(L.ps)]||now);
+      const ratio=(end-L.ps)/(L.d*B);
+      L.f.style.transition='none';L.f.style.width=Math.min(100,ratio*100)+'%';
+      if(ratio>1.1)L.x.classList.add('over');
+      if(!(ST.downOpen&&ST.taps[ST.taps.length-1]===L.ps))L.done=true;
+    });
+    if(ST.window||longs.some(L=>!L.done))requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
 }
 function patEv(){return ST.items.flatMap(w=>w.ev);}
 function patLen(){return ST.items.reduce((a,w)=>a+len(w),0);}
@@ -1198,26 +1260,29 @@ async function stFlow(first,tapOnly){
   $('#stMsg').textContent='きいてね';stBtnState('auto','👂');
   if(first&&ST.first){ST.first=false;await speak('koe-step-'+s.id,s.say||s.t);}else await P('kiite');
   if(!alive(tok))return;
+  const sylOK=sylReady();
+  if(!sylOK){await say(ST.items.map(w=>w.w).join(' '));if(!alive(tok))return;}
   let sess=newSess();ST.sess=sess;let t0=a.currentTime+.15;
-  schedulePattern(t0,sess,true,S.click);lightSeq(t0);
+  if(sylOK){scheduleSyl(t0,sess);schedulePattern(t0,sess,false,S.click);}else schedulePattern(t0,sess,true,S.click);lightSeq(t0);
   await wait((t0-a.currentTime+patLen()*B)*1000+300);if(!alive(tok))return;
   $('#stSeq').classList.remove('playing');await wait(350);if(!alive(tok))return;
   // 2) いっしょに いおう
-  $('#stMsg').textContent='いっしょに いってみよう';stBtnState('auto','🗣');
-  await P('issho');if(!alive(tok))return;
+  $('#stMsg').textContent='いいながら リズムを たたいてみよう';stBtnState('auto','👏');
+  await P('rhythm');if(!alive(tok))return;
   sess=newSess();ST.sess=sess;let D=countIn(a.currentTime+.2,sess);
   schedulePattern(D,sess,true,S.click);lightSeq(D);
-  ST.timers.push(setTimeout(()=>{if(alive(tok))stBtnState('auto','🗣');},(D-a.currentTime)*1000));
+  ST.timers.push(setTimeout(()=>{if(alive(tok))stBtnState('auto','👏');},(D-a.currentTime)*1000));
   await wait((D-a.currentTime+patLen()*B)*1000+300);if(!alive(tok))return;
   $('#stSeq').classList.remove('playing');await wait(300);if(!alive(tok))return;
   }
   // 3) たたこう
-  $('#stMsg').textContent=S.clap?'「はい」の つぎから てを たたこう':'ひかってる ボタンを たたいてね';
+  const HOLD=s.hold&&!S.clap;ST.hold=HOLD;
+  $('#stMsg').textContent=S.clap?'「はい」の つぎから てを たたこう':HOLD?'おんぷの ながさだけ おしてみよう':'ひかってる ボタンを たたいてね';
   stBtnState('drum');
-  await P(tapOnly?'mouichidotataku':(S.clap?'tebyoushi':'tataku'));if(!alive(tok))return;
+  await P(tapOnly?(HOLD?'mouichidoosu':'mouichidotataku'):(S.clap?'tebyoushi':HOLD?'osu':'tataku'));if(!alive(tok))return;
   await wait(250);if(!alive(tok))return;
-  sess=newSess();ST.sess=sess;D=countIn(a.currentTime+.25,sess,S.clap);ST.D=D;ST.taps=[];
-  schedulePattern(D,sess,false,S.click&&!S.clap);lightSeq(D);
+  sess=newSess();ST.sess=sess;D=countIn(a.currentTime+.25,sess,S.clap);ST.D=D;ST.taps=[];ST.ups=[];
+  schedulePattern(D,sess,false,S.click&&!S.clap);lightSeq(D,HOLD);
   ST.timers.push(setTimeout(()=>{if(!alive(tok))return;ST.window=true;stBtnState('drum');},(D-a.currentTime-.45*B)*1000));
   await wait((D-a.currentTime+(patLen()+.6)*B)*1000);if(!alive(tok))return;
   ST.window=false;
@@ -1237,10 +1302,18 @@ async function stFlow(first,tapOnly){
     stFlow(false,!full);
   }
 }
-function stTap(t){
+function stUp(t){
+  if(ST.holdStop){ST.holdStop();ST.holdStop=null;}
+  if(ST.downOpen){ST.downOpen=false;ST.ups[ST.taps.length-1]=t;}
+  const b=$('#stBtn');if(b)b.classList.remove('down');
+}
+function stTap(t,finger){
   if(!ST.window)return;
   if(ST.taps.length&&t-ST.taps[ST.taps.length-1]<.09)return;
-  ST.taps.push(t);if(!S.clap)tone(t,.12,null,330,.32);
+  ST.taps.push(t);
+  if(finger&&ST.hold){if(ST.holdStop)ST.holdStop();ST.holdStop=holdTone();ST.downOpen=true;const b=$('#stBtn');if(b)b.classList.add('down');return;}
+  ST.ups[ST.taps.length-1]=t;
+  if(!S.clap)tone(t,.12,null,330,.32);
   const b=$('#stBtn');if(b){b.classList.add('down');setTimeout(()=>b&&b.classList.remove('down'),90);}
 }
 function stJudge(){
@@ -1249,14 +1322,23 @@ function stJudge(){
   const on=[];let t=0;patEv().forEach(e=>{if(!e.r)on.push(D+t*B);t+=e.d;});
   const taps=ST.taps.map(x=>x-(S.clap?MIC.lat:0)),used=new Set();
   const win=.4*B,good=.2*B;
-  const res=on.map(x=>{let bi=-1,bd=1e9;taps.forEach((tp,k)=>{if(used.has(k))return;const d=Math.abs(tp-x);if(d<bd){bd=d;bi=k;}});
-    if(bi>=0&&bd<=win){used.add(bi);const d=taps[bi]-x;return Math.abs(d)<=good?'ok':d<0?'early':'late';}return 'miss';});
+  if(ST.downOpen)stUp(ac().currentTime);
+  const durs=[];patEv().forEach(e=>{if(!e.r)durs.push(e.d);});
+  const res=on.map((x,i)=>{let bi=-1,bd=1e9;taps.forEach((tp,k)=>{if(used.has(k))return;const d=Math.abs(tp-x);if(d<bd){bd=d;bi=k;}});
+    if(bi>=0&&bd<=win){used.add(bi);const d=taps[bi]-x;
+      if(Math.abs(d)>good)return d<0?'early':'late';
+      if(ST.hold&&ST.ups[bi]!=null){const rel=x+durs[i]*B,u=ST.ups[bi];
+        if(u>rel+.35*B)return 'long';
+        if(durs[i]>=2&&u<rel-.45*B)return 'short';}
+      return 'ok';}
+    return 'miss';});
   const extra=taps.length-used.size;
   const el=$('#stSeq');
   res.forEach((r,k)=>{const b=el.querySelector(`[data-on="${k}"]`);if(!b)return;const m=document.createElement('span');
-    m.className='mk '+r;m.textContent={ok:'⭕',early:'はやい',late:'おそい',miss:'✕'}[r];b.style.position='relative';b.appendChild(m);});
+    m.className='mk '+r;m.textContent={ok:'⭕',early:'はやい',late:'おそい',miss:'✕',short:'みじかい',long:'ながい'}[r];b.style.position='relative';b.appendChild(m);});
   const miss=res.filter(r=>r==='miss').length,okc=res.filter(r=>r==='ok').length;
-  const pass=miss===0&&extra===0;let cleared=false;
+  const lenErr=res.filter(r=>r==='short'||r==='long').length;
+  const pass=miss===0&&extra===0&&lenErr===0;let cleared=false;
   if(pass){
     CS.passes[s.id]=(CS.passes[s.id]||0)+1;
     if(CS.passes[s.id]>=s.need&&ST.i===CS.cur){CS.stamps[s.id]=today();CS.cur++;cleared=true;}
@@ -1265,7 +1347,7 @@ function stJudge(){
     P(okc===res.length?'pittari':'dekita');renderStepHead();
   }else{
     buzz();
-    $('#stMsg').textContent=taps.length===0?(S.clap?'てを たたいてね':'ひかってる ボタンを たたいてね'):extra>0&&miss===0?'うん の ところで たたいちゃったよ':'おしい！ もういちど たたいてみよう';
+    $('#stMsg').textContent=taps.length===0?(S.clap?'てを たたいてね':'ひかってる ボタンを たたいてね'):extra>0&&miss===0?'うん の ところで たたいちゃったよ':lenErr&&miss===0?(res.includes('short')?'もうすこし ながーく おしてね':'ながすぎたよ。ちょうどで はなそう'):'おしい！ もういちど たたいてみよう';
     if(taps.length)P('oshii');
   }
   return {pass,cleared,noTap:taps.length===0};
