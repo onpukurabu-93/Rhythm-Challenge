@@ -155,7 +155,7 @@ h2{font-size:22px;margin:6px 0 12px}
 .bento .cell{flex:1;border-right:2px dashed #ead6bd}
 .bento .cell:last-child{border-right:none}
 .bento .lay{position:relative;display:flex;align-items:center;height:100%}
-.bento .ghost{position:absolute;left:0;top:0;height:100%;display:flex;align-items:center;opacity:.28;filter:saturate(.7)}
+.bento .ghost{position:absolute;left:0;top:0;height:100%;display:flex;align-items:center;opacity:.45}
 .bento .ghost .blk{border-style:dashed}
 .bento .gh{position:absolute;top:0;height:100%;border:3px dashed var(--c);border-radius:12px;opacity:.55;background:repeating-linear-gradient(45deg,transparent 0 6px,rgba(0,0,0,.04) 6px 12px)}
 .bento .gh.r{background:none}
@@ -194,6 +194,22 @@ h2{font-size:22px;margin:6px 0 12px}
 .nl-big small{display:block;font-size:16px;color:var(--sub)}
 .nl-num{font-size:46px;color:var(--c1)}
 .nl-sub{font-size:14px;color:var(--sub);margin-top:6px}
+.bn-lv{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px;font-weight:800;min-height:26px}
+.bn-lv .lvb{background:var(--ink);color:#fff;border-radius:999px;padding:4px 12px;font-size:16px}
+.bn-lv .step{font-size:14px;color:var(--sub)}
+.bn-lv .pd{display:flex;gap:5px}.bn-lv .pd i{width:13px;height:13px;border-radius:50%;background:#e6dac8}
+.bn-lv .pd i.ok{background:var(--c3)}.bn-lv .pd i.ng{background:#f1b3a8}
+.bn-pc{position:relative}.newb{position:absolute;top:4px;right:6px;background:var(--c1);color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:1px 6px}
+.stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:12px 0}
+.stamp{aspect-ratio:1;border-radius:50%;border:3px dashed #d9c9b2;display:flex;align-items:center;justify-content:center;font-size:24px;position:relative;background:#fff}
+.stamp.got{border:3px solid var(--c1);background:#fff1ec}
+.stamp small{position:absolute;bottom:-16px;font-size:10px;font-weight:800;color:var(--sub);white-space:nowrap}
+.stamp.gold{border-color:#d4a017}.stamp.gold.got{background:#fff6d6}
+.mcard{border-radius:20px;padding:20px 14px;color:#5a3d00;background:linear-gradient(135deg,#fff3c4,#f7cd4c 45%,#fff0b3 60%,#e8b62c);
+  box-shadow:0 6px 0 #b98a12,inset 0 0 0 4px rgba(255,255,255,.6);margin:18px 0 14px;font-weight:800}
+.mcard .t{font-size:30px;letter-spacing:.06em}
+.mcard .big{font-size:60px;line-height:1.1}
+.mcard .d{font-size:13px;margin-top:6px;font-weight:500}
 </style>
 </head>
 <body>
@@ -216,6 +232,7 @@ h2{font-size:22px;margin:6px 0 12px}
     <div class="row"><span class="lab">はやさ</span><div class="seg" id="setSpeed"><button data-v="72">ふつう</button><button data-v="56">ゆっくり</button></div></div>
     <div class="row"><span class="lab">こえ</span><div class="seg" id="setVoice"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
     <div class="row"><span class="lab">カチカチ</span><div class="seg" id="setClick"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
+    <div class="row" style="justify-content:flex-end"><button class="tog" id="resetBtn" style="font-size:13px">せんせいよう：おべんとうの きろくを けす</button></div>
   </div>
 </section>
 
@@ -242,21 +259,21 @@ h2{font-size:22px;margin:6px 0 12px}
 
 <!-- BENTO -->
 <section class="view" id="v-bento">
-  <div class="row" style="justify-content:center;margin-bottom:8px">
-    <div class="seg" id="bnMode"><button data-v="free">じゆう</button><button data-v="odai">おだい</button></div>
-    <div class="seg" id="bnLv"><button data-v="shape">かたち</button><button data-v="score">がくふ</button><button data-v="ear">おと</button></div>
+  <div class="row" style="justify-content:space-between;margin-bottom:8px">
+    <div class="seg" id="bnMode"><button data-v="odai">チャレンジ</button><button data-v="free">じゆう</button></div>
+    <button class="tog on" id="bnCardBtn" style="color:var(--ink)">🎫 カード</button>
   </div>
+  <div class="bn-lv" id="bnLvBar"></div>
   <div id="bnTarget"></div>
   <div class="bento" id="bnBox"></div>
   <div id="bnNote" class="bn-note"></div>
-  <div class="btns dbtns" style="margin:8px 0 12px">
+  <div class="btns dbtns" style="margin:8px 0 10px">
     <button class="bigbtn" id="bnPlay" style="background:var(--c3)">▶ よむ</button>
     <button class="bigbtn gray" id="bnUndo">↩もどす</button>
     <button class="bigbtn gray" id="bnClear">🗑けす</button>
     <button class="bigbtn" id="bnNext" style="display:none;background:var(--c4)">つぎ▶</button>
   </div>
   <div class="bn-msg" id="bnMsg"></div>
-  <div class="chips" id="bnChips" style="justify-content:center"></div>
   <div class="bn-pal" id="bnPal"></div>
 </section>
 
@@ -303,11 +320,11 @@ const WORDS=[
   {nm:'じゅうろくぶおんぷ',id:'f7',k:'hassaku',nk:'juurokubu',g:4,w:'はっさく',emj:'🍊',col:'var(--c16)',ev:[N(.25,'は'),N(.25,'っ',1),N(.25,'さ'),N(.25,'く')]},
   {nm:'じゅうろくぶおんぷ',id:'f8',k:'korokke',nk:'juurokubu',g:4,w:'コロッケ',emj:'🥔',col:'var(--c16)',ev:[N(.25,'コ'),N(.25,'ロ'),N(.25,'っ',1),N(.25,'ケ')]},
   {nm:'じゅうろくぶおんぷ',id:'f9',k:'cookie',nk:'juurokubu',g:4,w:'クッキー',emj:'🍪',col:'var(--c16)',ev:[N(.25,'ク'),N(.25,'っ',1),N(.5,'キー')]},
-  {nm:'ごれんぷ',id:'t5',k:'omurice',nk:'gorenpu',g:4,w:'オムライス',emj:'🍳',col:'var(--c16)',ev:'オムライス'.split('').map(c=>T(5,c))},
-  {nm:'ろくれんぷ',id:'t6',k:'okonomiyaki',nk:'rokurenpu',g:4,w:'おこのみやき',emj:'🥞',col:'var(--c16)',ev:'おこのみやき'.split('').map(c=>T(6,c))},
-  {nm:'しちれんぷ',id:'t7',k:'mitarashi',nk:'shichirenpu',g:4,w:'みたらしだんご',emj:'🍡',col:'var(--c16)',ev:'みたらしだんご'.split('').map(c=>T(7,c))},
+  {nm:'ごれんぷ',id:'t5',k:'omurice',nk:'gorenpu',g:5,w:'オムライス',emj:'🍳',col:'var(--c16)',ev:'オムライス'.split('').map(c=>T(5,c))},
+  {nm:'ろくれんぷ',id:'t6',k:'okonomiyaki',nk:'rokurenpu',g:5,w:'おこのみやき',emj:'🥞',col:'var(--c16)',ev:'おこのみやき'.split('').map(c=>T(6,c))},
+  {nm:'しちれんぷ',id:'t7',k:'mitarashi',nk:'shichirenpu',g:5,w:'みたらしだんご',emj:'🍡',col:'var(--c16)',ev:'みたらしだんご'.split('').map(c=>T(7,c))},
 ];
-const GROUPS=[{g:1,name:'のばす おと'},{g:2,name:'おやすみ'},{g:3,name:'はんぶん'},{g:4,name:'たべもの'}];
+const GROUPS=[{g:1,name:'のばす おと'},{g:2,name:'おやすみ'},{g:3,name:'はんぶん'},{g:4,name:'たべもの'},{g:5,name:'れんぷ'}];
 const byId=id=>WORDS.find(w=>w.id===id);
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
 const near=(a,b)=>Math.abs(a-b)<1e-3;
@@ -361,7 +378,7 @@ function buzz(){const a=ac();const t=a.currentTime;tone(t,.18,null,220,.22);tone
 /* own files (images / voices) on GitHub */
 const AV=new Set();const CLIPS={};let CLIP_NOW=null;
 const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて いうかな',
-  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
+  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
 function clipName(key){return AV.has(key+'.mp3')?key+'.mp3':AV.has(key+'.wav')?key+'.wav':AV.has(key+'.m4a')?key+'.m4a':null;}
 async function probeFiles(){
   if(!/^https?:/.test(location.protocol))return;
@@ -734,114 +751,178 @@ function unitEv(w,info){
   return w.ev.slice(0,1);
 }
 
-/* ===================== bento (1小節パズル) ===================== */
-const BN={mode:'free',lv:'shape',tab:1,items:[],target:null,done:false,cap:4};
+/* ===================== bento (1小節パズル・レベルつき) ===================== */
+const BN_LEVELS=[['q','w'],['h'],['dh'],['qr','hr'],['ee'],['er','re'],['f1','f2','f6'],['f3','f4','f5'],['f7','f8','f9'],['t5','t6','t7']];
+const BN_STAMP=['🐕','🐘','🌈','🎈','💤','🐿️','🎵','🐙','🥩','🍡'];
+const BP=Object.assign({lv:1,step:'shape',hist:[],stamps:{},master:null,renpu:null},store.get('rz_bn',{}));
+const bpSave=()=>store.set('rz_bn',BP);
+const BN={mode:'odai',items:[],target:null,done:false,cap:4,miss:false,hint:false,auto:0};
 const bnLen=()=>BN.items.reduce((a,w)=>a+len(w),0);
-function bnPool(){
-  const g=new Set([1,BN.tab]);
-  return WORDS.filter(w=>g.has(w.g)&&!(w.g===2&&len(w)>2&&BN.tab!==2));
-}
+const today=()=>{const d=new Date();return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;};
+function bnUnlocked(){return BN_LEVELS.slice(0,BP.lv).flat().map(byId);}
+function bnNewIds(){return BN_LEVELS[BP.lv-1];}
+function bnLast(n){return BP.hist.slice(-n);}
+function bnStruggling(){const l=bnLast(5);return BP.step==='score'&&l.length>=3&&l.reduce((a,b)=>a+b,0)<=Math.floor(l.length/2);}
 function bnMakeTarget(){
-  const base=bnPool();const pool=base.concat(base.filter(w=>w.g===1));let rem=BN.cap,out=[],guard=0;
-  while(rem>1e-6&&guard++<50){
-    const ok=pool.filter(w=>len(w)<=rem+1e-6&&!(out.length===0&&len(w)>=BN.cap&&Math.random()<.7));
-    const c=(ok.length?ok:pool.filter(w=>len(w)<=rem+1e-6));
-    const w=c[Math.random()*c.length|0];out.push(w);rem-=len(w);
-  }
-  if(out.every(w=>w.ev.every(e=>e.r)))return bnMakeTarget();
+  const pool=bnUnlocked(),nw=bnNewIds(),easy=bnStruggling();
+  let out,guard=0;
+  do{
+    out=[];let rem=BN.cap,g=0;
+    while(rem>1e-6&&g++<30){
+      let c=pool.filter(w=>len(w)<=rem+1e-6);
+      if(easy&&BP.lv>1){const old=c.filter(w=>!nw.includes(w.id));if(old.length)c=old;}
+      const wt=c.map(w=>nw.includes(w.id)&&!easy?3:1);
+      let r=Math.random()*wt.reduce((a,b)=>a+b,0),pick=c[0];
+      for(let i=0;i<c.length;i++){r-=wt[i];if(r<=0){pick=c[i];break;}}
+      out.push(pick);rem-=len(pick);
+    }
+    guard++;
+  }while(guard<40&&(
+    out.every(w=>w.ev.every(e=>e.r))||
+    (!easy&&BP.lv>1&&!out.some(w=>nw.includes(w.id))&&Math.random()<.75)||
+    (BN.target&&out.map(w=>w.id).join()===BN.target.map(w=>w.id).join()&&BP.lv>1)));
   return out;
 }
-function renderBento(){
-  ['#bnMode','#bnLv'].forEach((id,i)=>{const key=i?'lv':'mode';
-    $(id).querySelectorAll('button').forEach(b=>{b.classList.toggle('on',b.dataset.v===BN[key]);
-      b.onclick=()=>{ac();BN[key]=b.dataset.v;BN.items=[];BN.done=false;BN.target=BN.mode==='odai'?bnMakeTarget():null;renderBento();if(BN.mode==='odai')bnIntro();};});});
-  $('#bnLv').style.display=BN.mode==='odai'?'inline-flex':'none';
-  if(BN.mode==='odai'&&!BN.target)BN.target=bnMakeTarget();
-  $('#bnChips').innerHTML=GROUPS.filter(g=>g.g!==1).map(g=>`<button class="chip${g.g===BN.tab?' on':''}" data-g="${g.g}">${g.g===2?'のばす＋おやすみ':g.g===3?'のばす＋はんぶん':'のばす＋たべもの'}</button>`).join('');
-  $('#bnChips').innerHTML=`<button class="chip${BN.tab===1?' on':''}" data-g="1">のばす おと</button>`+$('#bnChips').innerHTML;
-  $('#bnChips').querySelectorAll('.chip').forEach(c=>c.onclick=()=>{BN.tab=+c.dataset.g;BN.items=[];BN.done=false;BN.target=BN.mode==='odai'?bnMakeTarget():null;renderBento();});
-  bnDrawTarget();bnDrawBox();bnDrawPal();
-  $('#bnNext').style.display=BN.mode==='odai'?'':'none';
-  if(!BN.done)$('#bnMsg').textContent=BN.mode==='free'?'おかずを タップして つめよう':'おだいと おなじに つめよう';
+function bnNewQ(){
+  clearTimeout(BN.auto);
+  BN.items=[];BN.done=false;BN.miss=false;
+  const l2=bnLast(2);
+  BN.hint=BP.step==='shape'||(l2.length===2&&!l2[0]&&!l2[1]);
+  BN.target=bnMakeTarget();
 }
-function bnIntro(){if(BN.lv==='ear'&&BN.target)setTimeout(()=>bnPlayTarget(),300);}
+function renderBento(){
+  $('#bnMode').querySelectorAll('button').forEach(b=>{b.classList.toggle('on',b.dataset.v===BN.mode);
+    b.onclick=()=>{ac();BN.mode=b.dataset.v;if(BN.mode==='odai')bnNewQ();else{BN.items=[];BN.done=false;}renderBento();};});
+  if(BN.mode==='odai'&&!BN.target)bnNewQ();
+  bnDrawLv();bnDrawTarget();bnDrawBox();bnDrawPal();
+  $('#bnNext').style.display=BN.mode==='odai'?'':'none';
+  if(!BN.done)$('#bnMsg').textContent=BN.mode==='free'?'おかずを タップして つめよう':BN.hint?'おなじ かたちの おかずを いれよう':'がくふと おなじに つめよう';
+}
+function bnDrawLv(){
+  const el=$('#bnLvBar');
+  if(BN.mode==='free'){el.innerHTML=`<span class="step">レベル${BP.lv} までの おかずで あそべるよ</span>`;return;}
+  let dots='';
+  if(BP.step==='shape'){let k=0;for(let i=BP.hist.length-1;i>=0&&BP.hist[i];i--)k++;k=Math.min(k,3);for(let i=0;i<3;i++)dots+=`<i class="${i<k?'ok':''}"></i>`;}
+  else{const l=bnLast(5);for(let i=0;i<5;i++)dots+=`<i class="${i<l.length?(l[i]?'ok':'ng'):''}"></i>`;}
+  el.innerHTML=`<span class="lvb">レベル ${BP.lv}${BP.lv===10?' れんぷ':''}</span><span class="step">${BP.step==='shape'?'かたち':'がくふ'}</span><span class="pd">${dots}</span>`;
+}
 function bnDrawTarget(){
   const el=$('#bnTarget');
   if(BN.mode!=='odai'){el.innerHTML='';return;}
-  const ev=BN.target.flatMap(w=>w.ev);
-  if(BN.lv==='score')el.innerHTML=`<div class="bn-target"><div class="hint" style="margin:0">この リズムを つくろう</div>${notation(ev,1.6)}</div>`;
-  else if(BN.lv==='ear')el.innerHTML=`<div class="bn-target"><button class="bigbtn" id="bnHear">🔊 おだいを きく</button></div>`;
-  else el.innerHTML=`<div class="hint" style="text-align:center;margin:0 0 6px">おなじ かたちの おかずを いれよう</div>`;
-  const h=$('#bnHear');if(h)h.onclick=bnPlayTarget;
+  if(BP.step==='score'){el.innerHTML=`<div class="bn-target"><div class="hint" style="margin:0">この リズムを つくろう</div>${notation(BN.target.flatMap(w=>w.ev),1.6)}</div>`;}
+  else el.innerHTML='';
 }
-function bnPlayTarget(){playWord({ev:BN.target.flatMap(w=>w.ev)},{clicks:true});}
 function bnUnit(){return Math.floor(Math.min(92,(availW()-30)/BN.cap));}
 function bnDrawBox(){
   const u=bnUnit(),bh=Math.round(Math.min(u,95)*.72);
   let ghosts='';
-  if(BN.mode==='odai'&&BN.lv==='shape'){let t=0,g='';BN.target.forEach(w=>{let inner='';
+  if(BN.mode==='odai'&&BN.hint){let t=0,g='';BN.target.forEach(w=>{let inner='';
     w.ev.forEach(e=>{if(e.d>=1){for(let k=0;k<e.d;k++)inner+=blk(e,1,'',t+k,w);}else inner+=blk(e,e.d,'',t,w);t+=e.d;});
     g+=`<div class="pc" style="margin-right:2px">${inner}</div>`;});
     ghosts=`<div class="ghost">${g}</div>`;}
   let pcs='',t=0;
-  BN.items.forEach((w,i)=>{
-    let inner='';let tt=t;
+  BN.items.forEach((w,i)=>{let inner='',tt=t;
     w.ev.forEach(e=>{if(e.d>=1){for(let k=0;k<e.d;k++)inner+=blk(e,1,e.syl[k]||'',tt+k,w);}else inner+=blk(e,e.d,e.syl[0],tt,w);tt+=e.d;});
-    pcs+=`<div class="pc" data-i="${i}" style="margin-right:2px">${inner}</div>`;t+=len(w);
-  });
+    pcs+=`<div class="pc" data-i="${i}" style="margin-right:2px">${inner}</div>`;t+=len(w);});
   let cells='';for(let k=0;k<BN.cap;k++)cells+='<div class="cell"></div>';
-  $('#bnBox').className='bento'+(BN.done?' good':'');
-  $('#bnBox').style.width=(BN.cap*u+26)+'px';
-  $('#bnBox').innerHTML=`<div class="cells">${cells}</div><div class="lay blocks" style="--u:${u}px;--bh:${bh}px;height:${bh+8}px;justify-content:flex-start">${ghosts}${pcs}</div>`;
-  $('#bnBox').querySelectorAll('.pc').forEach(p=>p.onclick=()=>{if(BN.done&&BN.mode==='odai')return;BN.items.splice(+p.dataset.i,1);BN.done=false;bnDrawBox();bnDrawPal();bnDrawNote();$('#bnMsg').textContent='';});
-  bnDrawNote();
-}
-function bnDrawNote(){
-  const ev=BN.items.flatMap(w=>w.ev);
-  $('#bnNote').innerHTML=ev.length?notation(ev,1.4):'';
+  const box=$('#bnBox');box.className='bento'+(BN.done&&BN.mode==='odai'?' good':'');box.style.width=(BN.cap*u+26)+'px';
+  box.innerHTML=`<div class="cells">${cells}</div><div class="lay blocks" style="--u:${u}px;--bh:${bh}px;height:${bh+8}px;justify-content:flex-start">${ghosts}${pcs}</div>`;
+  box.querySelectorAll('.pc[data-i]').forEach(p=>p.onclick=()=>{if(BN.done&&BN.mode==='odai')return;BN.items.splice(+p.dataset.i,1);BN.done=false;bnDrawBox();bnDrawPal();$('#bnMsg').textContent='';});
+  const ev=BN.items.flatMap(w=>w.ev);$('#bnNote').innerHTML=ev.length?notation(ev,1.4):'';
 }
 function bnDrawPal(){
-  const rem=BN.cap-bnLen();
-  const ws=BN.tab===1?WORDS.filter(w=>w.g===1):WORDS.filter(w=>w.g===1||w.g===BN.tab);
-  $('#bnPal').innerHTML=ws.map(w=>`<button class="bn-pc${len(w)>rem+1e-6?' no':''}" data-id="${w.id}">
+  const rem=BN.cap-bnLen(),nw=BN.mode==='odai'?bnNewIds():[];
+  $('#bnPal').innerHTML=bnUnlocked().map(w=>`<button class="bn-pc${len(w)>rem+1e-6?' no':''}" data-id="${w.id}">
+      ${nw.includes(w.id)&&BP.lv>1?'<span class="newb">NEW</span>':''}
       ${notation(w.ev,len(w)<1?1.2:.9)}${blocks(w,Math.min(22,Math.floor(80/len(w))),'nolabel')}<div class="w">${w.w}</div></button>`).join('');
   $('#bnPal').querySelectorAll('.bn-pc').forEach(b=>b.onclick=()=>bnAdd(byId(b.dataset.id),b));
 }
 function bnShake(el){el.classList.remove('bad');void el.offsetWidth;el.classList.add('bad');}
 function bnAdd(w,btn){
-  ac();if(BN.done)return;
+  ac();if(BN.done&&BN.mode==='odai')return;
   const rem=BN.cap-bnLen();
-  if(len(w)>rem+1e-6){bnShake(btn);buzz();$('#bnMsg').textContent='はいらないよ！ ながすぎるね';say('はいらないよ');return;}
-  if(BN.mode==='odai'&&BN.lv==='shape'){
-    const nx=BN.target[BN.items.length];
-    if(!nx||!sameSound(nx,w)){bnShake(btn);buzz();$('#bnMsg').textContent='かたちが ちがうよ';return;}
-  }
-  BN.items.push(w);
-  speak('koe-'+w.k,w.w);
-  bnDrawBox();bnDrawPal();
-  $('#bnMsg').textContent='';
+  if(len(w)>rem+1e-6){bnShake(btn);buzz();$('#bnMsg').textContent='はいらないよ！ ながすぎるね';speak('koe-hairanai','はいらないよ');return;}
+  if(BN.mode==='odai'&&BN.hint){const nx=BN.target[BN.items.length];
+    if(!nx||!sameSound(nx,w)){bnShake(btn);buzz();BN.miss=true;$('#bnMsg').textContent='かたちが ちがうよ';return;}}
+  BN.items.push(w);speak('koe-'+w.k,w.w);
+  bnDrawBox();bnDrawPal();$('#bnMsg').textContent='';
   if(bnLen()>=BN.cap-1e-6)setTimeout(bnFull,450);
 }
-function bnSeq(){return BN.items.flatMap(w=>w.ev).map(e=>[Math.round(e.d*1000),e.r]);}
+const evKey=ws=>JSON.stringify(ws.flatMap(w=>w.ev).map(e=>[Math.round(e.d*1000),e.r]));
 async function bnFull(){
-  if(BN.mode==='free'){
-    $('#bnMsg').textContent='できた！ よんでみるよ';await wait(200);bnRead();return;
+  if(BN.mode==='free'){$('#bnMsg').textContent='できた！ よんでみるよ';await wait(200);bnRead();return;}
+  if(evKey(BN.items)!==evKey(BN.target)){
+    BN.miss=true;bnShake($('#bnBox'));buzz();$('#bnMsg').textContent='ちがうところが あるよ。おかずを タップして とりだそう';return;}
+  BN.done=true;bnDrawBox();yay();flash('⭕');addStar(BN.miss?0:1);
+  const r=bnRecord(!BN.miss);bnDrawLv();
+  $('#bnMsg').textContent=BN.miss?'できたね！':'せいかい！ おいしそう！';
+  await wait(700);const ms=bnRead();
+  BN.auto=setTimeout(()=>{
+    if(VIEW!=='bento'||BN.mode!=='odai')return;
+    if(r.level)bnLevelUp(r.cleared);
+    else{if(r.step){$('#bnMsg').textContent='かたち クリア！ こんどは がくふだけで やってみよう';yay();}
+      setTimeout(()=>{if(VIEW==='bento'&&BN.mode==='odai'&&BN.done){bnNewQ();renderBento();}},r.step?1600:300);}
+  },ms+800);
+}
+function bnRecord(ok){
+  BP.hist.push(ok?1:0);if(BP.hist.length>12)BP.hist.shift();
+  const res={step:false,level:false,cleared:BP.lv};
+  if(BP.step==='shape'){const l=bnLast(3);if(l.length===3&&l.every(x=>x)){BP.step='score';BP.hist=[];res.step=true;}}
+  else if(ok){const l4=bnLast(4),l5=bnLast(5);
+    if((l4.length===4&&l4.every(x=>x))||(l5.length===5&&l5.reduce((a,b)=>a+b,0)>=4))res.level=true;}
+  if(res.level){
+    BP.stamps[BP.lv]=today();
+    if(BP.lv===9&&!BP.master)BP.master=today();
+    if(BP.lv===10)BP.renpu=BP.renpu||today();
+    if(BP.lv<10)BP.lv++;
+    BP.step='shape';BP.hist=[];
   }
-  const ok=JSON.stringify(bnSeq())===JSON.stringify(BN.target.flatMap(w=>w.ev).map(e=>[Math.round(e.d*1000),e.r]));
-  if(ok){BN.done=true;bnDrawBox();yay();addStar(BN.lv==='shape'?1:2);flash('⭕');$('#bnMsg').textContent='せいかい！ おいしそう！';
-    await wait(900);bnRead();}
-  else{bnShake($('#bnBox'));buzz();$('#bnMsg').textContent='おだいと ちがうところが あるよ。おかずを タップして とりだそう';
-    if(BN.lv==='ear'){await wait(800);bnPlayTarget();}}
+  bpSave();return res;
+}
+function openModal(html){$('#mbox').innerHTML=html;$('#modal').classList.add('on');}
+function masterCard(){return `<div class="mcard"><div class="big">🏆</div><div class="t">リズムマスター</div>
+  <div>4マスの リズムが よめるように なったよ</div><div class="d">${BP.master}</div></div>`;}
+function bnLevelUp(cleared){
+  let html;
+  if(cleared===9){
+    html=`<h3>🎉 おめでとう！ 🎉</h3>${masterCard()}<div class="hint">この がめんを せんせいに みせてね</div>
+      <div class="hint">つぎは おまけの「れんぷ」に ちょうせん できるよ</div>`;
+    P('master');
+  }else if(cleared===10){
+    html=`<h3>🎉 れんぷマスター 🎉</h3><div class="stamp got gold" style="width:110px;margin:10px auto;font-size:54px">🍡</div><div class="hint">オムライス・おこのみやき・みたらしだんご ぜんぶ できたね！</div>`;
+    P('levelup');
+  }else{
+    const nw=bnNewIds().map(byId);
+    html=`<h3>🎉 レベル ${BP.lv} に アップ！</h3>
+      <div class="stamp got" style="width:84px;margin:6px auto;font-size:40px">${BN_STAMP[cleared-1]}</div>
+      <div class="hint">スタンプ ゲット！ あたらしい おかずが ふえたよ</div>
+      <div class="grid" style="grid-template-columns:repeat(${nw.length},1fr);margin:10px 0">${nw.map(w=>`<div class="card">${notation(w.ev,1)}${blocks(w,Math.min(22,Math.floor(80/len(w))),'nolabel')}<div class="w">${w.w}</div></div>`).join('')}</div>`;
+    P('levelup');
+  }
+  yay();
+  openModal(html+`<div class="btns" style="margin-top:10px"><button class="bigbtn" id="mGo" style="background:var(--c3)">やってみる ▶</button></div>`);
+  $('#mGo').onclick=()=>{closeModal();bnNewQ();renderBento();};
+}
+function bnShowCard(){
+  let st='';for(let i=1;i<=10;i++){const got=BP.stamps[i];
+    st+=`<div class="stamp${got?' got':''}${i===10?' gold':''}">${got?BN_STAMP[i-1]:''}<small>${i===10?'れんぷ':'Lv'+i}</small></div>`;}
+  openModal(`<h3>🎫 スタンプカード</h3><div class="hint">いまは レベル ${BP.lv}</div><div class="stamps">${st}</div>
+    ${BP.master?masterCard():'<div class="hint">レベル9 まで クリアすると「リズムマスター」の カードが もらえるよ</div>'}
+    <div class="btns"><button class="bigbtn gray" id="mClose">とじる</button></div>`);
+  $('#mClose').onclick=closeModal;
 }
 function bnRead(){
-  if(!BN.items.length)return;
-  const lay=$('#bnBox .lay');
-  playWord({ev:BN.items.flatMap(w=>w.ev)},{el:lay,clicks:S.click});
+  if(!BN.items.length)return 0;
+  return playWord({ev:BN.items.flatMap(w=>w.ev)},{el:$('#bnBox .lay'),clicks:S.click});
 }
+$('#bnCardBtn').onclick=bnShowCard;
 $('#bnPlay').onclick=()=>{ac();bnRead();};
-$('#bnUndo').onclick=()=>{if(BN.done&&BN.mode==='odai')return;BN.items.pop();BN.done=false;bnDrawBox();bnDrawPal();$('#bnMsg').textContent='';};
-$('#bnClear').onclick=()=>{if(BN.done&&BN.mode==='odai')return;BN.items=[];BN.done=false;bnDrawBox();bnDrawPal();$('#bnMsg').textContent='';};
-$('#bnNext').onclick=()=>{ac();BN.items=[];BN.done=false;BN.target=bnMakeTarget();renderBento();bnIntro();};
+$('#bnUndo').onclick=()=>{if(BN.done&&BN.mode==='odai')return;BN.items.pop();bnDrawBox();bnDrawPal();$('#bnMsg').textContent='';};
+$('#bnClear').onclick=()=>{if(BN.done&&BN.mode==='odai')return;BN.items=[];bnDrawBox();bnDrawPal();$('#bnMsg').textContent='';};
+$('#bnNext').onclick=()=>{ac();if(!BN.done&&BN.mode==='odai'){BP.hist.push(0);if(BP.hist.length>12)BP.hist.shift();bpSave();}bnNewQ();renderBento();};
+(()=>{const b=document.getElementById('resetBtn');if(!b)return;let armed=0;
+  b.onclick=()=>{if(!armed){armed=1;b.textContent='ほんとうに けす？ もういちど おしてね';setTimeout(()=>{armed=0;b.textContent='せんせいよう：おべんとうの きろくを けす';},3500);return;}
+    Object.assign(BP,{lv:1,step:'shape',hist:[],stamps:{},master:null,renpu:null});bpSave();armed=0;b.textContent='けしました';};})();
 
 /* ===================== quiz ===================== */
 const QZ={type:'listen',groups:new Set([1]),choices:2,show:true,i:0,total:5,score:0,alive:false,lock:false,prev:null};
