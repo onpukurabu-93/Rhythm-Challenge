@@ -527,7 +527,7 @@ function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_T
 new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
   else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/9-e';
+const VERSION='11/9-f';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -597,7 +597,7 @@ function clipName0(key){return AV.has(key+'.mp3')?key+'.mp3':AV.has(key+'.wav')?
 function clipName(key){return clipName0(key)||(CLIP_ALIAS[key]?clipName0(CLIP_ALIAS[key]):null);}
 async function probeFiles(){
   if(!/^https?:/.test(location.protocol))return;
-  const keys=[];WORDS.forEach(w=>{keys.push('koe-'+w.k,'na-'+w.nk);});Object.keys(PROMPTS).forEach(k=>keys.push('koe-'+k));
+  const keys=[];WORDS.forEach(w=>{keys.push('koe-'+w.k,'na-'+w.nk);});Object.keys(PROMPTS).forEach(k=>keys.push('koe-'+k));keys.push('na-hachibu','na-hachibu-kyuufu');
   Object.values({tan:1,un:1,ni:1,san:1,shi:1,ta:1,ka:1,u:1}).length;['tan','un','ni','san','shi','ta','ka','u'].forEach(k=>keys.push('syl-'+k));
   Object.values(CLIP_ALIAS).forEach(k=>keys.push(k));
   ['zou','inu','risu'].forEach(k=>keys.push('mel-'+k));for(let k=1;k<=16;k++)keys.push('kazu-'+k);
@@ -1018,6 +1018,7 @@ const PCOL={1:'var(--c1)',2:'var(--c2)',3:'var(--c3)',4:'var(--c4)'};
 let NL_TIMERS=[];
 function closeModal(){NL_TIMERS.forEach(clearTimeout);NL_TIMERS=[];$('#modal').classList.remove('on','sheet');document.body.classList.remove('sheeton');}
 $('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+function NKMAP(){const m={'はちぶおんぷ':'hachibu','はちぶきゅうふ':'hachibu-kyuufu','じゅうろくぶおんぷ':'juurokubu','たん（しぶおんぷ）':'shibuonpu'};WORDS.forEach(w=>{if(w.nk&&!m[w.nm])m[w.nm]=w.nk;});return m;}
 function openNameLesson(w){
   const info=NAMEINFO[w.id];if(!info){speak('na-'+w.nk,w.nm);return;}
   const base=byId(info.base),bl=len(base);
@@ -1052,7 +1053,7 @@ function openNameLesson(w){
     <div class="btns" style="margin-top:12px"><button class="bigbtn" id="nlAgain" style="background:var(--c3)">🔁 もういちど</button><button class="bigbtn gray" id="nlClose">とじる</button></div>`;
   $('#modal').classList.add('on');
   $('#nlClose').onclick=closeModal;$('#nlAgain').onclick=()=>openNameLesson(w);
-  $('#mbox').querySelectorAll('.nl-p').forEach(el=>el.onclick=()=>{const n=el.dataset.nm;if(!n)return;const an=$('#nlAns');if(an){an.textContent=n;an.classList.remove('pop');void an.offsetWidth;an.classList.add('pop');}say(n);});
+  $('#mbox').querySelectorAll('.nl-p').forEach(el=>el.onclick=()=>{const n=el.dataset.nm;if(!n)return;const an=$('#nlAns');if(an){an.textContent=n;an.classList.remove('pop');void an.offsetWidth;an.classList.add('pop');}const nk=NKMAP()[n];nk?speak('na-'+nk,n):say(n);});
   const els=[...$('#mbox').querySelectorAll('.nl-row.top .nl-p')];
   const kz=!info.parts&&els.length>1&&clipName('kazu-1')&&S.voice;
   const step=kz?Math.max(520,Math.min(650,2600/els.length)):Math.min(650,Math.max(150,2600/els.length));
@@ -1338,8 +1339,8 @@ const COURSE=[
   {id:'e1',opt:1,bpm:40,t:'れんぷ（おまけ）',cap:4,pool:['q','qr','h','t5','t6','t7'],must:['t5','t6','t7'],need:2,say:'れんぷ'},
 ];
 const NAMEQ=[{id:'w',nm:'ぜんおんぷ',ev:[N(4,'')]},{id:'h',nm:'にぶおんぷ',ev:[N(2,'')]},{id:'q',nm:'しぶおんぷ',ev:[N(1,'')]},
-  {id:'ee',nm:'はちぶおんぷ',ev:[N(.5,'')]},{id:'f1',nm:'じゅうろくぶおんぷ',ev:[N(.25,'')]},{id:'dh',nm:'ふてん にぶおんぷ',ev:[N(3,'')]}];
-const NAMEQR=[{id:'wr',nm:'ぜんきゅうふ',ev:[N(4,'',1)]},{id:'hr',nm:'にぶきゅうふ',ev:[N(2,'',1)]},{id:'qr',nm:'しぶきゅうふ',ev:[N(1,'',1)]},{id:'er8',nm:'はちぶきゅうふ',ev:[N(.5,'',1)]}];
+  {id:'ee',nk:'hachibu',nm:'はちぶおんぷ',ev:[N(.5,'')]},{id:'f1',nm:'じゅうろくぶおんぷ',ev:[N(.25,'')]},{id:'dh',nm:'ふてん にぶおんぷ',ev:[N(3,'')]}];
+const NAMEQR=[{id:'wr',nm:'ぜんきゅうふ',ev:[N(4,'',1)]},{id:'hr',nm:'にぶきゅうふ',ev:[N(2,'',1)]},{id:'qr',nm:'しぶきゅうふ',ev:[N(1,'',1)]},{id:'er8',nk:'hachibu-kyuufu',nm:'はちぶきゅうふ',ev:[N(.5,'',1)]}];
 const CS=Object.assign({cur:0,passes:{},stamps:{}},store.get('rz_course',{}));
 const csSave=()=>store.set('rz_course',CS);
 const ST={i:0,items:[],taps:[],timers:[],sess:null,run:0,btn:'auto',window:false,noTap:0,first:true,D:0,custom:null,cpass:0,cg:0,m:null};
@@ -2023,7 +2024,7 @@ async function nextQ(){
   else if(QZ.type==='name'){
     const list=NAMEQ.concat(QZ.rest?NAMEQR:[]);const ans=pickAns(list);
     const others=shuffle(list.filter(x=>x!==ans)).slice(0,3);const ch=shuffle([ans,...others]);
-    const key=x=>'na-'+((byId(x.id)||{}).nk||x.id);
+    const key=x=>'na-'+(x.nk||(byId(x.id)||{}).nk||x.id);
     box.innerHTML=progHTML()+`<div class="qprompt">なんて いう おんぷ？</div>
       <button class="qnote qtapnote" id="qNameNote">${notation(ans.ev,2.4,true,null,true)}<div class="hint" style="margin:0">👆 おんぷを おすと なまえを いうよ</div></button>
       <div class="qchoices tlist">${ch.map(x=>textChoice(x.id,x.nm,key(x),x.nm)).join('')}</div>`;
