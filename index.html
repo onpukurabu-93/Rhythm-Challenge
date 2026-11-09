@@ -527,7 +527,7 @@ function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_T
 new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
   else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/9-f';
+const VERSION='11/9-g';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -591,7 +591,7 @@ function buzz(){const a=ac();const t=a.currentTime;tone(t,.18,null,220,.35);tone
 /* own files (images / voices) on GitHub */
 const AV=new Set();const CLIPS={};let CLIP_NOW=null;
 const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて うたうかな',
-  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは ひとりで。いいながら ボタンを たたいてね',tebyoushi:'こんどは ひとりで。いいながら てを たたいてね',rhythm:'ずんだもんと いっしょに、くちで いいながら たたこう',osu:'こんどは ひとりで。おんぷの ながさだけ ボタンを おしてね',mouichidoosu:'もういちど おしてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',again:'もういちど やるときは ボタンを おしてね',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',clear:'クリア おめでとう',nanko:'いくつ のばすかな',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
+  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは ひとりで。いいながら ボタンを たたいてね',tebyoushi:'こんどは ひとりで。いいながら てを たたいてね',rhythm:'ずんだもんと いっしょに、くちで いいながら たたこう',osaete:'こんどは おんぷの ながさだけ ボタンを おさえてみよう',mouichidoosu:'もういちど おしてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',again:'もういちど やるときは ボタンを おしてね',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',yatta:'やったー おめでとう',nanko:'いくつ のばすかな',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
 const CLIP_ALIAS={'koe-tan3':'koe-tan23','koe-tan4':'koe-tan234','koe-un3':'koe-un23','koe-un4':'koe-un234'};
 function clipName0(key){return AV.has(key+'.mp3')?key+'.mp3':AV.has(key+'.wav')?key+'.wav':AV.has(key+'.m4a')?key+'.m4a':null;}
 function clipName(key){return clipName0(key)||(CLIP_ALIAS[key]?clipName0(CLIP_ALIAS[key]):null);}
@@ -601,7 +601,10 @@ async function probeFiles(){
   Object.values({tan:1,un:1,ni:1,san:1,shi:1,ta:1,ka:1,u:1}).length;['tan','un','ni','san','shi','ta','ka','u'].forEach(k=>keys.push('syl-'+k));
   Object.values(CLIP_ALIAS).forEach(k=>keys.push(k));
   ['zou','inu','risu'].forEach(k=>keys.push('mel-'+k));for(let k=1;k<=16;k++)keys.push('kazu-'+k);
-  ['ta','ko','ya','ki','ra','a','me','n','su','te','e','ju','u','ze','ri','i','ma','go','o','ha','sa','ku','ro','ke','mu','no','mi','shi','da','ka'].forEach(k=>keys.push('kana-'+k));
+  [...new Set(Object.values(KANAR))].forEach(k=>keys.push('kana-'+k));
+  /* PROMPTS の ほかに よぶ こえ（どうぶつクイズ・おべんとう・なまえ・ステップ） */
+  ['bye-zou','bye-inu','bye-risu','dare','chigau','tsuginodare','ana','sukima'].forEach(k=>keys.push('koe-'+k));
+  [...NAMEQ,...NAMEQR].forEach(x=>keys.push('koe-dore-'+x.id));COURSE.forEach(c=>keys.push('koe-step-'+c.id));
   const names=[...new Set(keys)].flatMap(k=>/^kana-/.test(k)?[k+'.mp3']:/^mel-/.test(k)?[k+'.m4a',k+'.mp3']:[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.map(w=>'e-'+w.k+'.png'));
   await Promise.all(names.map(n=>fetch(n,{method:'HEAD',cache:'no-cache'}).then(r=>{if(r.ok)AV.add(n);}).catch(()=>{})));
   AV.forEach(n=>{if(!/\.png$/.test(n)&&!/^(syl|kana)-/.test(n))CLIPS[n]=null;});
@@ -637,8 +640,8 @@ const P=k=>speak('koe-'+k,PROMPTS[k]);
 const SYLMAP={'たん':'tan','うん':'un','にー':'ni','さん':'san','しー':'shi','タ':'ta','カ':'ka','ウ':'u'};
 const SYLBUF={};
 const CHUNKBUF={};
-const KANAR={'た':'ta','こ':'ko','や':'ya','き':'ki','ら':'ra','あ':'a','め':'me','ん':'n','す':'su','て':'te','え':'e','じゅ':'ju','う':'u','ぜ':'ze','り':'ri','い':'i','ま':'ma','ご':'go','お':'o','は':'ha','さ':'sa','く':'ku','ろ':'ro','け':'ke','む':'mu','の':'no','み':'mi','し':'shi','だ':'da','か':'ka'};
-const KANA16={f1:['た','こ','や','き'],f2:['ら','あ','め','ん'],f3:['す','て','え','き'],f4:['じゅ','う','う','す'],f5:['ぜ','り','い','い'],
+const KANAR={'た':'ta','こ':'ko','や':'ya','き':'ki','ら':'ra','あ':'a','め':'me','ん':'n','す':'su','て':'te','え':'e','じゅ':'ju','う':'u','ぜ':'ze','り':'ri','い':'i','ま':'ma','ご':'go','お':'o','は':'ha','さ':'sa','く':'ku','ろ':'ro','け':'ke','む':'mu','の':'no','み':'mi','し':'shi','だ':'da','か':'ka','じ':'ji','ゆ':'yu'};
+const KANA16={f1:['た','こ','や','き'],f2:['ら','あ','め','ん'],f3:['す','て','え','き'],f4:['じ','ゆ','う','す'],f5:['ぜ','り','い','い'],
   f6:['ま','ん','ご','お'],f7:['は',null,'さ','く'],f8:['こ','ろ',null,'け'],f9:['く',null,'き','い'],
   t5:['お','む','ら','い','す'],t6:['お','こ','の','み','や','き'],t7:['み','た','ら','し','だ','ん','ご'],
   ee:['た','か'],er:['た',null],re:[null,'か']};
@@ -1613,9 +1616,9 @@ async function stFlow(first,tapOnly){
   }
   // 3) たたこう
   const HOLD=!!(s.hold&&!S.clap&&S.len);ST.hold=HOLD;
-  $('#stMsg').textContent=S.clap?'こんどは ひとりで てを たたこう':HOLD?'こんどは ひとりで ながさだけ おそう':'こんどは ひとりで たたこう';
+  $('#stMsg').textContent=S.clap?'こんどは ひとりで てを たたこう':HOLD?'ながさだけ おさえてみよう':'こんどは ひとりで たたこう';
   stBtnState('drum');
-  await P(tapOnly?(HOLD?'mouichidoosu':'mouichidotataku'):(S.clap?'tebyoushi':HOLD?'osu':'tataku'));if(!alive(tok))return;
+  await P(tapOnly?(HOLD?'mouichidoosu':'mouichidotataku'):(S.clap?'tebyoushi':HOLD?'osaete':'tataku'));if(!alive(tok))return;
   await wait(250);if(!alive(tok))return;
   stMetroStart();
   sess=newSess();ST.sess=sess;D=countIn(a.currentTime+.25,sess,S.clap);ST.D=D;ST.taps=[];ST.ups=[];
@@ -1723,7 +1726,7 @@ function stCleared(){
   if(ST.custom){const c=ST.custom;
     openModal(`<h3>🎉 できた！</h3><div class="sh-row"><div class="stamp got">📝</div><div class="hint">「${c.t}」が できたね<br>うえの ⭕ を みてみよう</div></div>
       <div class="btns" style="margin-top:10px"><button class="bigbtn glow" id="mAgain" style="background:var(--c3)">もういちど</button><button class="bigbtn gray" id="mBack">もどる</button></div>`,true);
-    yay();P('clear');
+    yay();P('yatta');
     $('#mAgain').onclick=()=>{closeModal();openPractice(c,ST.cg);};$('#mBack').onclick=()=>{closeModal();openPracticePage(ST.cg);};return;}
   const s=COURSE[ST.i],nx=COURSE[ST.i+1];
   const ms=MASTERS.find(m=>m.last===s.id);
@@ -1739,10 +1742,10 @@ function stCleared(){
   if(nx&&nx.opt&&!s.opt){openModal(`<h3>🏆 メインの みち ぜんぶ クリア！</h3><div class="mcard"><div class="big">🏆</div><div class="t">リズムの みち</div><div>まねっこ・なまえ・はちぶおんぷ ぜんぶ できたね</div><div class="d">${today()}</div></div>
     <div class="hint">この がめんを せんせいに みせてね</div><div style="font-weight:800;margin:10px 0">できる子は「⭐ チャレンジ」に すすめるよ</div>
     <div class="btns"><button class="bigbtn glow" id="mNext" style="background:var(--c3)">チャレンジ ▶</button><button class="bigbtn gray" id="mHome">みちに もどる</button></div>`);
-    yay();P('clear');$('#mNext').onclick=()=>{closeModal();openStep(ST.i+1);};$('#mHome').onclick=()=>{closeModal();go('home');};return;}
+    yay();P('yatta');$('#mNext').onclick=()=>{closeModal();openStep(ST.i+1);};$('#mHome').onclick=()=>{closeModal();go('home');};return;}
   openModal(`<h3>🎉 ステップ ${ST.i+1} クリア！</h3><div class="sh-row"><div class="stamp got">⭐</div><div class="hint">「${s.t}」が できたね<br>${nx?`つぎは「${nx.t}」`:'ぜんぶ クリア！'}</div></div>
     <div class="btns"><button class="bigbtn glow" id="mNext" style="background:var(--c3)">${nx?'つぎへ ▶':'おわり'}</button><button class="bigbtn gray" id="mHome">みちに もどる</button></div>`,true);
-  yay();P('clear').then(()=>P('tsugi'));
+  yay();P('yatta').then(()=>P('tsugi'));
   $('#mNext').onclick=()=>{closeModal();if(nx)openStep(ST.i+1);else go('home');};
   $('#mHome').onclick=()=>{closeModal();go('home');};
 }
