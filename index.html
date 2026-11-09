@@ -237,6 +237,7 @@ h2{font-size:22px;margin:6px 0 12px}
 .road-st.now{outline:3px solid var(--c1)}
 .road-st.now .rs-dot{background:#ffe1d9;font-size:24px}
 .road-st.lock{opacity:.45;box-shadow:none}
+.road-st.open{opacity:.8}
 /* step */
 .st-head{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:8px;flex-wrap:wrap}
 .st-no{background:var(--c1);color:#fff;border-radius:50%;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
@@ -316,6 +317,21 @@ h2{font-size:22px;margin:6px 0 12px}
 .plist{display:flex;flex-direction:column;gap:10px;width:100%;margin:10px 0}
 .pbtn{display:flex;align-items:center;gap:12px;border:none;background:#fff;border-radius:18px;padding:14px;box-shadow:0 4px 0 var(--line);font-weight:800;font-size:18px;text-align:left}
 .pbtn .pn{width:34px;height:34px;border-radius:50%;background:var(--c4);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+.flip{border:none;background:none;padding:0;width:min(78vw,300px);height:min(50vh,300px);perspective:900px;margin:4px auto 0;display:block}
+.fl-in{position:relative;display:block;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+.flip.show-back .fl-in{transform:rotateY(180deg)}
+.fl-front,.fl-back{position:absolute;inset:0;border-radius:28px;background:#fff;box-shadow:0 6px 0 var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.fl-back{transform:rotateY(180deg);background:#fff7d6;gap:8px}
+.fl-front svg{height:78% !important;width:auto !important;max-width:88% !important}
+.fl-word{font-size:clamp(28px,9vw,44px);font-weight:800}
+.fl-emj{font-size:54px;line-height:1}
+.flip.pulse .fl-front{animation:fpulse .5s infinite alternate}
+@keyframes fpulse{to{box-shadow:0 6px 0 var(--line),0 0 0 8px rgba(79,177,114,.35)}}
+.nl-p .nic{height:70%;width:auto}
+.nl-p{cursor:pointer}
+.nl-ans{min-height:30px;font-size:20px;font-weight:800;color:var(--c4);margin:4px 0}
+.pc.cur .blk,.ncard.cur{box-shadow:0 0 0 4px #ffd34d,0 0 14px 4px rgba(255,200,40,.7);transform:translateY(-3px)}
+.pc .blk,.ncard{transition:box-shadow .12s,transform .12s}
 </style>
 </head>
 <body>
@@ -351,6 +367,7 @@ h2{font-size:22px;margin:6px 0 12px}
     <div class="row"><span class="lab">つみきの もじ</span><div class="seg" id="setLbl"><button data-v="0">おんぷだけ</button><button data-v="1">ことばも だす</button></div></div>
     <div class="row"><span class="lab">かぞえかた</span><div class="seg" id="setNum"><button data-v="0">にー さん しー</button><button data-v="1">2 3 4</button></div></div>
     <div class="row"><span class="lab">カチカチ</span><div class="seg" id="setClick"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
+    <div class="row"><span class="lab">せんせいよう</span><div class="seg" id="setUnlock"><button data-v="0">ふつう</button><button data-v="1">ぜんぶ ひらく（チェック用）</button></div></div>
     <div class="row" style="justify-content:flex-end"><button class="tog" id="resetBtn" style="font-size:13px">せんせいよう：おべんとうの きろくを けす</button></div>
   </div>
 </section>
@@ -460,7 +477,7 @@ const $=s=>document.querySelector(s);
 /* ===================== storage ===================== */
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const S=Object.assign({bpm:72,voice:1,click:1,num:0,clap:0,lbl:0,len:0},store.get('rz_set',{}));
+const S=Object.assign({bpm:72,voice:1,click:1,num:0,clap:0,lbl:0,len:0,unlock:0},store.get('rz_set',{}));
 let STARS=store.get('rz_stars',0);
 function addStar(n=1){STARS+=n;store.set('rz_stars',STARS);$('#stars').textContent='⭐ '+STARS;}
 $('#stars').textContent='⭐ '+STARS;
@@ -506,12 +523,15 @@ function buzz(){const a=ac();const t=a.currentTime;tone(t,.18,null,220,.22);tone
 /* own files (images / voices) on GitHub */
 const AV=new Set();const CLIPS={};let CLIP_NOW=null;
 const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて いうかな',
-  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは たたいてみよう。ひかってる ボタンを たたいてね',tebyoushi:'こんどは てを たたいてみよう',rhythm:'いいながら リズムを たたいてみよう',osu:'こんどは おんぷの ながさだけ ボタンを おしてみよう',mouichidoosu:'もういちど おしてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',clear:'クリア おめでとう',nanko:'たん なんこ ぶん',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
-function clipName(key){return AV.has(key+'.mp3')?key+'.mp3':AV.has(key+'.wav')?key+'.wav':AV.has(key+'.m4a')?key+'.m4a':null;}
+  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは たたいてみよう。ひかってる ボタンを たたいてね',tebyoushi:'こんどは てを たたいてみよう',rhythm:'くちで いいながら リズムを たたいてみよう',osu:'こんどは おんぷの ながさだけ ボタンを おしてみよう',mouichidoosu:'もういちど おしてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',clear:'クリア おめでとう',nanko:'たん なんこ ぶん',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
+const CLIP_ALIAS={'koe-tan3':'koe-tan23','koe-tan4':'koe-tan234','koe-un3':'koe-un23','koe-un4':'koe-un234'};
+function clipName0(key){return AV.has(key+'.mp3')?key+'.mp3':AV.has(key+'.wav')?key+'.wav':AV.has(key+'.m4a')?key+'.m4a':null;}
+function clipName(key){return clipName0(key)||(CLIP_ALIAS[key]?clipName0(CLIP_ALIAS[key]):null);}
 async function probeFiles(){
   if(!/^https?:/.test(location.protocol))return;
   const keys=[];WORDS.forEach(w=>{keys.push('koe-'+w.k,'na-'+w.nk);});Object.keys(PROMPTS).forEach(k=>keys.push('koe-'+k));
   Object.values({tan:1,un:1,ni:1,san:1,shi:1,ta:1,ka:1,u:1}).length;['tan','un','ni','san','shi','ta','ka','u'].forEach(k=>keys.push('syl-'+k));
+  Object.values(CLIP_ALIAS).forEach(k=>keys.push(k));
   const names=[...new Set(keys)].flatMap(k=>[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.map(w=>'e-'+w.k+'.png'));
   await Promise.all(names.map(n=>fetch(n,{method:'HEAD',cache:'no-cache'}).then(r=>{if(r.ok)AV.add(n);}).catch(()=>{})));
   AV.forEach(n=>{if(!/\.png$/.test(n)){const a=new Audio(n);a.preload='auto';CLIPS[n]=a;}});
@@ -558,7 +578,7 @@ function say(text){
       const u=new SpeechSynthesisUtterance(text);u.lang='ja-JP';u.rate=.9;u.pitch=1.15;
       const v=speechSynthesis.getVoices().find(v=>/ja/i.test(v.lang));if(v)u.voice=v;
       u.onend=fin;u.onerror=fin;speechSynthesis.speak(u);
-      setTimeout(fin,Math.min(3000,600+text.length*260));
+      setTimeout(fin,Math.min(20000,900+text.length*330));
     }catch(e){fin();}
   });
 }
@@ -574,15 +594,15 @@ function restSvg(d,x){
     `<circle cx="${x-4}" cy="40" r="2.8" fill="${k}"/><path d="M${x-4},42 Q${x},43 ${x+3.5},38.5" fill="none" stroke="${k}" stroke-width="2"/>`+
     `<path d="M${x+6},29 L${x-1},55" fill="none" stroke="${k}" stroke-width="2" stroke-linecap="round"/>`;
 }
-function notation(ev,scale=1.6,compact=false,off=null){
+function notation(ev,scale=1.6,compact=false,off=null,noStaff=false){
   const per={};let tt=0;ev.forEach(e=>{const b=Math.floor(tt+1e-6);per[b]=(per[b]||0)+1;tt+=e.d;});
   const BW=Math.max(46,Math.max(...Object.values(per))*21+8),PAD=14;let t=0;
   const it=ev.map(e=>{const o=Object.assign({},e,{t});t+=e.d;return o;});
   const ew=e=>compact&&e.d>=1?BW*Math.min(e.d,1.25):e.d*BW;let cum=0;it.forEach(o=>{o.x0=cum;cum+=ew(o);});
-  const W=PAD*2+cum+(cum<BW?10:0),HY=55,TOP=20,SX=6,K='#2b2320';
+  const W=(noStaff&&it.length===1)?44:PAD*2+cum+(cum<BW?10:0),HY=55,TOP=20,SX=6,K='#2b2320';
   const X=o=>it.length===1?W/2-3:PAD+o.x0+(o.d>=1?12:8);
   let s='';
-  for(const y of [20,30,40,50,60])s+=`<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="#a89a8f" stroke-width="1.2"/>`;
+  if(!noStaff)for(const y of [20,30,40,50,60])s+=`<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="#a89a8f" stroke-width="1.2"/>`;
   const groups={};
   it.forEach(o=>{if(o.d<1){const b=Math.floor(o.t+1e-6);(groups[b]=groups[b]||[]).push(o);}});
   const solo=new Set();
@@ -612,7 +632,8 @@ function notation(ev,scale=1.6,compact=false,off=null){
     if(n[0].tp){const bx1=X(n[0])-4,bx2=X(n[n.length-1])+SX+4,mx=(bx1+bx2)/2;
       s+=`<path d="M${bx1},15 V9 H${mx-8} M${mx+8},9 H${bx2} V15" fill="none" stroke="${K}" stroke-width="1.4"/><text x="${mx}" y="13" text-anchor="middle" font-size="12" font-weight="700" fill="${K}" font-family="serif">${n[0].tp}</text>`;}
   });
-  return `<svg viewBox="0 0 ${W} 72" overflow="visible" style="width:${Math.round(W*scale)}px;max-width:100%;height:auto;display:block">${s}</svg>`;
+  const vb=noStaff?(it.every(o=>!o.r&&near(o.d,4))?`0 40 ${W} 26`:`0 4 ${W} 66`):`0 0 ${W} 72`;
+  return `<svg viewBox="${vb}" overflow="visible" style="width:${Math.round(W*scale)}px;max-width:100%;height:auto;display:block">${s}</svg>`;
 }
 function blocks(w,u,cls=''){
   let h=`<div class="blocks ${cls}" style="--u:${u}px;--bh:${Math.round(Math.min(u,95))}px">`,t=0;
@@ -626,12 +647,14 @@ function blocks(w,u,cls=''){
 function noteIcon(e){
   const d=e.d,r=e.r,C='currentColor';let g='';
   if(!r){
-    if(near(d,4))g=`<ellipse cx="15" cy="22" rx="8.5" ry="5.5" transform="rotate(-18 15 22)" fill="none" stroke="${C}" stroke-width="3.6"/>`;
+    if(d<1){g=`<ellipse cx="12" cy="31" rx="6.5" ry="4.8" transform="rotate(-22 12 31)" fill="${C}"/><line x1="18" y1="30" x2="18" y2="4" stroke="${C}" stroke-width="2.6"/><path d="M18,4 q1,7 8,10 q3,4 0,10" fill="none" stroke="${C}" stroke-width="2.6"/>`+(d<.5?`<path d="M18,11 q1,7 8,10 q3,4 0,10" fill="none" stroke="${C}" stroke-width="2.6"/>`:'');}
+    else if(near(d,4))g=`<ellipse cx="15" cy="22" rx="8.5" ry="5.5" transform="rotate(-18 15 22)" fill="none" stroke="${C}" stroke-width="3.6"/>`;
     else{const open=d>=2;
       g=`<ellipse cx="12" cy="31" rx="6.5" ry="4.8" transform="rotate(-22 12 31)" fill="${open?'none':C}" stroke="${C}" stroke-width="${open?3:1}"/><line x1="18" y1="30" x2="18" y2="4" stroke="${C}" stroke-width="2.6"/>`;
       if(near(d,3))g+=`<circle cx="25" cy="30" r="2.6" fill="${C}"/>`;}
   }else{
-    if(near(d,1))g=`<path d="M12,4 L19,13 L13.5,20 L20,29 Q11,25 16,36" fill="none" stroke="${C}" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+    if(d<1)g=`<circle cx="11" cy="14" r="3.4" fill="${C}"/><path d="M11,16 Q16,17 20,11 L13,34" fill="none" stroke="${C}" stroke-width="2.6" stroke-linecap="round"/>`+(d<.5?`<circle cx="8" cy="23" r="3.4" fill="${C}"/><path d="M8,25 Q12,26 16,21" fill="none" stroke="${C}" stroke-width="2.6"/>`:'');
+    else if(near(d,1))g=`<path d="M12,4 L19,13 L13.5,20 L20,29 Q11,25 16,36" fill="none" stroke="${C}" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`;
     else if(near(d,4))g=`<line x1="3" y1="15" x2="27" y2="15" stroke="${C}" stroke-width="2"/><rect x="8" y="15" width="14" height="7" fill="${C}"/>`;
     else{g=`<line x1="3" y1="25" x2="27" y2="25" stroke="${C}" stroke-width="2"/><rect x="8" y="18" width="14" height="7" fill="${C}"/>`;if(near(d,3))g+=`<circle cx="26" cy="19" r="2.4" fill="${C}"/>`;}
   }
@@ -709,7 +732,7 @@ function bindSeg(id,key){
   const el=$(id);const sync=()=>el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===+S[key]));
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{S[key]=+b.dataset.v;store.set('rz_set',S);sync();});sync();
 }
-bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');bindSeg('#setNum','num');bindSeg('#setLbl','lbl');bindSeg('#setLen','len');bindSeg('#setClap','clap');
+bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');bindSeg('#setNum','num');bindSeg('#setLbl','lbl');bindSeg('#setUnlock','unlock');bindSeg('#setLen','len');bindSeg('#setClap','clap');
 $('#setClap').addEventListener('click',async()=>{if(S.clap){const ok=await micStart();if(!ok){S.clap=0;store.set('rz_set',S);$('#setClap').querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===0));}}});
 
 function numTogSync(){const b=$('#numTog');if(!b)return;const show=!['home','menu','quizSetup'].includes(VIEW);
@@ -745,14 +768,13 @@ let DETAIL_ID=null,DETAIL_NAV={};
 function openDetail(id,silent){
   go('detail');DETAIL_ID=id;const w=byId(id);
   const ws=WORDS.filter(x=>x.g===w.g),i=ws.indexOf(w);
-  const u=unitFor(w,availW(),w.g===4?170:88);
   $('#detailBox').innerHTML=`
-    <div class="notebox">${notation(w.ev,w.g===4?3.2:(len(w)>=3?1.9:2.4))}</div>
-    ${pic(w,'emj')}
-    <div class="word">${W(w)}</div>
-    <div style="font-size:18px;font-weight:800;color:var(--sub);background:#fff;border-radius:999px;padding:4px 14px">${w.nm}</div>
-    <div id="dBlocks">${tanRow(w,u)}${blocks(w,u)}</div>
-    <div class="btns dbtns" style="margin-top:4px">
+    <button class="flip show-back" id="dFlip" aria-label="おんぷ">
+      <span class="fl-in"><span class="fl-front">${notation(w.ev,1,true,null,!w.ev.some(e=>e.r&&e.d>=2))}</span>
+      <span class="fl-back">${pic(w,'fl-emj')}<span class="fl-word">${W(w)}</span></span></span>
+    </button>
+    <div class="hint" style="margin:0">👆 おんぷを おすと こたえが みえるよ</div>
+    <div class="btns dbtns" style="margin-top:6px">
       <button class="bigbtn" id="dPlay" style="background:var(--c3)">▶ きく</button>
       <button class="bigbtn" id="dSay">🗣 ことば</button>
       <button class="bigbtn" id="dName" style="background:var(--c8)">📛 なまえ</button>
@@ -760,18 +782,21 @@ function openDetail(id,silent){
     <div class="pager"><button class="arw" id="dPrev" ${i<=0?'style="visibility:hidden"':''} aria-label="まえ">◀</button>
       <div class="dots">${ws.map((x,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}${PRACTICE[w.g]?'<i class="pd-p"></i>':''}</div>
       <button class="arw" id="dNext" ${i>=ws.length-1&&!PRACTICE[w.g]?'style="visibility:hidden"':''} aria-label="つぎ">▶</button></div>`;
-  const run=()=>doPlayDetail(w);
-  $('#dPlay').onclick=run;$('#dBlocks').onclick=run;
-  $('#dSay').onclick=()=>speak('koe-'+w.k,w.w);
+  const card=$('#dFlip');let ft=0;
+  const toFront=()=>card.classList.remove('show-back');
+  const peek=(ms=1400)=>{clearTimeout(ft);card.classList.add('show-back');ft=setTimeout(toFront,ms);};
+  setTimeout(toFront,900);
+  card.onclick=()=>{ac();peek();speak('koe-'+w.k,w.w);};
+  const run=()=>{card.classList.add('pulse');setTimeout(()=>card.classList.remove('pulse'),len(w)*beat()*1000+200);playWord(w,{});};
+  $('#dPlay').onclick=()=>{ac();run();};
+  $('#dSay').onclick=()=>{ac();peek();speak('koe-'+w.k,w.w);};
   $('#dName').onclick=()=>{ac();openNameLesson(w);};
   DETAIL_NAV={prev:i>0?ws[i-1].id:null,next:i<ws.length-1?ws[i+1].id:(PRACTICE[w.g]?'P'+w.g:null)};
   $('#dPrev').onclick=()=>navTo(DETAIL_NAV.prev);
   $('#dNext').onclick=()=>navTo(DETAIL_NAV.next);
   if(!silent)(async()=>{await speak('koe-'+w.k,w.w);if(DETAIL_ID===id&&VIEW==='detail')run();})();
 }
-function doPlayDetail(w){
-  playWord(w,{el:$('#dBlocks')});
-}
+function doPlayDetail(w){playWord(w,{});}
 
 /* ===================== nobashi (hold game) ===================== */
 const NB={id:'w',hint:true,countIn:false,state:'idle',raf:0,sess:null,stopTone:null,timers:[]};
@@ -901,7 +926,7 @@ function openNameLesson(w){
   else{const L=bl/info.div;const col=info.tp?'var(--c16)':info.div===16?'var(--c16)':info.div===8?'var(--c8)':PCOL[L]||'var(--c1)';
     for(let i=0;i<info.div;i++)pieces.push({len:L,col,r:isRest||info.rest,lab:info.div<=4?(isRest?'うん':'たん').repeat(1):'',nm:unitName});}
   const px=l=>W*l/bl;
-  const pieceHTML=pieces.map((p,i)=>`<div class="nl-p${p.r?' r':''}" style="width:${px(p.len)-3}px;--c:${p.col}" data-i="${i}">${px(p.len)>44&&!info.tp?(info.parts?p.lab:({1:p.r?'うん':'たん',2:p.r?'うんにー':'たんにー'})[p.len]||''):''}</div>`).join('');
+  const pieceHTML=pieces.map((p,i)=>`<div class="nl-p${p.r?' r':''}" style="width:${px(p.len)-3}px;--c:${p.col}" data-i="${i}" data-nm="${p.nm}">${px(p.len)>16?noteIcon({d:info.tp?.25:p.len,r:p.r}):''}</div>`).join('');
   const baseLab=info.tp?'たん（1はく）':base.w;
   let sent,sub='',bigName;
   if(info.parts){sent=`${pieces.map(p=>p.nm).join(' と ')} を あわせた ながさ`;bigName=w.nm;sub='てん（・）は「はんぶんを たす」しるし';}
@@ -910,16 +935,16 @@ function openNameLesson(w){
   else{sent=`${base.nm} を ${info.div}つに わけたから`;bigName=`<b class="nl-num">${info.num}</b>ぶ${unitName.endsWith('きゅうふ')?'きゅうふ':'おんぷ'}<small>（${unitName}）</small>`;}
   $('#mbox').innerHTML=`<h3>なまえの ひみつ</h3>
     <div class="nl-wrap" style="width:${W}px;--nh:${Math.round(Math.min(W/4,90))}px">
-      <div class="nl-cap">${notation(byId(info.parts?info.parts[0]:w.id).ev.slice(0,1).length&&!info.parts?unitEv(w,info):byId(info.parts[0]).ev,1)}${info.parts?notation(byId(info.parts[1]).ev,1):''}</div>
+      <div class="nl-ans" id="nlAns">👆 おんぷを おすと なまえが でるよ</div>
       <div class="nl-row top">${pieceHTML}</div>
-      <div class="nl-row"><div class="nl-p base${isRest?' r':''}" style="width:${W-3}px;--c:${base.col}">${baseLab}</div></div>
-      <div class="nl-cap">${notation(base.ev,1)}</div>
+      <div class="nl-row"><div class="nl-p base${isRest?' r':''}" style="width:${W-3}px;--c:${base.col}" data-nm="${info.tp?'たん（しぶおんぷ）':base.nm}">${noteIcon({d:info.tp?1:bl,r:isRest})}</div></div>
     </div>
     <div class="nl-count" id="nlCount"></div>
     <div class="nl-sent" id="nlSent"></div>
     <div class="btns" style="margin-top:12px"><button class="bigbtn" id="nlAgain" style="background:var(--c3)">🔁 もういちど</button><button class="bigbtn gray" id="nlClose">とじる</button></div>`;
   $('#modal').classList.add('on');
   $('#nlClose').onclick=closeModal;$('#nlAgain').onclick=()=>openNameLesson(w);
+  $('#mbox').querySelectorAll('.nl-p').forEach(el=>el.onclick=()=>{const n=el.dataset.nm;if(!n)return;const an=$('#nlAns');if(an){an.textContent=n;an.classList.remove('pop');void an.offsetWidth;an.classList.add('pop');}say(n);});
   const els=[...$('#mbox').querySelectorAll('.nl-row.top .nl-p')];
   const step=Math.min(650,Math.max(150,2600/els.length));
   NL_TIMERS.forEach(clearTimeout);NL_TIMERS=[];
@@ -1219,7 +1244,7 @@ function renderHome(){
   $('#homeGo').textContent=done?'▶ おさらい':(CS.passes[c.id]?'▶ つづきから':'▶ はじめる');
   let h='';
   COURSE.forEach((s,i)=>{
-    const st=i<CS.cur?'done':i===CS.cur?'now':'lock';
+    const st=i<CS.cur?'done':i===CS.cur?'now':(S.unlock?'open':'lock');
     const sec=i===0?'リズムを まねっこ':s.id==='b1'?'おんぷの なまえ':s.id==='c1'?'はちぶおんぷ':s.id==='d_f1'?'⭐ チャレンジ（できる子むけ・やらなくても OK）':s.id==='l8'?'⭐ ながい リズム チャレンジ':s.id==='e1'?'おまけ（れんぷ）':'';
     if(sec)h+=`<div class="road-sec">${sec}</div>`;
     h+=`<button class="road-st ${st}${s.opt?' opt':''}" data-i="${i}" ${st==='lock'?'disabled':''}>
@@ -1272,16 +1297,16 @@ function seqHTML(items,cap){
   const meas=[];let cur=[],acc=0;
   items.forEach(w=>{cur.push(w);acc+=len(w);if(acc>=Math.min(cap,4)-1e-6){meas.push(cur);cur=[];acc=0;}});
   if(cur.length)meas.push(cur);
-  let t=0,on=0,h='<div class="seq">';
+  let t=0,on=0,pi=0,h='<div class="seq">';
   for(let r=0;r<meas.length;r+=perRow){
     h+=`<div class="seq-row" data-rt="${t}">`;
     for(let m=r;m<Math.min(r+perRow,meas.length);m++){
       const ev=meas[m].flatMap(w=>w.ev);let blks='';const mT=t;
       meas[m].forEach(w=>{let inner='';w.ev.forEach(e=>{let x=evBlkIcon(e,t,w);
         if(!e.r){x=x.replace('<div class="blk','<div data-on="'+on+'" class="blk');on++;}inner+=x;t+=e.d;});
-        blks+=`<div class="pc">${inner}</div>`;});
+        blks+=`<div class="pc" data-pi="${pi++}">${inner}</div>`;});
       const cells=Array.from({length:Math.min(cap,4)},()=>'<div class="cell"></div>').join('');
-      h+=`<div class="seq-m"><div class="seq-n">${notation(ev,1.2,false,mT)}</div>
+      h+=`<div class="seq-m">${ev.some(e=>e.d<1)||S.lbl?`<div class="seq-n">${notation(ev,1.2,false,mT)}</div>`:''}
         <div class="bento sm" style="width:${Math.min(cap,4)*u+22}px"><div class="cells">${cells}</div>
         <div class="lay blocks" style="--u:${u}px;--bh:${bh}px;height:${bh+6}px;justify-content:flex-start">${blks}</div></div></div>`;
     }
@@ -1291,10 +1316,10 @@ function seqHTML(items,cap){
 }
 function cardsHTML(items){
   const n=items.length,u=Math.floor(Math.min(90,(availW()-10-n*30)/n));
-  let t=0,on=0,h=`<div class="ncards${n>4?' many':''}">`;
+  let t=0,on=0,pi=0,h=`<div class="ncards${n>4?' many':''}">`;
   items.forEach(w=>{let inner='';const cT=t;w.ev.forEach(e=>{let x=evBlkIcon(e,t,w);
       if(!e.r){x=x.replace('<div class="blk','<div data-on="'+on+'" class="blk');on++;}inner+=x;t+=e.d;});
-    h+=`<div class="ncard"><div class="nc-n">${notation(w.ev,1,true,cT)}</div>
+    h+=`<div class="ncard" data-pi="${pi++}"><div class="nc-n">${notation(w.ev,1,true,cT)}</div>
       <div class="lay blocks nc-b" style="--u:${u}px;--bh:${Math.round(u*.38)}px;height:${Math.round(u*.38)+6}px"><div class="pc">${inner}</div></div></div>`;});
   return h+'</div>';
 }
@@ -1306,12 +1331,16 @@ function renderStep(){
     <div id="stSeq" class="${(s.cap||0)>16?'seqscroll':''}">${s.cards&&ST.items.length>1?cardsHTML(ST.items):seqHTML(ST.items,s.cap||Math.ceil(patLen()-1e-6))}</div>
     <div class="st-msg" id="stMsg"></div>
     <div class="holdwrap"><button class="hold drum" id="stBtn"></button></div>
-    <div class="st-sub"><button class="tog" id="stHear">▶ おてほん</button><button class="tog" id="stPause">⏸ とめる</button><button class="tog" id="stMode">${S.clap?'👏 てびょうし':'👆 タップ'}</button>${s.hold?`<button class="tog" id="stLen">📏 ながさ ${S.len?'あり':'なし'}</button>`:''}</div>
+    <div class="st-sub"><button class="tog" id="stHear">🎵 うたの おてほん</button><button class="tog" id="stPause">⏸ とめる</button><button class="tog" id="stMode">${S.clap?'👏 てびょうし':'👆 タップ'}</button>${S.unlock&&!ST.custom&&COURSE[ST.i+1]?'<button class="tog" id="stSkip">⏭ つぎの ステップ</button>':''}${s.hold?`<button class="tog" id="stLen">📏 ながさ ${S.len?'あり':'なし'}</button>`:''}</div>
     <div class="st-names">${namesOf(ST.items)}</div>`;
   const b=$('#stBtn');
   b.addEventListener('pointerdown',stBtnDown);b.addEventListener('contextmenu',e=>e.preventDefault());
   ['pointerup','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>stUp(ac().currentTime)));
-  $('#stHear').onclick=()=>{ac();if(ST.window)return;ST.failRow=0;stBtnState('auto');stFlow(false);};
+  $('#stHear').onclick=async()=>{ac();if(ST.window)return;stStop();ST.failRow=0;stBtnState('auto','👂');$('#stMsg').textContent='うたの おてほん';const tok=ST.run;
+    if(!sylReady()){if(!(await readPhrase(()=>tok===ST.run&&VIEW==='step')))return;await wait(250);}
+    const a=ac(),B=beat(),sess=newSess();ST.sess=sess;const t0=a.currentTime+.15;
+    if(sylReady()){scheduleSyl(t0,sess);schedulePattern(t0,sess,false,S.click);}else schedulePattern(t0,sess,true,S.click);lightSeq(t0,false,true);
+    await wait((t0-a.currentTime+patLen()*B)*1000+500);if(tok!==ST.run||VIEW!=='step')return;stFlow(false,true);};
   $('#stPause').onclick=()=>{stStop();stBtnState('retry');$('#stMsg').textContent='とめたよ。ボタンを おすと つづきから';};
   const sl=$('#stLen');if(sl)sl.onclick=()=>{S.len=S.len?0:1;store.set('rz_set',S);sl.textContent='📏 ながさ '+(S.len?'あり':'なし');
     $('#stMsg').textContent=S.len?'つぎの もんだいから ながさも みるよ':'つぎの もんだいから たたくだけ';};
@@ -1332,8 +1361,9 @@ function stBtnDown(e){
   if(ST.btn==='next'){ST.items=genPattern(curStep());renderStep();stBtnState('auto');stFlow(false);return;}
   if(ST.btn==='retry'){ST.noTap=0;ST.failRow=0;stBtnState('auto');stFlow(false);return;}
 }
-function lightSeq(t0,follow){
+function lightSeq(t0,follow,countOnly){
   const a=ac(),el=$('#stSeq');if(!el)return;const B=beat();
+  if(!countOnly){
   el.classList.add('playing');el.querySelectorAll('[data-t]').forEach(x=>x.classList.remove('on'));
   el.querySelectorAll('.fillb').forEach(x=>{x.classList.remove('over');const f=x.querySelector('.fl');f.style.transition='none';f.style.width='0%';});
   el.querySelectorAll('[data-t]').forEach(x=>{const tt=+x.dataset.t;ST.timers.push(setTimeout(()=>x.classList.add('on'),(t0-a.currentTime+tt*B)*1000));});
@@ -1341,6 +1371,7 @@ function lightSeq(t0,follow){
     const isRest=x.classList.contains('rest');
     if(follow&&!isRest)return;
     ST.timers.push(setTimeout(()=>{f.style.transition=`width ${d*B}s linear`;f.style.width='100%';},(t0-a.currentTime+st*B)*1000));});
+  }
   // drum count label
   const lbls=[];let t=0;patEv().forEach(e=>{if(e.d>=1){for(let k=0;k<e.d;k++)lbls.push([t+k,k===0?(e.r?'うん':'たん'):String(k+1),e.r]);}
     else lbls.push([t,e.syl[0],e.r]);t+=e.d;});
@@ -1395,25 +1426,21 @@ async function stFlow(first,tapOnly){
   const s=curStep(),a=ac(),B=beat();
   $('#stSeq').querySelectorAll('.mk').forEach(x=>x.remove());
   if(S.clap&&!MIC.on){const ok=await micStart();if(!ok){S.clap=0;store.set('rz_set',S);const m=$('#stMode');if(m)m.textContent='👆 タップ';}}
+  let sess,D;
   if(!tapOnly){
-  // 1) お手本
-  $('#stMsg').textContent='きいてね';stBtnState('auto','👂');
-  if(first&&ST.first){ST.first=false;let sy=s.say||s.t;if(s.hold&&!S.len)sy=sy.split('。')[0];await speak('koe-step-'+(s.id||'p'),sy);}else await P('kiite');
-  if(!alive(tok))return;
-  const sylOK=sylReady();
-  if(!sylOK){await say(ST.items.map(w=>w.w).join(' '));if(!alive(tok))return;}
-  let sess=newSess();ST.sess=sess;let t0=a.currentTime+.15;
-  if(sylOK){scheduleSyl(t0,sess);schedulePattern(t0,sess,false,S.click);}else schedulePattern(t0,sess,true,S.click);lightSeq(t0);
-  await wait((t0-a.currentTime+patLen()*B)*1000+300);if(!alive(tok))return;
-  $('#stSeq').classList.remove('playing');await wait(350);if(!alive(tok))return;
-  // 2) いっしょに いおう
-  $('#stMsg').textContent='いいながら リズムを たたいてみよう';stBtnState('auto','👏');
+  // くちで いいながら たたこう（おてほんの プレイは なし）
+  $('#stMsg').textContent='くちで いいながら たたこう';stBtnState('auto','👏');
+  if(first&&ST.first){ST.first=false;let sy=s.say||s.t;if(s.hold&&!S.len)sy=sy.split('。')[0];await speak('koe-step-'+(s.id||'p'),sy);if(!alive(tok))return;await wait(250);}
+  $('#stMsg').textContent='きいてね';
+  if(!(await readPhrase(()=>alive(tok))))return;await wait(300);
+  $('#stMsg').textContent='くちで いいながら たたこう';
   await P('rhythm');if(!alive(tok))return;
-  sess=newSess();ST.sess=sess;let D=countIn(a.currentTime+.2,sess);
-  schedulePattern(D,sess,true,S.click);lightSeq(D);
+  sess=newSess();ST.sess=sess;D=countIn(a.currentTime+.2,sess);
+  if(sylReady()){scheduleSyl(D,sess);schedulePattern(D,sess,false,S.click);}else schedulePattern(D,sess,true,S.click);
+  lightSeq(D,false,true);
   ST.timers.push(setTimeout(()=>{if(alive(tok))stBtnState('auto','👏');},(D-a.currentTime)*1000));
   await wait((D-a.currentTime+patLen()*B)*1000+300);if(!alive(tok))return;
-  $('#stSeq').classList.remove('playing');await wait(300);if(!alive(tok))return;
+  await wait(250);if(!alive(tok))return;
   }
   // 3) たたこう
   const HOLD=!!(s.hold&&!S.clap&&S.len);ST.hold=HOLD;
@@ -1437,7 +1464,7 @@ async function stFlow(first,tapOnly){
     if(ST.noTap>=2){stBtnState('retry');$('#stMsg').textContent='ボタンを おすと もういちど できるよ';P('osuto');return;}
     if(!r.noTap)ST.failRow=(ST.failRow||0)+1;
     const full=ST.failRow>=3;if(full)ST.failRow=0;
-    if(full){$('#stMsg').textContent='もういちど きいてみよう';await P('mouichidokiku');}
+    if(full){$('#stMsg').textContent='もういちど いいながら やってみよう';}
     await wait(900);if(!alive(tok))return;
     stFlow(false,!full);
   }
@@ -1446,6 +1473,17 @@ function stUp(t){
   if(ST.holdStop){ST.holdStop();ST.holdStop=null;}
   if(ST.downOpen){ST.downOpen=false;ST.ups[ST.taps.length-1]=t;}
   const b=$('#stBtn');if(b)b.classList.remove('down');
+}
+async function readPhrase(ok){
+  const el=$('#stSeq');
+  for(let k=0;k<ST.items.length;k++){
+    const w=ST.items[k],box=el&&el.querySelector(`[data-pi="${k}"]`);
+    if(box)box.classList.add('cur');
+    await speak('koe-'+w.k,w.w);
+    if(box)box.classList.remove('cur');
+    if(!ok())return false;
+  }
+  return true;
 }
 function stTap(t,finger){
   if(!ST.window)return;
@@ -1597,11 +1635,12 @@ function showShape(nid){
     await wait(1500);done();
   });
 }
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#stSkip');if(!b||VIEW!=='step')return;ac();closeModal();openStep(ST.i+1);});
 function nameStepStart(){
   const s=COURSE[ST.i];ST.qn=0;
   $('#stepBox').innerHTML=`<div class="st-head"><span class="st-no">${ST.i+1}</span><span class="st-t">${s.t}</span><span class="pd">${stepNeedDots(s)}</span></div>
     <div class="st-msg">${s.rest?'きゅうふの なまえも、わける かずで きまるよ':'なまえは「いくつに わけたか」で きまるよ'}</div>
-    <div class="holdwrap"><button class="hold drum" id="nmGo">▶<br><small>みてみよう</small></button></div>`;
+    <div class="holdwrap"><button class="hold drum" id="nmGo">▶<br><small>みてみよう</small></button></div>${S.unlock&&COURSE[ST.i+1]?'<div class="btns" style="margin-top:10px"><button class="tog" id="stSkip">⏭ つぎの ステップ</button></div>':''}`;
   $('#nmGo').onclick=async()=>{ac();await showShape(s.nid);if(VIEW!=='step')return;openNameLesson(byId(s.nid));
     const iv=setInterval(()=>{if(!$('#modal').classList.contains('on')){clearInterval(iv);if(VIEW==='step')nameQuiz();}},400);};
   setTimeout(()=>{const g=$('#nmGo');if(g&&VIEW==='step')g.click();},700);
@@ -1616,7 +1655,7 @@ function nameQuiz(){
     <div class="qprompt">「${ans.nm}」は どれ？</div>
     <div class="btns" style="margin-bottom:10px"><button class="bigbtn" id="nqHear">🔊 きく</button></div>
     <div class="qchoices">${ch.map(x=>`<button class="qchoice" data-id="${x.id}">${notation(x.ev,1,true)}</button>`).join('')}</div>
-    <div class="btns" style="margin-top:12px"><button class="tog" id="nqLesson">📛 なまえの ひみつ を もういちど</button></div>`;
+    <div class="btns" style="margin-top:12px"><button class="tog" id="nqLesson">📛 なまえの ひみつ を もういちど</button></div>${S.unlock&&COURSE[ST.i+1]?'<div class="btns" style="margin-top:10px"><button class="tog" id="stSkip">⏭ つぎの ステップ</button></div>':''}`;
   const sayIt=()=>speak('na-'+(byId(ans.id)||{nk:''}).nk,ans.nm);
   $('#nqHear').onclick=sayIt;sayIt();
   $('#nqLesson').onclick=()=>openNameLesson(byId(s.nid));
