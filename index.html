@@ -722,7 +722,7 @@ function go(v){
   if(v==='quizSetup')renderQuizSetup();
   if(v==='bento')renderBento();
   if(v==='home')renderHome();
-  if(v!=='step'){ST.run++;stClear();ST.window=false;}
+  if(v!=='step'){ST.run++;stClear();ST.window=false;stMetroStop();}
 }
 $('#backBtn').onclick=()=>{if(VIEW==='step'&&ST.custom){stStop();openPracticePage(ST.cg);return;}go(PARENT[VIEW]||'home');};
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ac();go(b.dataset.go);});
@@ -1184,7 +1184,7 @@ const NAMEQ=[{id:'w',nm:'ぜんおんぷ',ev:[N(4,'')]},{id:'h',nm:'にぶおん
 const NAMEQR=[{id:'wr',nm:'ぜんきゅうふ',ev:[N(4,'',1)]},{id:'hr',nm:'にぶきゅうふ',ev:[N(2,'',1)]},{id:'qr',nm:'しぶきゅうふ',ev:[N(1,'',1)]},{id:'er8',nm:'はちぶきゅうふ',ev:[N(.5,'',1)]}];
 const CS=Object.assign({cur:0,passes:{},stamps:{}},store.get('rz_course',{}));
 const csSave=()=>store.set('rz_course',CS);
-const ST={i:0,items:[],taps:[],timers:[],sess:null,run:0,btn:'auto',window:false,noTap:0,first:true,D:0,custom:null,cpass:0,cg:0};
+const ST={i:0,items:[],taps:[],timers:[],sess:null,run:0,btn:'auto',window:false,noTap:0,first:true,D:0,custom:null,cpass:0,cg:0,m:null};
 
 const MASTERS=[
   {key:'A',last:'a10',name:'まねっこマスター',icon:'👏',col:'#ec6450',how:'リズムを まねっこ（ステップ1〜10）を クリア'},
@@ -1258,7 +1258,7 @@ $('#homeCards').onclick=()=>{ac();showCards();};
 
 /* ---------- step ---------- */
 function stClear(){ST.timers.forEach(clearTimeout);ST.timers=[];killSess(ST.sess);ST.sess=null;}
-function stStop(){ST.run++;stClear();ST.window=false;const el=$('#stSeq');if(el)el.classList.remove('playing');}
+function stStop(){ST.run++;stClear();stMetroStop();ST.window=false;const el=$('#stSeq');if(el)el.classList.remove('playing');}
 function genPattern(s){
   if(s.fixed)return s.fixed.map(byId);
   if(s.gen==='one'){const out=[];for(let m=0;m<s.cap/4;m++){const pos=Math.random()*4|0;for(let k=0;k<4;k++)out.push(k===pos?byId(s.pool[Math.random()*s.pool.length|0]):byId('q'));}return out;}
@@ -1361,6 +1361,14 @@ function stBtnDown(e){
   if(ST.btn==='next'){ST.items=genPattern(curStep());renderStep();stBtnState('auto');stFlow(false);return;}
   if(ST.btn==='retry'){ST.noTap=0;ST.failRow=0;stBtnState('auto');stFlow(false);return;}
 }
+function stMetroStart(){
+  if(ST.m)return;const a=ac(),B=beat();
+  const m={B,g0:a.currentTime+.12,n:0,sess:newSess(),iv:0};ST.m=m;
+  m.iv=setInterval(()=>{const now=a.currentTime;
+    while(m.g0+m.n*m.B<now+.25){const t=m.g0+m.n*m.B;if(S.click&&!(S.clap&&ST.window))click(t,m.n%4===0,m.sess);m.n++;}},40);
+}
+function stMetroStop(){if(ST.m){clearInterval(ST.m.iv);killSess(ST.m.sess);ST.m=null;}}
+function stNextBar(t){const m=ST.m;if(!m)return t;const bar=4*m.B;return m.g0+Math.ceil((t-m.g0)/bar-1e-6)*bar;}
 function lightSeq(t0,follow,countOnly){
   const a=ac(),el=$('#stSeq');if(!el)return;const B=beat();
   if(!countOnly){
@@ -1408,13 +1416,15 @@ function stFollowLoop(t0){
 function patEv(){return ST.items.flatMap(w=>w.ev);}
 function patLen(){return ST.items.reduce((a,w)=>a+len(w),0);}
 function schedulePattern(t0,sess,withTones,clicks){
+  if(ST.m)clicks=false;
   const B=beat();let t=0;
   patEv().forEach(e=>{if(withTones&&!e.r)tone(t0+t*B,e.d*B*(e.d<1?.8:.9),sess);t+=e.d;});
   if(clicks)for(let b=0;b<Math.ceil(t-1e-6);b++)click(t0+b*B,b%4===0,sess);
 }
 function countIn(t0,sess,quiet){
   const a=ac(),B=beat();
-  for(let k=0;k<4;k++)click(t0+k*B,k===0,sess);if(!quiet)bell(t0+3*B,sess);
+  if(ST.m){t0=stNextBar(t0);}else for(let k=0;k<4;k++)click(t0+k*B,k===0,sess);
+  if(!quiet)bell(t0+3*B,sess);
   ['1','2','3','はい'].forEach((x,k)=>ST.timers.push(setTimeout(()=>{const b=$('#stBtn');if(!b)return;
     b.classList.add('count');b.classList.remove('glow');b.innerHTML=x;
     b.style.background=x==='はい'?'radial-gradient(circle at 35% 30%,#ff9a85,var(--c1))':'';},(t0-a.currentTime+k*B)*1000)));
@@ -1435,6 +1445,7 @@ async function stFlow(first,tapOnly){
   if(!(await readPhrase(()=>alive(tok))))return;await wait(300);
   $('#stMsg').textContent='くちで いいながら たたこう';
   await P('rhythm');if(!alive(tok))return;
+  stMetroStart();
   sess=newSess();ST.sess=sess;D=countIn(a.currentTime+.2,sess);
   if(sylReady()){scheduleSyl(D,sess);schedulePattern(D,sess,false,S.click);}else schedulePattern(D,sess,true,S.click);
   lightSeq(D,false,true);
@@ -1448,6 +1459,7 @@ async function stFlow(first,tapOnly){
   stBtnState('drum');
   await P(tapOnly?(HOLD?'mouichidoosu':'mouichidotataku'):(S.clap?'tebyoushi':HOLD?'osu':'tataku'));if(!alive(tok))return;
   await wait(250);if(!alive(tok))return;
+  stMetroStart();
   sess=newSess();ST.sess=sess;D=countIn(a.currentTime+.25,sess,S.clap);ST.D=D;ST.taps=[];ST.ups=[];
   schedulePattern(D,sess,false,S.click&&!S.clap);lightSeq(D,HOLD);
   ST.timers.push(setTimeout(()=>{if(!alive(tok))return;ST.window=true;stBtnState('drum');},(D-a.currentTime-.45*B)*1000));
@@ -1456,12 +1468,12 @@ async function stFlow(first,tapOnly){
   // 4) はんてい
   const r=stJudge();
   if(r.pass){
-    ST.failRow=0;
+    ST.failRow=0;stMetroStop();
     if(r.cleared){await wait(900);if(alive(tok))stCleared();return;}
     stBtnState('next');await wait(400);if(!alive(tok))return;P('tsugi');
   }else{
     if(r.noTap){ST.noTap++;}else ST.noTap=0;
-    if(ST.noTap>=2){stBtnState('retry');$('#stMsg').textContent='ボタンを おすと もういちど できるよ';P('osuto');return;}
+    if(ST.noTap>=2){stMetroStop();stBtnState('retry');$('#stMsg').textContent='ボタンを おすと もういちど できるよ';P('osuto');return;}
     if(!r.noTap)ST.failRow=(ST.failRow||0)+1;
     const full=ST.failRow>=3;if(full)ST.failRow=0;
     if(full){$('#stMsg').textContent='もういちど いいながら やってみよう';}
