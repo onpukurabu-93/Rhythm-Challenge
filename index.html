@@ -713,6 +713,11 @@ function playWord(w,{el=null,clicks=S.click,onSyl=null,at=null,keep=false}={}){
 }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 
+/* 画面を つけたままにする */
+let WL=null;
+async function wakeOn(){try{if('wakeLock' in navigator&&!WL){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null;});}}catch(e){}}
+function wakeOff(){try{if(WL)WL.release();}catch(e){}WL=null;}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&['step','quizPlay'].includes(VIEW))wakeOn();});
 /* ===================== navigation ===================== */
 let VIEW='home';
 const PARENT={menu:'home',step:'home',bento:'menu',list:'menu',detail:'list',nobashi:'menu',quizSetup:'menu',quizPlay:'quizSetup'};
@@ -723,6 +728,7 @@ function go(v){
   $('#v-'+v).classList.add('on');VIEW=v;
   $('#backBtn').style.visibility=v==='home'?'hidden':'visible';
   numTogSync();
+  if(['step','quizPlay'].includes(v))wakeOn();else wakeOff();
   window.scrollTo(0,0);
   if(v==='list')renderList();
   if(v==='nobashi')renderNobashi();
@@ -1369,7 +1375,8 @@ function stMetroStart(){
   if(ST.m)return;const a=ac(),B=beat();
   const m={B,g0:a.currentTime+.12,n:0,sess:newSess(),iv:0};ST.m=m;
   m.iv=setInterval(()=>{const now=a.currentTime;
-    while(m.g0+m.n*m.B<now+.25){const t=m.g0+m.n*m.B;if(S.click&&!(S.clap&&ST.window))click(t,m.n%4===0,m.sess);m.n++;}},40);
+    while(m.g0+m.n*m.B<now+.25){const t=m.g0+m.n*m.B;if(S.click){click(t,m.n%4===0,m.sess);MIC.clicks.push(t);if(MIC.clicks.length>16)MIC.clicks.shift();}m.n++;}},40);
+  m.sess.gain.value=S.clap?.55:1;
 }
 function stMetroStop(){if(ST.m){clearInterval(ST.m.iv);killSess(ST.m.sess);ST.m=null;}}
 function stNextBar(t){const m=ST.m;if(!m)return t;const bar=4*m.B;return m.g0+Math.ceil((t-m.g0)/bar-1e-6)*bar;}
@@ -1595,7 +1602,7 @@ function stCleared(){
 }
 
 /* ---------- てびょうし（マイク） ---------- */
-const MIC={on:false,stream:null,node:null,lat:.06,noise:.02,last:0};
+const MIC={on:false,stream:null,node:null,lat:.06,noise:.02,last:0,clicks:[],clickPk:0};
 async function micStart(){
   if(MIC.on)return true;
   try{
@@ -1607,9 +1614,11 @@ async function micStart(){
     sp.onaudioprocess=e=>{
       const d=e.inputBuffer.getChannelData(0);let pk=0;for(let i=0;i<d.length;i++){const v=Math.abs(d[i]);if(v>pk)pk=v;}
       const now=a.currentTime-e.inputBuffer.duration;
-      const th=Math.max(.18,MIC.noise*6);
+      const nearClick=MIC.clicks.some(c=>Math.abs(now-c-MIC.lat)<.07);
+      if(nearClick&&!ST.window){MIC.clickPk=Math.max(pk,MIC.clickPk*.97);}
+      const th=Math.max(.18,MIC.noise*6,MIC.clickPk*1.6);
       if(pk>th&&now-MIC.last>.12){MIC.last=now;if(ST.window)stTap(now);}
-      else MIC.noise=MIC.noise*.98+pk*.02;
+      else if(!nearClick)MIC.noise=MIC.noise*.98+pk*.02;
       e.outputBuffer.getChannelData(0).fill(0);
     };
     const g=a.createGain();g.gain.value=0;src.connect(sp);sp.connect(g);g.connect(a.destination);
