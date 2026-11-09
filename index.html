@@ -368,7 +368,7 @@ h2{font-size:22px;margin:6px 0 12px}
     <div class="row"><span class="lab">かぞえかた</span><div class="seg" id="setNum"><button data-v="0">にー さん しー</button><button data-v="1">2 3 4</button></div></div>
     <div class="row"><span class="lab">カチカチ</span><div class="seg" id="setClick"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
     <div class="row"><span class="lab">せんせいよう</span><div class="seg" id="setUnlock"><button data-v="0">ふつう</button><button data-v="1">ぜんぶ ひらく（チェック用）</button></div></div>
-    <div class="row" style="justify-content:flex-end"><button class="tog" id="resetBtn" style="font-size:13px">せんせいよう：おべんとうの きろくを けす</button></div>
+    <div class="row" style="justify-content:space-between"><span class="hint" style="margin:0" id="verLbl"></span><button class="tog" id="resetBtn" style="font-size:13px">せんせいよう：おべんとうの きろくを けす</button></div>
   </div>
 </section>
 
@@ -471,6 +471,7 @@ const NUMMAP={'にー':'2','さん':'3','しー':'4'};
 const lab=x=>S.num&&NUMMAP[x]?NUMMAP[x]:x;
 const W=w=>S.num?w.w.replace(/にー/g,'2').replace(/さん/g,'3').replace(/しー/g,'4'):w.w;
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
+const VERSION='11/9-b';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -486,7 +487,12 @@ function curStep(){return ST.custom||COURSE[ST.i];}
 
 /* ===================== audio ===================== */
 let AC=null;
-function ac(){if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();}if(AC.state==='suspended')AC.resume();return AC;}
+function ac(){if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();}if(AC.state!=='running'){try{AC.resume();}catch(e){}}return AC;}
+/* iPhone: 音が とまったら つぎに さわったときに もどす */
+let AUDIO_UNLOCKED=false;
+function audioKick(){try{const a=ac();if(!AUDIO_UNLOCKED){const b=a.createBuffer(1,1,22050);const s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);AUDIO_UNLOCKED=true;}}catch(e){}}
+['pointerdown','touchend','click'].forEach(ev=>document.addEventListener(ev,()=>{if(!AC||AC.state!=='running'||!AUDIO_UNLOCKED)audioKick();},{capture:true,passive:true}));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&AC&&AC.state!=='running'){try{AC.resume();}catch(e){}}});
 function newSess(){const a=ac();const g=a.createGain();g.connect(a.destination);return g;}
 function killSess(g){if(!g)return;try{const a=ac();g.gain.cancelScheduledValues(a.currentTime);g.gain.setValueAtTime(0,a.currentTime);setTimeout(()=>{try{g.disconnect()}catch(e){}},200)}catch(e){}}
 function tone(t,dur,dest,f=523.25,vol=.28){
@@ -534,7 +540,8 @@ async function probeFiles(){
   Object.values(CLIP_ALIAS).forEach(k=>keys.push(k));
   const names=[...new Set(keys)].flatMap(k=>[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.map(w=>'e-'+w.k+'.png'));
   await Promise.all(names.map(n=>fetch(n,{method:'HEAD',cache:'no-cache'}).then(r=>{if(r.ok)AV.add(n);}).catch(()=>{})));
-  AV.forEach(n=>{if(!/\.png$/.test(n)){const a=new Audio(n);a.preload='auto';CLIPS[n]=a;}});
+  AV.forEach(n=>{if(!/\.png$/.test(n)&&!/^syl-/.test(n))CLIPS[n]=null;});
+  decodeClips();
   if([...AV].some(n=>!/\.png$/.test(n)))$('#credit').style.display='block';
   loadSyl();
   if(VIEW==='list')renderList();
@@ -544,14 +551,20 @@ function pic(w,cls,style=''){
   if(AV.has('e-'+w.k+'.png'))return `<div class="${cls}" style="${style}"><img class="pic" src="e-${w.k}.png" alt=""></div>`;
   return w.emj?`<div class="${cls}" style="${style}">${w.emj}</div>`:'';
 }
+async function decodeClips(){
+  const a=ac();
+  for(const n of Object.keys(CLIPS)){try{const r=await fetch(n);const ab=await r.arrayBuffer();
+    const b=await new Promise((res,rej)=>a.decodeAudioData(ab,res,rej));const d=b.getChannelData(0);let i=0;while(i<d.length&&Math.abs(d[i])<.02)i++;b._lead=Math.max(0,i/b.sampleRate-.01);CLIPS[n]=b;}catch(e){}}
+}
 function speak(key,text){
   const n=clipName(key);
   if(!S.voice)return Promise.resolve();
-  if(!n)return say(text);
+  if(!n||!CLIPS[n])return say(text);
   return new Promise(res=>{
-    try{if(window.speechSynthesis)speechSynthesis.cancel();if(CLIP_NOW){CLIP_NOW.pause();}
-      const a=CLIPS[n]||new Audio(n);CLIP_NOW=a;a.currentTime=0;let done=false;const fin=()=>{if(!done){done=true;res();}};
-      a.onended=fin;a.onerror=fin;const p=a.play();if(p&&p.catch)p.catch(()=>{fin();});setTimeout(fin,4000);
+    try{if(window.speechSynthesis)speechSynthesis.cancel();if(CLIP_NOW){try{CLIP_NOW.stop();}catch(e){}}
+      const a=ac(),b=CLIPS[n],src=a.createBufferSource();src.buffer=b;src.connect(a.destination);CLIP_NOW=src;
+      let done=false;const fin=()=>{if(!done){done=true;res();}};src.onended=fin;
+      src.start(a.currentTime+.02,b._lead||0);setTimeout(fin,(b.duration+.5)*1000);
     }catch(e){res();}
   });
 }
@@ -1889,6 +1902,7 @@ function showResult(){
 }
 probeFiles();
 renderHome();
+$('#verLbl').textContent='版：'+VERSION;
 if(window.speechSynthesis){try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();}catch(e){}}
 </script>
 </body>
