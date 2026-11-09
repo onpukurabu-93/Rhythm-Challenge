@@ -559,14 +559,21 @@ const P=k=>speak('koe-'+k,PROMPTS[k]);
 /* syllable voices (ずんだもん) scheduled in rhythm */
 const SYLMAP={'たん':'tan','うん':'un','にー':'ni','さん':'san','しー':'shi','タ':'ta','カ':'ka','ウ':'u'};
 const SYLBUF={};
+const CHUNKBUF={};
+const isChunk=w=>Math.abs(len(w)-1)<1e-6&&w.ev.length>1;
 async function loadSyl(){
   const a=ac();
-  for(const k of new Set(Object.values(SYLMAP))){const n=clipName('syl-'+k);if(!n)continue;
-    try{const r=await fetch(n);const ab=await r.arrayBuffer();SYLBUF[k]=await new Promise((res,rej)=>a.decodeAudioData(ab,res,rej));}catch(e){}}
+  const dec=async n=>{const r=await fetch(n);const ab=await r.arrayBuffer();const b=await new Promise((res,rej)=>a.decodeAudioData(ab,res,rej));
+    const d=b.getChannelData(0);let i=0;while(i<d.length&&Math.abs(d[i])<.02)i++;b._lead=Math.max(0,i/b.sampleRate-.01);return b;};
+  for(const k of new Set(Object.values(SYLMAP))){const n=clipName('syl-'+k);if(!n)continue;try{SYLBUF[k]=await dec(n);}catch(e){}}
+  for(const w of WORDS.filter(isChunk)){const n=clipName('koe-'+w.k);if(!n)continue;try{CHUNKBUF[w.k]=await dec(n);}catch(e){}}
 }
-function sylList(){const out=[];let t=0;ST.items.forEach(w=>w.ev.forEach(e=>{if(e.d>=1){for(let k=0;k<e.d;k++)out.push([t+k,e.syl[k]]);}else out.push([t,e.syl[0]]);t+=e.d;}));return out;}
-function sylReady(){return sylList().every(([t,x])=>SYLMAP[x]&&SYLBUF[SYLMAP[x]]);}
-function scheduleSyl(t0,sess){const a=ac(),B=beat();sylList().forEach(([t,x])=>{const src=a.createBufferSource();src.buffer=SYLBUF[SYLMAP[x]];src.connect(sess);src.start(t0+t*B);});}
+function sylList(){const out=[];let t=0;ST.items.forEach(w=>{
+    if(isChunk(w)){out.push([t,null,CHUNKBUF[w.k]||null]);t+=1;return;}
+    w.ev.forEach(e=>{if(e.d>=1){for(let k=0;k<e.d;k++)out.push([t+k,e.syl[k],SYLBUF[SYLMAP[e.syl[k]]]||null]);}else out.push([t,e.syl[0],SYLBUF[SYLMAP[e.syl[0]]]||null]);t+=e.d;});});return out;}
+function sylReady(){return sylList().every(x=>x[2]);}
+function scheduleSyl(t0,sess){const a=ac(),B=beat();sylList().forEach(([t,x,buf])=>{const src=a.createBufferSource();src.buffer=buf;src.connect(sess);
+  const lead=buf._lead||0,body=buf.duration-lead;if(body>B*.97)src.playbackRate.value=Math.min(1.35,body/(B*.95));src.start(t0+t*B,lead);});}
 
 /* speech */
 function say(text){
@@ -1337,10 +1344,7 @@ function renderStep(){
   b.addEventListener('pointerdown',stBtnDown);b.addEventListener('contextmenu',e=>e.preventDefault());
   ['pointerup','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>stUp(ac().currentTime)));
   $('#stHear').onclick=async()=>{ac();if(ST.window)return;stStop();ST.failRow=0;stBtnState('auto','👂');$('#stMsg').textContent='うたの おてほん';const tok=ST.run;
-    if(!sylReady()){if(!(await readPhrase(()=>tok===ST.run&&VIEW==='step')))return;await wait(250);}
-    const a=ac(),B=beat(),sess=newSess();ST.sess=sess;const t0=a.currentTime+.15;
-    if(sylReady()){scheduleSyl(t0,sess);schedulePattern(t0,sess,false,S.click);}else schedulePattern(t0,sess,true,S.click);lightSeq(t0,false,true);
-    await wait((t0-a.currentTime+patLen()*B)*1000+500);if(tok!==ST.run||VIEW!=='step')return;stFlow(false,true);};
+    if(!(await stModel(()=>tok===ST.run&&VIEW==='step')))return;stFlow(false,true);};
   $('#stPause').onclick=()=>{stStop();stBtnState('retry');$('#stMsg').textContent='とめたよ。ボタンを おすと つづきから';};
   const sl=$('#stLen');if(sl)sl.onclick=()=>{S.len=S.len?0:1;store.set('rz_set',S);sl.textContent='📏 ながさ '+(S.len?'あり':'なし');
     $('#stMsg').textContent=S.len?'つぎの もんだいから ながさも みるよ':'つぎの もんだいから たたくだけ';};
@@ -1441,14 +1445,13 @@ async function stFlow(first,tapOnly){
   // くちで いいながら たたこう（おてほんの プレイは なし）
   $('#stMsg').textContent='くちで いいながら たたこう';stBtnState('auto','👏');
   if(first&&ST.first){ST.first=false;let sy=s.say||s.t;if(s.hold&&!S.len)sy=sy.split('。')[0];await speak('koe-step-'+(s.id||'p'),sy);if(!alive(tok))return;await wait(250);}
-  $('#stMsg').textContent='きいてね';
-  if(!(await readPhrase(()=>alive(tok))))return;await wait(300);
-  $('#stMsg').textContent='くちで いいながら たたこう';
+  $('#stMsg').textContent='きいてね';stBtnState('auto','👂');
+  if(!(await stModel(()=>alive(tok))))return;
+  $('#stMsg').textContent='くちで いいながら たたこう';stBtnState('auto','👏');
   await P('rhythm');if(!alive(tok))return;
-  stMetroStart();
   sess=newSess();ST.sess=sess;D=countIn(a.currentTime+.2,sess);
   if(sylReady()){scheduleSyl(D,sess);schedulePattern(D,sess,false,S.click);}else schedulePattern(D,sess,true,S.click);
-  lightSeq(D,false,true);
+  lightSeq(D,false,true);glowSeq(D);
   ST.timers.push(setTimeout(()=>{if(alive(tok))stBtnState('auto','👏');},(D-a.currentTime)*1000));
   await wait((D-a.currentTime+patLen()*B)*1000+300);if(!alive(tok))return;
   await wait(250);if(!alive(tok))return;
@@ -1485,6 +1488,21 @@ function stUp(t){
   if(ST.holdStop){ST.holdStop();ST.holdStop=null;}
   if(ST.downOpen){ST.downOpen=false;ST.ups[ST.taps.length-1]=t;}
   const b=$('#stBtn');if(b)b.classList.remove('down');
+}
+async function stModel(ok){
+  const a=ac(),B=beat();stMetroStart();
+  const sess=newSess();ST.sess=sess;const D=countIn(a.currentTime+.2,sess);
+  if(sylReady()){scheduleSyl(D,sess);schedulePattern(D,sess,false,false);}else schedulePattern(D,sess,true,false);
+  lightSeq(D,false,true);glowSeq(D);
+  ST.timers.push(setTimeout(()=>{if(ok())stBtnState('auto','👂');},(D-a.currentTime)*1000));
+  await wait((D-a.currentTime+patLen()*B)*1000+250);
+  return ok();
+}
+function glowSeq(t0){
+  const a=ac(),B=beat(),el=$('#stSeq');if(!el)return;let t=0;
+  ST.items.forEach((w,k)=>{const box=el.querySelector(`[data-pi="${k}"]`),st=t,ln=len(w);t+=ln;if(!box)return;
+    ST.timers.push(setTimeout(()=>box.classList.add('cur'),(t0-a.currentTime+st*B)*1000));
+    ST.timers.push(setTimeout(()=>box.classList.remove('cur'),(t0-a.currentTime+(st+ln)*B)*1000-40));});
 }
 async function readPhrase(ok){
   const el=$('#stSeq');
