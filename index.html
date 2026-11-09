@@ -188,6 +188,15 @@ h2{font-size:22px;margin:6px 0 12px}
 .bento.good{border-color:var(--c3);box-shadow:0 5px 0 #2f7d4c}
 .modal{position:fixed;inset:0;background:rgba(40,30,25,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:14px}
 .modal.on{display:flex}
+.bento.wood .blk{--c:#d9ad72!important;color:#3a2a1e;text-shadow:none}
+.bento.wood .blk.rest{background:#fff}
+.bento .pc{position:relative}.bento .pcn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.bento .pc{overflow:hidden}.bento .pcn svg{width:auto!important;height:calc(var(--bh) * .8)!important;max-width:92%}
+.bn-pal.anap{grid-template-columns:repeat(4,1fr)!important}
+.bento .hole{flex:none;margin-right:2px;border:3px dashed #c98b4a;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#c98b4a;background:#fff8ee;animation:holeb 1.4s ease-in-out infinite}
+@keyframes holeb{50%{background:#fde9cf}}
+.bento .pc.drop{animation:dropin .35s cubic-bezier(.3,1.6,.6,1)}@keyframes dropin{from{transform:translateY(-30px);opacity:0}}
+.bn-pc.ana{min-height:90px;justify-content:center}.bn-pc.ana svg{height:66px;width:auto!important;max-width:100%}
 .bnhelp{text-align:left;font-size:15px;line-height:1.6}.bnhelp p{margin:6px 0}.bnhelp .sub{font-size:12px;color:var(--sub)}
 .modal.sheet{align-items:flex-end;background:rgba(40,30,25,.1);pointer-events:none;padding:8px}
 .modal.sheet .mbox{pointer-events:auto;padding:10px 14px 12px;max-width:520px;width:100%;margin-bottom:env(safe-area-inset-bottom)}
@@ -404,6 +413,8 @@ body.sheeton #v-step{padding-bottom:210px}
     <div class="row"><span class="lab">つみきの もじ</span><div class="seg" id="setLbl"><button data-v="0">おんぷだけ</button><button data-v="1">ことばも だす</button></div></div>
     <div class="row"><span class="lab">かぞえかた</span><div class="seg" id="setNum"><button data-v="0">にー さん しー</button><button data-v="1">2 3 4</button></div></div>
     <div class="row"><span class="lab">カチカチ</span><div class="seg" id="setClick"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
+    <div class="row"><span class="lab">iPhoneの よみあげ</span><div class="seg" id="setTts"><button data-v="1">つかう</button><button data-v="0">つかわない</button></div></div>
+    <div class="hint" style="margin:-4px 0 8px;text-align:left">ずんだもんの ファイルが ない ことばを iPhoneが よみます。音が とまる ときは「つかわない」に してみてください。</div>
     <div class="row"><span class="lab">せんせいよう</span><div class="seg" id="setUnlock"><button data-v="0">ふつう</button><button data-v="1">ぜんぶ ひらく（チェック用）</button></div></div>
     <div class="row" style="justify-content:space-between"><span class="hint" style="margin:0" id="verLbl"></span><button class="tog" id="resetBtn" style="font-size:13px">せんせいよう：おべんとうの きろくを けす</button></div>
   </div>
@@ -458,9 +469,9 @@ body.sheeton #v-step{padding-bottom:210px}
     <button class="qtype" data-t="animal"><span class="em">🐘</span><span>どうぶつさん だれかな？<small>はじめての レッスン・ちいさい子むけ。メロディーを きいて どうぶつを あてる</small></span></button>
     <button class="qtype on" data-t="longer"><span class="em">📏</span><span>ながいのは どっち？<small>2つの おとを くらべる（いちばん やさしい）</small></span></button>
     <button class="qtype" data-t="listen"><span class="em">👂</span><span>どの おとかな？<small>おとを きいて、おんぷを えらぶ（じが よめなくても できる）</small></span></button>
-    <button class="qtype" data-t="count"><span class="em">🔢</span><span>たん なんこ？<small>ながい おんぷは たん いくつぶん？ すうじで こたえる</small></span></button>
-    <button class="qtype" data-t="name"><span class="em">📛</span><span>なまえを おぼえよう<small>おんぷを おすと なまえを いうよ。よめる子は こたえを えらぶ</small></span></button>
-    <button class="qtype" data-t="word"><span class="em">🔤</span><span>ことばを えらぼう<small>おんぷを みて、ことばを えらぶ</small></span></button>
+    <button class="qtype" data-t="count"><span class="em">🔢</span><span>いくつ のばす？<small>おんぷを いくつ のばすかな？ すうじで こたえる</small></span></button>
+    <button class="qtype" data-t="name"><span class="em">📛</span><span>なんていう おんぷ？<small>おんぷの なまえを えらぶ（「2 3 4」で すうじの なまえ）</small></span></button>
+    <button class="qtype" data-t="word"><span class="em">🔤</span><span>なんて うたう？<small>おんぷを みて、リズムの うたいかたを えらぶ</small></span></button>
   </div>
   <div class="hint" style="text-align:center">おすと すぐ はじまるよ。⚙ で くわしい せってい</div>
   <div id="qOpts"></div>
@@ -508,15 +519,22 @@ const byId=id=>WORDS.find(w=>w.id===id);
 const NUMMAP={'にー':'2','さん':'3','しー':'4'};
 const lab=x=>S.num&&NUMMAP[x]?NUMMAP[x]:x;
 const W=w=>S.num?w.w.replace(/にー/g,'2').replace(/さん/g,'3').replace(/しー/g,'4'):w.w;
+/* 2 3 4 の ときは おんぷの なまえも すうじ（しぶおんぷ → 4ぶおんぷ）。こえは そのまま */
+const NUMRE=/(じゅうろく|はち|し|に)ぶ(おんぷ|きゅうふ)/g,NUMV={'じゅうろく':'16','はち':'8','し':'4','に':'2'};
+function numText(n){if(n.__o==null){if(!NUMRE.test(n.nodeValue)){NUMRE.lastIndex=0;return;}NUMRE.lastIndex=0;n.__o=n.nodeValue;}
+  const v=S.num?n.__o.replace(NUMRE,(m,a,b)=>NUMV[a]+'ぶ'+b):n.__o;if(n.nodeValue!==v){n.__w=v;n.nodeValue=v;}}
+function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=tw.nextNode()))numText(n);}
+new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
+  else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/9-d';
+const VERSION='11/9-e';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
 /* ===================== storage ===================== */
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const S=Object.assign({bpm:72,voice:1,click:1,num:0,clap:0,lbl:0,len:0,unlock:0},store.get('rz_set',{}));
+const S=Object.assign({bpm:72,voice:1,click:1,num:0,clap:0,lbl:0,len:0,unlock:0,tts:1},store.get('rz_set',{}));
 let STARS=store.get('rz_stars',0);
 function addStar(n=1){STARS+=n;store.set('rz_stars',STARS);$('#stars').textContent='⭐ '+STARS;}
 $('#stars').textContent='⭐ '+STARS;
@@ -527,20 +545,15 @@ function curStep(){return ST.custom||COURSE[ST.i];}
 let AC=null;
 let MASTER=null;
 function out(){const a=ac();if(!MASTER){const g=a.createGain();g.gain.value=1;const c=a.createDynamicsCompressor();c.threshold.value=-4;c.knee.value=3;c.ratio.value=20;c.attack.value=.002;c.release.value=.1;g.connect(c);c.connect(a.destination);MASTER=g;}return MASTER;}
-let VBUS=null;function vout(){const a=ac();if(!VBUS||VBUS.context!==a){VBUS=a.createGain();VBUS.gain.value=.6;VBUS.connect(out());}return VBUS;}
-function ac(){if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();}if(AC.state!=='running'){try{AC.resume();}catch(e){}}return AC;}
+let VBUS=null;function vout(){const a=ac();if(!VBUS){VBUS=a.createGain();VBUS.gain.value=.75;VBUS.connect(out());}return VBUS;}
+function ac(){if(!AC){try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}AC=new (window.AudioContext||window.webkitAudioContext)();}if(AC.state!=='running'){try{AC.resume();}catch(e){}}return AC;}
 /* iPhone: 音が とまったら つぎに さわったときに もどす */
 let AUDIO_UNLOCKED=false;
-function audioKick(){try{const a=ac();if(!AUDIO_UNLOCKED){const b=a.createBuffer(1,1,22050);const s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);AUDIO_UNLOCKED=true;}}catch(e){}}
+function audioKick(){try{try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}const a=ac();if(!AUDIO_UNLOCKED){const b=a.createBuffer(1,1,22050);const s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);AUDIO_UNLOCKED=true;}}catch(e){}}
 ['pointerdown','touchend','click'].forEach(ev=>document.addEventListener(ev,()=>{if(!AC||AC.state!=='running'||!AUDIO_UNLOCKED)audioKick();},{capture:true,passive:true}));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&AC&&AC.state!=='running'){try{AC.resume();}catch(e){}}});
-/* それでも もどらないときは 音の しくみを つくりなおす */
-let HEALING=false;
-function audioHeal(){if(!AC||AC.state==='running'||HEALING)return;HEALING=true;try{AC.resume().catch(()=>{});}catch(e){}
-  setTimeout(()=>{HEALING=false;if(!AC||AC.state==='running')return;
-    try{AC.close();}catch(e){}AC=null;MASTER=null;VBUS=null;AUDIO_UNLOCKED=false;audioKick();
-    try{if(QZ.m)metroStart();}catch(e){}try{if(ST.m){stMetroStop();stMetroStart();}}catch(e){}},450);}
-['pointerdown','touchend'].forEach(ev=>document.addEventListener(ev,audioHeal,{capture:true,passive:true}));
+/* 止まっていたら さわったときに もどす（つくりなおしは しない） */
+['pointerdown','touchend'].forEach(ev=>document.addEventListener(ev,()=>{if(AC&&AC.state!=='running'){try{AC.resume().catch(()=>{});}catch(e){}}},{capture:true,passive:true}));
 setInterval(()=>{if(AC&&AC.state!=='running'&&document.visibilityState==='visible'){try{AC.resume().catch(()=>{});}catch(e){}}},1500);
 function newSess(){const a=ac();const g=a.createGain();g.connect(out());return g;}
 function killSess(g){if(!g)return;try{const a=ac();g.gain.cancelScheduledValues(a.currentTime);g.gain.setValueAtTime(0,a.currentTime);setTimeout(()=>{try{g.disconnect()}catch(e){}},200)}catch(e){}}
@@ -577,8 +590,8 @@ function buzz(){const a=ac();const t=a.currentTime;tone(t,.18,null,220,.35);tone
 
 /* own files (images / voices) on GitHub */
 const AV=new Set();const CLIPS={};let CLIP_NOW=null;
-const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて いうかな',
-  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは ひとりで。いいながら ボタンを たたいてね',tebyoushi:'こんどは ひとりで。いいながら てを たたいてね',rhythm:'ずんだもんと いっしょに、くちで いいながら たたこう',osu:'こんどは ひとりで。おんぷの ながさだけ ボタンを おしてね',mouichidoosu:'もういちど おしてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',again:'もういちど やるときは ボタンを おしてね',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',clear:'クリア おめでとう',nanko:'たん なんこ ぶん',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
+const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて うたうかな',
+  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは ひとりで。いいながら ボタンを たたいてね',tebyoushi:'こんどは ひとりで。いいながら てを たたいてね',rhythm:'ずんだもんと いっしょに、くちで いいながら たたこう',osu:'こんどは ひとりで。おんぷの ながさだけ ボタンを おしてね',mouichidoosu:'もういちど おしてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',again:'もういちど やるときは ボタンを おしてね',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',clear:'クリア おめでとう',nanko:'いくつ のばすかな',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
 const CLIP_ALIAS={'koe-tan3':'koe-tan23','koe-tan4':'koe-tan234','koe-un3':'koe-un23','koe-un4':'koe-un234'};
 function clipName0(key){return AV.has(key+'.mp3')?key+'.mp3':AV.has(key+'.wav')?key+'.wav':AV.has(key+'.m4a')?key+'.m4a':null;}
 function clipName(key){return clipName0(key)||(CLIP_ALIAS[key]?clipName0(CLIP_ALIAS[key]):null);}
@@ -587,7 +600,7 @@ async function probeFiles(){
   const keys=[];WORDS.forEach(w=>{keys.push('koe-'+w.k,'na-'+w.nk);});Object.keys(PROMPTS).forEach(k=>keys.push('koe-'+k));
   Object.values({tan:1,un:1,ni:1,san:1,shi:1,ta:1,ka:1,u:1}).length;['tan','un','ni','san','shi','ta','ka','u'].forEach(k=>keys.push('syl-'+k));
   Object.values(CLIP_ALIAS).forEach(k=>keys.push(k));
-  ['zou','inu','risu'].forEach(k=>keys.push('mel-'+k));
+  ['zou','inu','risu'].forEach(k=>keys.push('mel-'+k));for(let k=1;k<=16;k++)keys.push('kazu-'+k);
   ['ta','ko','ya','ki','ra','a','me','n','su','te','e','ju','u','ze','ri','i','ma','go','o','ha','sa','ku','ro','ke','mu','no','mi','shi','da','ka'].forEach(k=>keys.push('kana-'+k));
   const names=[...new Set(keys)].flatMap(k=>/^kana-/.test(k)?[k+'.mp3']:/^mel-/.test(k)?[k+'.m4a',k+'.mp3']:[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.map(w=>'e-'+w.k+'.png'));
   await Promise.all(names.map(n=>fetch(n,{method:'HEAD',cache:'no-cache'}).then(r=>{if(r.ok)AV.add(n);}).catch(()=>{})));
@@ -646,20 +659,20 @@ function sylList(){const out=[];let t=0;ST.items.forEach(w=>{
       else out.push([t,null,CHUNKBUF[w.k]||null,1]);t+=1;return;}
     w.ev.forEach(e=>{if(e.d>=1){for(let k=0;k<e.d;k++)out.push([t+k,e.syl[k],SYLBUF[SYLMAP[e.syl[k]]]||null]);}else out.push([t,e.syl[0],SYLBUF[SYLMAP[e.syl[0]]]||null]);t+=e.d;});});return out;}
 function sylReady(){return sylList().every(x=>x[2]);}
-function scheduleSyl(t0,sess){const a=ac(),B=beat(),L=sylList();L.forEach(([t,x,buf,dur],i)=>{const src=a.createBufferSource();src.buffer=buf;const vg=a.createGain();vg.gain.value=.6;vg.connect(sess);src.connect(vg);
+function scheduleSyl(t0,sess){const a=ac(),B=beat(),L=sylList();L.forEach(([t,x,buf,dur],i)=>{const src=a.createBufferSource();src.buffer=buf;const vg=a.createGain();vg.gain.value=.75;vg.connect(sess);src.connect(vg);
   const d=(dur||1)*B,lead=buf._lead||0,body=buf.duration-lead;if(body>d*.97)src.playbackRate.value=Math.min(dur&&dur<1?1.15:1.35,body/(d*.95));src.start(t0+t*B,lead);
   const nx=L[i+1];if(nx&&dur&&dur<1)src.stop(t0+nx[0]*B+.03);});}
 
 /* speech */
 function say(text){
   return new Promise(res=>{
-    if(!S.voice||!window.speechSynthesis){res();return;}
+    if(!S.voice||!S.tts||!window.speechSynthesis){res();return;}
     let done=false;const fin=()=>{if(!done){done=true;res();}};
     try{
       speechSynthesis.cancel();
       const u=new SpeechSynthesisUtterance(text);u.lang='ja-JP';u.rate=.9;u.pitch=1.15;
       const v=speechSynthesis.getVoices().find(v=>/ja/i.test(v.lang));if(v)u.voice=v;
-      u.onend=fin;u.onerror=fin;speechSynthesis.speak(u);
+      const fin2=()=>{fin();try{if(AC&&AC.state!=='running')AC.resume().catch(()=>{});}catch(e){}};u.onend=fin2;u.onerror=fin2;speechSynthesis.speak(u);
       setTimeout(fin,Math.min(20000,900+text.length*330));
     }catch(e){fin();}
   });
@@ -823,12 +836,12 @@ function bindSeg(id,key){
   const el=$(id);const sync=()=>el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===+S[key]));
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{S[key]=+b.dataset.v;store.set('rz_set',S);sync();});sync();
 }
-bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');bindSeg('#setNum','num');bindSeg('#setLbl','lbl');bindSeg('#setUnlock','unlock');bindSeg('#setLen','len');bindSeg('#setClap','clap');
+bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');bindSeg('#setNum','num');bindSeg('#setLbl','lbl');bindSeg('#setUnlock','unlock');bindSeg('#setLen','len');bindSeg('#setClap','clap');bindSeg('#setTts','tts');$('#setNum').addEventListener('click',()=>{numTogSync();numWalk(document.body);});
 $('#setClap').addEventListener('click',async()=>{if(S.clap){const ok=await micStart();if(!ok){S.clap=0;store.set('rz_set',S);$('#setClap').querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===0));}}});
 
-function numTogSync(){const b=$('#numTog');if(!b)return;const show=!['home','menu','quizSetup'].includes(VIEW);
+function numTogSync(){const b=$('#numTog');if(!b)return;const show=!['home'].includes(VIEW);
   b.style.display=show?'':'none';b.innerHTML=S.num?'<b>2 3 4</b>':'<b>にーさんしー</b>';}
-$('#numTog').onclick=()=>{S.num=S.num?0:1;store.set('rz_set',S);numTogSync();
+$('#numTog').onclick=()=>{S.num=S.num?0:1;store.set('rz_set',S);numTogSync();numWalk(document.body);
   $('#setNum').querySelectorAll('button').forEach(x=>x.classList.toggle('on',+x.dataset.v===S.num));
   if(VIEW==='list')renderList();else if(VIEW==='detail'&&DETAIL_ID)openDetail(DETAIL_ID,true);
   else if(VIEW==='nobashi'&&NB.state!=='hold'&&NB.state!=='count')renderNobashi();
@@ -1041,11 +1054,13 @@ function openNameLesson(w){
   $('#nlClose').onclick=closeModal;$('#nlAgain').onclick=()=>openNameLesson(w);
   $('#mbox').querySelectorAll('.nl-p').forEach(el=>el.onclick=()=>{const n=el.dataset.nm;if(!n)return;const an=$('#nlAns');if(an){an.textContent=n;an.classList.remove('pop');void an.offsetWidth;an.classList.add('pop');}say(n);});
   const els=[...$('#mbox').querySelectorAll('.nl-row.top .nl-p')];
-  const step=Math.min(650,Math.max(150,2600/els.length));
+  const kz=!info.parts&&els.length>1&&clipName('kazu-1')&&S.voice;
+  const step=kz?Math.max(520,Math.min(650,2600/els.length)):Math.min(650,Math.max(150,2600/els.length));
   NL_TIMERS.forEach(clearTimeout);NL_TIMERS=[];
   NL_TIMERS.push(setTimeout(()=>{if(S.voice)speak('na-'+base.nk,info.tp?'たん':base.nm);},150));
   els.forEach((e,i)=>NL_TIMERS.push(setTimeout(()=>{e.classList.add('in');if(e.parentElement.classList.contains('nl-g')&&i%4===3)e.parentElement.classList.add('in');
     if(!info.parts&&els.length>1){const c=$('#nlCount');c.textContent=(i+1);c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');}
+    if(kz&&clipName('kazu-'+(i+1))){speak('kazu-'+(i+1),'');return;}
     try{tone(ac().currentTime,.09,null,e.classList.contains('r')?392:659,.3);}catch(_){}},900+i*step)));
   NL_TIMERS.push(setTimeout(()=>{
     $('#nlCount').textContent='';
@@ -1066,7 +1081,8 @@ const BN_LEVELS=[['q','w'],['h'],['dh'],['qr','hr'],['ee'],['er','re'],['f1','f2
 const BN_STAMP=['🐕','🐘','🌈','🎈','💤','🐿️','🎵','🐙','🥩','🍡'];
 const BP=Object.assign({lv:1,step:'shape',hist:[],stamps:{},master:null,renpu:null},store.get('rz_bn',{}));
 const bpSave=()=>store.set('rz_bn',BP);
-const BN={mode:'odai',items:[],target:null,done:false,cap:4,miss:false,hint:false,auto:0};
+const BN={mode:'odai',items:[],target:null,done:false,cap:4,miss:false,hint:false,auto:0,blank:-1,choices:[],fresh:false};
+const bnAna=()=>BN.mode==='odai'&&BP.lv>=2;
 const bnLen=()=>BN.items.reduce((a,w)=>a+len(w),0);
 const today=()=>{const d=new Date();return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;};
 function bnUnlocked(){return BN_LEVELS.slice(0,BP.lv).flat().map(byId);}
@@ -1099,7 +1115,15 @@ function bnNewQ(){
   BN.items=[];BN.done=false;BN.miss=false;
   const l2=bnLast(2);
   BN.hint=BP.step==='shape'||(l2.length===2&&!l2[0]&&!l2[1]);
-  BN.target=bnMakeTarget();
+  BN.target=bnMakeTarget();BN.fresh=true;
+  if(BP.lv>=2){/* あなうめ：1つ ぬけている ところに はいる おんぷを えらぶ */
+    BP.step='score';BN.hint=false;const nw=bnNewIds();
+    const idx=BN.target.map((w,i)=>i),nidx=idx.filter(i=>nw.includes(BN.target[i].id));
+    const bi=nidx.length&&Math.random()<.7?nidx[Math.random()*nidx.length|0]:idx[Math.random()*idx.length|0];
+    BN.blank=bi;const ans=BN.target[bi];
+    const seen=new Set();const others=shuffle(bnUnlocked()).filter(w=>{const k=JSON.stringify(w.ev.map(e=>[e.d,e.r]));
+      if(Math.abs(len(w)-len(ans))<1e-6||seen.has(k))return false;seen.add(k);return true;}).slice(0,3);
+    BN.choices=shuffle([ans,...others]);}
 }
 function renderBento(){
   $('#bnMode').querySelectorAll('button').forEach(b=>{b.classList.toggle('on',b.dataset.v===BN.mode);
@@ -1107,6 +1131,8 @@ function renderBento(){
   if(BN.mode==='odai'&&!BN.target)bnNewQ();
   bnDrawLv();bnDrawTarget();bnDrawBox();bnDrawPal();
   $('#bnNext').style.display=BN.mode==='odai'?'':'none';
+  if(bnAna()){$('#bnMsg').textContent=BN.done?$('#bnMsg').textContent:'あいている ところに はいる おんぷは どれ？';
+    if(BN.fresh&&VIEW==='bento'){BN.fresh=false;if(!$('#modal').classList.contains('on'))speak('koe-ana','あいている ところに はいる おんぷは どれ？');}return;}
   if(!BN.done)$('#bnMsg').textContent=BN.mode==='free'?'おかずを タップして つめよう':BN.hint?'おなじ かたちの おかずを いれよう':'がくふと おなじに つめよう';
 }
 function bnDrawLv(){
@@ -1115,17 +1141,26 @@ function bnDrawLv(){
   let dots='';
   if(BP.step==='shape'){let k=0;for(let i=BP.hist.length-1;i>=0&&BP.hist[i];i--)k++;k=Math.min(k,3);for(let i=0;i<3;i++)dots+=`<i class="${i<k?'ok':''}"></i>`;}
   else{const l=bnLast(5);for(let i=0;i<5;i++)dots+=`<i class="${i<l.length?(l[i]?'ok':'ng'):''}"></i>`;}
-  el.innerHTML=`<span class="lvb">レベル ${BP.lv}${BP.lv===10?' れんぷ':''}</span><span class="step">${BP.step==='shape'?'かたち':'がくふ'}</span><span class="pd">${dots}</span>`;
+  el.innerHTML=`<span class="lvb">レベル ${BP.lv}${BP.lv===10?' れんぷ':''}</span><span class="step">${BP.lv>=2?'あなうめ':BP.step==='shape'?'かたち':'がくふ'}</span><span class="pd">${dots}</span>`;
 }
 function bnDrawTarget(){
   const el=$('#bnTarget');
-  if(BN.mode!=='odai'){el.innerHTML='';return;}
+  if(BN.mode!=='odai'||bnAna()){el.innerHTML='';return;}
   if(BP.step==='score'){el.innerHTML=`<div class="bn-target"><div class="hint" style="margin:0">この リズムを つくろう</div>${notation(BN.target.flatMap(w=>w.ev),1.6)}</div>`;}
   else el.innerHTML='';
 }
 function bnUnit(){return Math.floor(Math.min(92,(availW()-30)/BN.cap));}
 function bnDrawBox(){
   const u=bnUnit(),bh=Math.round(Math.min(u,95));
+  if(bnAna()){let pcs='',t=0;
+    BN.target.forEach((w,i)=>{
+      if(i===BN.blank&&!BN.done){pcs+=`<div class="hole" style="width:${len(w)*u-2}px;height:${bh}px">？</div>`;t+=len(w);return;}
+      let inner='',tt=t;w.ev.forEach(e=>{inner+=evBlk(e,tt,w,false);tt+=e.d;});
+      pcs+=`<div class="pc${i===BN.blank?' drop':''}" style="margin-right:2px">${inner}<div class="pcn">${notation(w.ev,1,true,null,true)}</div></div>`;t+=len(w);});
+    let cells='';for(let k=0;k<BN.cap;k++)cells+='<div class="cell"></div>';
+    const box=$('#bnBox');box.className='bento wood'+(BN.done?' good':'');box.style.width=(BN.cap*u+26)+'px';
+    box.innerHTML=`<div class="cells">${cells}</div><div class="lay blocks" style="--u:${u}px;--bh:${bh}px;height:${bh+8}px;justify-content:flex-start">${pcs}</div>`;
+    $('#bnNote').innerHTML='';return;}
   let ghosts='';
   if(BN.mode==='odai'&&BN.hint){let t=0,g='';BN.target.forEach(w=>{let inner='';
     w.ev.forEach(e=>{inner+=evBlk(e,t,w,false);t+=e.d;});
@@ -1142,6 +1177,9 @@ function bnDrawBox(){
   const ev=BN.items.flatMap(w=>w.ev);$('#bnNote').innerHTML=ev.length?notation(ev,1.4):'';
 }
 function bnDrawPal(){
+  const ana=bnAna();['bnUndo','bnClear'].forEach(id=>$('#'+id).style.display=ana?'none':'');
+  $('#bnPal').classList.toggle('anap',ana);if(ana){$('#bnPal').innerHTML=BN.choices.map(w=>`<button class="bn-pc ana" data-id="${w.id}">${notation(w.ev,1.3,true,null,true)}</button>`).join('');
+    $('#bnPal').querySelectorAll('.bn-pc').forEach(b=>b.onclick=()=>bnPick(byId(b.dataset.id),b));return;}
   const rem=BN.cap-bnLen(),nw=BN.mode==='odai'?bnNewIds():[];
   $('#bnPal').innerHTML=bnUnlocked().map(w=>`<button class="bn-pc${len(w)>rem+1e-6?' no':''}" data-id="${w.id}">
       ${nw.includes(w.id)&&BP.lv>1?'<span class="newb">NEW</span>':''}
@@ -1164,6 +1202,16 @@ async function bnFull(){
   if(BN.mode==='free'){$('#bnMsg').textContent='できた！ よんでみるよ';await wait(200);bnRead();return;}
   if(evKey(BN.items)!==evKey(BN.target)){
     BN.miss=true;bnShake($('#bnBox'));buzz();$('#bnMsg').textContent='ちがうところが あるよ。おかずを タップして とりだそう';return;}
+  bnWin();
+}
+function bnPick(w,btn){
+  ac();if(BN.done)return;const ans=BN.target[BN.blank];
+  if(sameSound(w,ans)){BN.items=BN.target.slice();bnWin();return;}
+  BN.miss=true;bnShake(btn);buzz();
+  if(len(w)>len(ans)){$('#bnMsg').textContent='ながすぎて はいらないよ';speak('koe-hairanai','はいらないよ');}
+  else{$('#bnMsg').textContent='すきまが できちゃうよ';speak('koe-sukima','すきまが できちゃうよ');}
+}
+async function bnWin(){
   BN.done=true;bnDrawBox();yay();flash('⭕');addStar(BN.miss?0:1);
   const r=bnRecord(!BN.miss);bnDrawLv();
   $('#bnMsg').textContent=BN.miss?'できたね！':'せいかい！ おいしそう！';
@@ -1223,6 +1271,7 @@ function bnShowCard(){
   $('#mClose').onclick=closeModal;
 }
 function bnRead(){
+  if(bnAna()&&!BN.done){const ev=BN.target.flatMap((w,i)=>i===BN.blank?[{d:len(w),r:1,syl:['']}]:w.ev);return playWord({ev},{el:$('#bnBox .lay'),clicks:S.click});}
   if(!BN.items.length)return 0;
   return playWord({ev:BN.items.flatMap(w=>w.ev)},{el:$('#bnBox .lay'),clicks:S.click});
 }
@@ -1231,16 +1280,15 @@ $('#bnPlay').onclick=()=>{ac();bnRead();};
 function bnHelp(){
   openModal(`<h3>🍱 おべんとうばこ の あそびかた</h3>
     <div class="bnhelp">
-      <p>おべんとうばこは <b>4マス</b>（4はく）。おかずの ながさが おんぷの ながさだよ。</p>
-      <p>🍙 <b>たん</b>は 1マス、<b>たん2</b>は 2マス、<b>たん234</b>は 4マス ぜんぶ。</p>
-      <p>⭐ <b>チャレンジ</b>：はこの なかの <b>かたち</b>（あとで <b>がくふ</b>）と おなじに なるように、したの おかずを タップして つめよう。4マス つまると こたえあわせ。あっていたら ⭕ で、つめた リズムを よんでくれるよ。</p>
-      <p>↩ もどす：さいごの おかずを とりだす　🗑 けす：ぜんぶ とりだす</p>
+      <p>おべんとうばこは <b>4マス</b>（4はく）。おかずの ながさが おんぷの ながさだよ。<b>たん</b>は 1マス、<b>たん2</b>は 2マス、<b>たん234</b>は 4マス ぜんぶ。</p>
+      <p>🐣 <b>レベル1</b>：はこの なかの かたちと おなじ いろ・おなじ かたちの おかずを タップして つめよう。</p>
+      <p>⭐ <b>レベル2から</b>：おべんとうに 1つ あなが あいているよ。<b>あいている ところに はいる おんぷ</b>を えらぼう。のこりは なんマス？ その ながさの おんぷは どれかな？ ▶ よむ で きいて かんがえても いいよ。</p>
       <p>🎨 <b>じゆう</b>：すきな おかずを つめて、じぶんの リズムを つくって よもう。</p>
-      <p class="sub">せんせいへ：レベルは こたえの できで じどうで あがります（はじめは かたちの ヒントあり → がくふだけ）。</p>
+      <p class="sub">せんせいへ：レベルは こたえの できで じどうで あがります。レベル2からは つみきが 1しょく（木の いろ）で、いろでは なく ながさと おんぷで かんがえます。</p>
     </div>
     <div class="btns" style="margin-top:10px"><button class="bigbtn" id="bhOk" style="background:var(--c3)">やってみる ▶</button></div>`);
   $('#bhOk').onclick=closeModal;
-  say('おべんとうばこは 4マス。おかずの ながさが おんぷの ながさだよ。おなじ リズムに なるように、おかずを タップして つめよう');
+  say('おべんとうばこは 4マス。おかずの ながさが おんぷの ながさだよ');
 }
 $('#bnHelpBtn').onclick=()=>{ac();bnHelp();};
 $('#bnUndo').onclick=()=>{if(BN.done&&BN.mode==='odai')return;BN.items.pop();bnDrawBox();bnDrawPal();$('#bnMsg').textContent='';};
@@ -1956,7 +2004,7 @@ async function nextQ(){
   else if(QZ.type==='count'){
     const ans=pickAns(pool());QZ.ans=ans;const n=len(ans),r=ans.ev[0].r;
     const u=Math.min(70,Math.floor((availW()-40)/4));
-    box.innerHTML=progHTML()+`<div class="qprompt">${r?'うん':'たん'} なんこ ぶん？</div>
+    box.innerHTML=progHTML()+`<div class="qprompt">${r?'いくつ おやすみ？':'いくつ のばす？'}</div>
       <div class="qnote" id="qcNote" style="flex-direction:column;align-items:center;gap:8px">${notation(ans.ev,2,true,null,true)}<div id="qcB"></div></div>
       <div class="btns" style="margin-bottom:12px"><button class="bigbtn" id="qReplay">🔊 きく</button></div>
       <div class="qchoices" style="grid-template-columns:repeat(4,1fr)">${[1,2,3,4].map(k=>`<button class="qchoice qnum" data-n="${k}"><div class="w">${k}</div></button>`).join('')}</div>`;
@@ -1990,7 +2038,7 @@ async function nextQ(){
     const ans=pickAns(pool());QZ.ans=ans;
     const ch=pickChoices(ans,4);
     const u=Math.min(60,Math.floor((availW()-60)/Math.max(1,len(ans))));
-    box.innerHTML=progHTML()+`<div class="qprompt">なんて いうかな？</div>
+    box.innerHTML=progHTML()+`<div class="qprompt">なんて うたうかな？</div>
       <button class="qnote qtapnote" id="qWordNote">${notation(ans.ev,len(ans)<1?3:2,true,null,true)}<div id="qwB"></div><div class="hint" style="margin:0">👆 おんぷを おすと リズムが なるよ</div></button>
       <div class="qchoices tlist">${ch.map(w=>textChoice(w.id,W(w),'koe-'+w.k,w.w)).join('')}</div>`;
     $('#qWordNote').onclick=()=>{ac();playWord(ans,{clicks:true,el:$('#qwB .blocks')});};
