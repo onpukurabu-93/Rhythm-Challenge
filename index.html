@@ -59,7 +59,7 @@ h2{font-size:22px;margin:6px 0 12px}
 .card .w{font-size:20px;font-weight:800}
 .card .emj{font-size:26px;line-height:1}
 .card svg{max-width:100%;height:auto}
-.card svg,.qchoice svg,.bn-pc svg{height:54px !important;width:auto !important;max-width:none !important}
+.card svg,.qchoice svg,.bn-pc svg{height:calc(var(--vh,72) / 72 * 58px) !important;width:auto !important;max-width:none !important}
 
 /* blocks */
 .blocks{display:flex;align-items:flex-end;justify-content:center}
@@ -246,7 +246,7 @@ h2{font-size:22px;margin:6px 0 12px}
 .seq{display:flex;flex-direction:column;gap:6px;align-items:center}
 .seq-row{display:flex;gap:10px;justify-content:center}
 .seq-m{display:flex;flex-direction:column;align-items:center;gap:2px}
-.seq-n svg{height:min(56px,8vh) !important;width:auto !important;max-width:none !important}
+.seq-n svg{height:calc(var(--vh,72) / 72 * min(56px,8vh)) !important;width:auto !important;max-width:none !important}
 .bento.sm{border-width:4px;padding:6px;border-radius:16px;box-shadow:0 3px 0 #a8703a;margin:0}
 .bento.sm .cells{inset:6px}
 .st-msg{text-align:center;font-weight:800;font-size:19px;min-height:28px;margin:10px 0 4px}
@@ -291,9 +291,9 @@ h2{font-size:22px;margin:6px 0 12px}
 .rs-s{font-size:12px;color:var(--sub);font-weight:800;margin-top:4px}
 .ncards{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .ncard{background:#fff;border-radius:16px;padding:8px 6px 6px;box-shadow:0 3px 0 var(--line);display:flex;flex-direction:column;align-items:center;gap:4px;border:3px solid #c98b4a}
-.nc-n svg{height:84px !important;width:auto !important;max-width:100%}
+.nc-n svg{height:calc(var(--vh,72) / 72 * 84px) !important;width:auto !important;max-width:100%}
 .nc-b{opacity:.55}
-.ncards.many .nc-n svg{height:58px !important}
+.ncards.many .nc-n svg{height:calc(var(--vh,72) / 72 * 58px) !important}
 .ncards.many{gap:6px}
 .st-sub .tog{font-size:13px;padding:8px 10px;white-space:nowrap}
 .ncard .lay{display:flex;align-items:center;justify-content:center}
@@ -332,6 +332,35 @@ h2{font-size:22px;margin:6px 0 12px}
 .nl-ans{min-height:30px;font-size:20px;font-weight:800;color:var(--c4);margin:4px 0}
 .pc.cur .blk,.ncard.cur{box-shadow:0 0 0 4px #ffd34d,0 0 14px 4px rgba(255,200,40,.7);transform:translateY(-3px)}
 .pc .blk,.ncard{transition:box-shadow .12s,transform .12s}
+/* step: fit screen, dark notes, clear glow */
+#v-step{padding-top:6px}
+#v-step .st-head{margin-bottom:4px}
+#v-step .st-msg{font-size:17px;min-height:24px;margin:6px 0 2px}
+#v-step .drum{width:min(44vw,170px,23vh);height:min(44vw,170px,23vh);font-size:34px;box-shadow:0 8px 0 #b8432f}
+#v-step .drum.idle{box-shadow:0 8px 0 #8f8172}
+#v-step .drum.okb{box-shadow:0 8px 0 #2f7d4c;font-size:26px}
+#v-step .drum.againb{font-size:24px}
+#v-step .drum .cnt{font-size:52px}
+#v-step .holdwrap{margin:4px 0 10px}
+#v-step .st-sub{flex-wrap:nowrap;gap:6px}
+#v-step .st-sub .tog{font-size:14px;padding:8px 10px}
+#v-step .tog.on2{color:var(--ink);background:#e8f6ec}
+#stSeq .blk,.ncard .blk{color:#2b2320;background:color-mix(in srgb,var(--c) 32%,#fff);text-shadow:none}
+#stSeq .blk.rest,.ncard .blk.rest{background:#fff;color:#2b2320}
+#stSeq.playing .blk[data-t]{opacity:1}
+#stSeq .blk[data-t].on{background:color-mix(in srgb,var(--c) 70%,#fff)}
+#stSeq .blk.fillb::before{opacity:.0}
+#stSeq .blk.fillb{background:color-mix(in srgb,var(--c) 32%,#fff)}
+#stSeq .blk.fillb.rest{background:#fff}
+#stSeq .blk.fillb .fl{opacity:.75}
+#stSeq .blk.fillb.rest .fl{opacity:.25}
+#stSeq .blk.fillb .bt{color:#2b2320}
+.pc{position:relative}
+.pc.cur .blk,.ncard.cur{box-shadow:0 0 0 4px #ff9f1c !important;transform:translateY(-4px) scale(1.04)}
+.pc.cur::before,.ncard.cur::before{content:'▼';position:absolute;top:-20px;left:50%;transform:translateX(-50%);color:#ff7a1a;font-size:16px;z-index:5;animation:bob .4s infinite alternate}
+.ncard{position:relative}
+@keyframes bob{to{top:-15px}}
+.qtype{position:relative;padding-right:46px!important}.qgear{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:22px;padding:8px;opacity:.6}
 </style>
 </head>
 <body>
@@ -418,15 +447,16 @@ h2{font-size:22px;margin:6px 0 12px}
 <!-- QUIZ SETUP -->
 <section class="view" id="v-quizSetup">
   <div class="qtypes" id="qTypes">
-    <button class="qtype" data-t="animal"><span class="em">🐘</span><span>これは なに おんぷ？<small>はじめての レッスン・ちいさい子むけ。どうぶつで こたえる</small></span></button>
+    <button class="qtype" data-t="animal"><span class="em">🐘</span><span>どうぶつさん だれかな？<small>はじめての レッスン・ちいさい子むけ。メロディーを きいて どうぶつを あてる</small></span></button>
     <button class="qtype on" data-t="longer"><span class="em">📏</span><span>ながいのは どっち？<small>2つの おとを くらべる（いちばん やさしい）</small></span></button>
     <button class="qtype" data-t="listen"><span class="em">👂</span><span>どの おとかな？<small>おとを きいて、おんぷを えらぶ（じが よめなくても できる）</small></span></button>
     <button class="qtype" data-t="count"><span class="em">🔢</span><span>たん なんこ？<small>ながい おんぷは たん いくつぶん？ すうじで こたえる</small></span></button>
     <button class="qtype" data-t="name"><span class="em">📛</span><span>なまえを おぼえよう<small>おんぷを おすと なまえを いうよ。よめる子は こたえを えらぶ</small></span></button>
     <button class="qtype" data-t="word"><span class="em">🔤</span><span>ことばを えらぼう<small>おんぷを みて、ことばを えらぶ</small></span></button>
   </div>
+  <div class="hint" style="text-align:center">おすと すぐ はじまるよ。⚙ で くわしい せってい</div>
   <div id="qOpts"></div>
-  <div class="btns" style="margin-top:18px"><button class="bigbtn" id="qStart" style="background:var(--c3);font-size:24px;padding:16px 40px">はじめる ▶</button></div>
+  <div class="btns" style="margin-top:18px;display:none" id="qStartRow"><button class="bigbtn" id="qStart" style="background:var(--c3);font-size:24px;padding:16px 40px">はじめる ▶</button></div>
 </section>
 
 <!-- QUIZ PLAY -->
@@ -441,15 +471,15 @@ h2{font-size:22px;margin:6px 0 12px}
 const N=(d,syl,r)=>({d,syl:Array.isArray(syl)?syl:[syl],r:!!r});
 const T=(n,c)=>({d:1/n,syl:[c],r:false,tp:n});
 const WORDS=[
-  {id:'q',k:'tan',nk:'shibuonpu', g:1,ani:'🐕',anm:'いぬ',nm:'しぶおんぷ',w:'たん',col:'var(--c1)',ev:[N(1,'たん')]},
-  {id:'h',k:'tan2',nk:'nibuonpu', g:1,ani:'🐈',anm:'ねこ',nm:'にぶおんぷ',w:'たんにー',col:'var(--c2)',ev:[N(2,['たん','にー'])]},
+  {id:'q',k:'tan',nk:'shibuonpu', g:1,ani:'🐕',anm:'いぬ',mel:'inu',nm:'しぶおんぷ',w:'たん',col:'var(--c1)',ev:[N(1,'たん')]},
+  {id:'h',k:'tan2',nk:'nibuonpu', g:1,ani:'🐘',anm:'ぞう',mel:'zou',nm:'にぶおんぷ',w:'たんにー',col:'var(--c2)',ev:[N(2,['たん','にー'])]},
   {id:'dh',k:'tan3',nk:'futen-nibuonpu',g:1,nm:'ふてん にぶおんぷ',w:'たんにーさん',col:'var(--c3)',ev:[N(3,['たん','にー','さん'])]},
-  {id:'w',k:'tan4',nk:'zenonpu', g:1,ani:'🐘',anm:'ぞう',nm:'ぜんおんぷ',w:'たんにーさんしー',col:'var(--c4)',ev:[N(4,['たん','にー','さん','しー'])]},
+  {id:'w',k:'tan4',nk:'zenonpu', g:1,nm:'ぜんおんぷ',w:'たんにーさんしー',col:'var(--c4)',ev:[N(4,['たん','にー','さん','しー'])]},
   {id:'qr',k:'un',nk:'shibukyuufu', g:2,nm:'しぶきゅうふ',w:'うん',col:'var(--c1)',ev:[N(1,'うん',1)]},
   {id:'hr',k:'un2',nk:'nibukyuufu', g:2,nm:'にぶきゅうふ',w:'うんにー',col:'var(--c2)',ev:[N(2,['うん','にー'],1)]},
   {id:'dhr',k:'un3',nk:'futen-nibukyuufu',g:2,nm:'ふてん にぶきゅうふ',w:'うんにーさん',col:'var(--c3)',ev:[N(3,['うん','にー','さん'],1)]},
   {id:'wr',k:'un4',nk:'zenkyuufu', g:2,nm:'ぜんきゅうふ',w:'うんにーさんしー',col:'var(--c4)',ev:[N(4,['うん','にー','さん','しー'],1)]},
-  {id:'ee',k:'taka',nk:'hachibu-2',g:3,ani:'🐿️',anm:'リス',nm:'はちぶおんぷ 2つ',w:'タカ',col:'var(--c8)',ev:[N(.5,'タ'),N(.5,'カ')]},
+  {id:'ee',k:'taka',nk:'hachibu-2',g:3,ani:'🐿️',anm:'リス',mel:'risu',nm:'はちぶおんぷ 2つ',w:'タカ',col:'var(--c8)',ev:[N(.5,'タ'),N(.5,'カ')]},
   {id:'er',k:'tau',nk:'hachibu-kyuufu-ato',g:3,nm:'はちぶおんぷ と はちぶきゅうふ',w:'タウ',col:'var(--c8)',ev:[N(.5,'タ'),N(.5,'ウ',1)]},
   {id:'re',k:'uka',nk:'hachibu-kyuufu-mae',g:3,nm:'はちぶきゅうふ と はちぶおんぷ',w:'ウカ',col:'var(--c8)',ev:[N(.5,'ウ',1),N(.5,'カ')]},
   {nm:'じゅうろくぶおんぷ',id:'f1',k:'takoyaki',nk:'juurokubu',g:4,w:'たこやき',emj:'🐙',col:'var(--c16)',ev:[N(.25,'た'),N(.25,'こ'),N(.25,'や'),N(.25,'き')]},
@@ -471,7 +501,7 @@ const NUMMAP={'にー':'2','さん':'3','しー':'4'};
 const lab=x=>S.num&&NUMMAP[x]?NUMMAP[x]:x;
 const W=w=>S.num?w.w.replace(/にー/g,'2').replace(/さん/g,'3').replace(/しー/g,'4'):w.w;
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/9-b';
+const VERSION='11/9-c';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -487,18 +517,20 @@ function curStep(){return ST.custom||COURSE[ST.i];}
 
 /* ===================== audio ===================== */
 let AC=null;
+let MASTER=null;
+function out(){const a=ac();if(!MASTER){const g=a.createGain();g.gain.value=.8;const c=a.createDynamicsCompressor();c.threshold.value=-12;c.knee.value=6;c.ratio.value=12;c.attack.value=.003;c.release.value=.15;g.connect(c);c.connect(a.destination);MASTER=g;}return MASTER;}
 function ac(){if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();}if(AC.state!=='running'){try{AC.resume();}catch(e){}}return AC;}
 /* iPhone: 音が とまったら つぎに さわったときに もどす */
 let AUDIO_UNLOCKED=false;
 function audioKick(){try{const a=ac();if(!AUDIO_UNLOCKED){const b=a.createBuffer(1,1,22050);const s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);AUDIO_UNLOCKED=true;}}catch(e){}}
 ['pointerdown','touchend','click'].forEach(ev=>document.addEventListener(ev,()=>{if(!AC||AC.state!=='running'||!AUDIO_UNLOCKED)audioKick();},{capture:true,passive:true}));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&AC&&AC.state!=='running'){try{AC.resume();}catch(e){}}});
-function newSess(){const a=ac();const g=a.createGain();g.connect(a.destination);return g;}
+function newSess(){const a=ac();const g=a.createGain();g.connect(out());return g;}
 function killSess(g){if(!g)return;try{const a=ac();g.gain.cancelScheduledValues(a.currentTime);g.gain.setValueAtTime(0,a.currentTime);setTimeout(()=>{try{g.disconnect()}catch(e){}},200)}catch(e){}}
-function tone(t,dur,dest,f=523.25,vol=.28){
-  const a=ac();const g=a.createGain();g.connect(dest||a.destination);
+function tone(t,dur,dest,f=523.25,vol=.2){
+  const a=ac();const g=a.createGain();g.connect(dest||out());
   const o=a.createOscillator();o.type='triangle';o.frequency.value=f;o.connect(g);
-  const o2=a.createOscillator();o2.type='sine';o2.frequency.value=f*2;const g2=a.createGain();g2.gain.value=.22;o2.connect(g2);g2.connect(g);
+  const o2=a.createOscillator();o2.type='sine';o2.frequency.value=f*2;const g2=a.createGain();g2.gain.value=.1;o2.connect(g2);g2.connect(g);
   dur=Math.max(dur,.08);const end=t+dur;const sus=Math.min(.25,dur*.5);
   g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol,t+.012);
   g.gain.linearRampToValueAtTime(vol*.65,t+sus);g.gain.setValueAtTime(vol*.65,end-.02);
@@ -506,7 +538,7 @@ function tone(t,dur,dest,f=523.25,vol=.28){
   o.start(t);o2.start(t);o.stop(end+.06);o2.stop(end+.06);
 }
 function holdTone(){
-  const a=ac();const t=a.currentTime;const g=a.createGain();g.connect(a.destination);
+  const a=ac();const t=a.currentTime;const g=a.createGain();g.connect(out());
   const o=a.createOscillator();o.type='triangle';o.frequency.value=523.25;o.connect(g);
   const o2=a.createOscillator();o2.type='sine';o2.frequency.value=1046.5;const g2=a.createGain();g2.gain.value=.22;o2.connect(g2);g2.connect(g);
   g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.3,t+.012);g.gain.linearRampToValueAtTime(.2,t+.25);
@@ -515,12 +547,12 @@ function holdTone(){
 }
 function click(t,acc,dest){
   const a=ac();const o=a.createOscillator();const g=a.createGain();o.type='sine';o.frequency.value=acc?1700:1150;
-  o.connect(g);g.connect(dest||a.destination);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(acc?.32:.2,t+.003);
+  o.connect(g);g.connect(dest||out());g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(acc?.32:.2,t+.003);
   g.gain.exponentialRampToValueAtTime(.0001,t+.06);o.start(t);o.stop(t+.08);
 }
 function bell(t,dest){
   const a=ac();t=t||a.currentTime;[2093,3136].forEach((f,i)=>{const o=a.createOscillator();const g=a.createGain();o.type='sine';o.frequency.value=f;
-  o.connect(g);g.connect(dest||a.destination);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(i?.06:.18,t+.005);
+  o.connect(g);g.connect(dest||out());g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(i?.06:.18,t+.005);
   g.gain.exponentialRampToValueAtTime(.0001,t+.9);o.start(t);o.stop(t+1);});
 }
 function yay(){const a=ac();const t=a.currentTime;[523,659,784,1047].forEach((f,i)=>tone(t+i*.08,.14,null,f,.2));}
@@ -529,7 +561,7 @@ function buzz(){const a=ac();const t=a.currentTime;tone(t,.18,null,220,.22);tone
 /* own files (images / voices) on GitHub */
 const AV=new Set();const CLIPS={};let CLIP_NOW=null;
 const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて いうかな',
-  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは たたいてみよう。ひかってる ボタンを たたいてね',tebyoushi:'こんどは てを たたいてみよう',rhythm:'くちで いいながら リズムを たたいてみよう',osu:'こんどは おんぷの ながさだけ ボタンを おしてみよう',mouichidoosu:'もういちど おしてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',clear:'クリア おめでとう',nanko:'たん なんこ ぶん',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
+  pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは たたいてみよう。ひかってる ボタンを たたいてね',tebyoushi:'こんどは てを たたいてみよう',rhythm:'くちで いいながら リズムを たたいてみよう',osu:'こんどは おんぷの ながさだけ ボタンを おしてみよう',mouichidoosu:'もういちど おしてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',again:'もういちど やるときは ボタンを おしてね',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',clear:'クリア おめでとう',nanko:'たん なんこ ぶん',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
 const CLIP_ALIAS={'koe-tan3':'koe-tan23','koe-tan4':'koe-tan234','koe-un3':'koe-un23','koe-un4':'koe-un234'};
 function clipName0(key){return AV.has(key+'.mp3')?key+'.mp3':AV.has(key+'.wav')?key+'.wav':AV.has(key+'.m4a')?key+'.m4a':null;}
 function clipName(key){return clipName0(key)||(CLIP_ALIAS[key]?clipName0(CLIP_ALIAS[key]):null);}
@@ -538,9 +570,11 @@ async function probeFiles(){
   const keys=[];WORDS.forEach(w=>{keys.push('koe-'+w.k,'na-'+w.nk);});Object.keys(PROMPTS).forEach(k=>keys.push('koe-'+k));
   Object.values({tan:1,un:1,ni:1,san:1,shi:1,ta:1,ka:1,u:1}).length;['tan','un','ni','san','shi','ta','ka','u'].forEach(k=>keys.push('syl-'+k));
   Object.values(CLIP_ALIAS).forEach(k=>keys.push(k));
-  const names=[...new Set(keys)].flatMap(k=>[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.map(w=>'e-'+w.k+'.png'));
+  ['zou','inu','risu'].forEach(k=>keys.push('mel-'+k));
+  ['ta','ko','ya','ki','ra','a','me','n','su','te','e','ju','u','ze','ri','i','ma','go','o','ha','sa','ku','ro','ke','mu','no','mi','shi','da','ka'].forEach(k=>keys.push('kana-'+k));
+  const names=[...new Set(keys)].flatMap(k=>/^kana-/.test(k)?[k+'.mp3']:/^mel-/.test(k)?[k+'.m4a',k+'.mp3']:[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.map(w=>'e-'+w.k+'.png'));
   await Promise.all(names.map(n=>fetch(n,{method:'HEAD',cache:'no-cache'}).then(r=>{if(r.ok)AV.add(n);}).catch(()=>{})));
-  AV.forEach(n=>{if(!/\.png$/.test(n)&&!/^syl-/.test(n))CLIPS[n]=null;});
+  AV.forEach(n=>{if(!/\.png$/.test(n)&&!/^(syl|kana)-/.test(n))CLIPS[n]=null;});
   decodeClips();
   if([...AV].some(n=>!/\.png$/.test(n)))$('#credit').style.display='block';
   loadSyl();
@@ -562,7 +596,7 @@ function speak(key,text){
   if(!n||!CLIPS[n])return say(text);
   return new Promise(res=>{
     try{if(window.speechSynthesis)speechSynthesis.cancel();if(CLIP_NOW){try{CLIP_NOW.stop();}catch(e){}}
-      const a=ac(),b=CLIPS[n],src=a.createBufferSource();src.buffer=b;src.connect(a.destination);CLIP_NOW=src;
+      const a=ac(),b=CLIPS[n],src=a.createBufferSource();src.buffer=b;src.connect(out());CLIP_NOW=src;
       let done=false;const fin=()=>{if(!done){done=true;res();}};src.onended=fin;
       src.start(a.currentTime+.02,b._lead||0);setTimeout(fin,(b.duration+.5)*1000);
     }catch(e){res();}
@@ -573,6 +607,13 @@ const P=k=>speak('koe-'+k,PROMPTS[k]);
 const SYLMAP={'たん':'tan','うん':'un','にー':'ni','さん':'san','しー':'shi','タ':'ta','カ':'ka','ウ':'u'};
 const SYLBUF={};
 const CHUNKBUF={};
+const KANAR={'た':'ta','こ':'ko','や':'ya','き':'ki','ら':'ra','あ':'a','め':'me','ん':'n','す':'su','て':'te','え':'e','じゅ':'ju','う':'u','ぜ':'ze','り':'ri','い':'i','ま':'ma','ご':'go','お':'o','は':'ha','さ':'sa','く':'ku','ろ':'ro','け':'ke','む':'mu','の':'no','み':'mi','し':'shi','だ':'da','か':'ka'};
+const KANA16={f1:['た','こ','や','き'],f2:['ら','あ','め','ん'],f3:['す','て','え','き'],f4:['じゅ','う','う','す'],f5:['ぜ','り','い','い'],
+  f6:['ま','ん','ご','お'],f7:['は',null,'さ','く'],f8:['こ','ろ',null,'け'],f9:['く',null,'き','い'],
+  t5:['お','む','ら','い','す'],t6:['お','こ','の','み','や','き'],t7:['み','た','ら','し','だ','ん','ご'],
+  ee:['た','か'],er:['た',null],re:[null,'か']};
+const KANABUF={};
+
 const isChunk=w=>Math.abs(len(w)-1)<1e-6&&w.ev.length>1;
 async function loadSyl(){
   const a=ac();
@@ -580,13 +621,17 @@ async function loadSyl(){
     const d=b.getChannelData(0);let i=0;while(i<d.length&&Math.abs(d[i])<.02)i++;b._lead=Math.max(0,i/b.sampleRate-.01);return b;};
   for(const k of new Set(Object.values(SYLMAP))){const n=clipName('syl-'+k);if(!n)continue;try{SYLBUF[k]=await dec(n);}catch(e){}}
   for(const w of WORDS.filter(isChunk)){const n=clipName('koe-'+w.k);if(!n)continue;try{CHUNKBUF[w.k]=await dec(n);}catch(e){}}
+  for(const r of new Set(Object.values(KANAR))){const n=clipName('kana-'+r);if(!n)continue;try{KANABUF[r]=await dec(n);}catch(e){}}
 }
 function sylList(){const out=[];let t=0;ST.items.forEach(w=>{
-    if(isChunk(w)){out.push([t,null,CHUNKBUF[w.k]||null]);t+=1;return;}
+    if(isChunk(w)){const ks=KANA16[w.id];
+      if(ks&&ks.every(x=>x===null||KANABUF[KANAR[x]])){const sl=1/ks.length;ks.forEach((x,i)=>{if(x)out.push([t+i*sl,x,KANABUF[KANAR[x]],sl]);});}
+      else out.push([t,null,CHUNKBUF[w.k]||null,1]);t+=1;return;}
     w.ev.forEach(e=>{if(e.d>=1){for(let k=0;k<e.d;k++)out.push([t+k,e.syl[k],SYLBUF[SYLMAP[e.syl[k]]]||null]);}else out.push([t,e.syl[0],SYLBUF[SYLMAP[e.syl[0]]]||null]);t+=e.d;});});return out;}
 function sylReady(){return sylList().every(x=>x[2]);}
-function scheduleSyl(t0,sess){const a=ac(),B=beat();sylList().forEach(([t,x,buf])=>{const src=a.createBufferSource();src.buffer=buf;src.connect(sess);
-  const lead=buf._lead||0,body=buf.duration-lead;if(body>B*.97)src.playbackRate.value=Math.min(1.35,body/(B*.95));src.start(t0+t*B,lead);});}
+function scheduleSyl(t0,sess){const a=ac(),B=beat(),L=sylList();L.forEach(([t,x,buf,dur],i)=>{const src=a.createBufferSource();src.buffer=buf;src.connect(sess);
+  const d=(dur||1)*B,lead=buf._lead||0,body=buf.duration-lead;if(body>d*.97)src.playbackRate.value=Math.min(dur&&dur<1?1.15:1.35,body/(d*.95));src.start(t0+t*B,lead);
+  const nx=L[i+1];if(nx&&dur&&dur<1)src.stop(t0+nx[0]*B+.03);});}
 
 /* speech */
 function say(text){
@@ -604,10 +649,11 @@ function say(text){
 }
 
 /* ===================== rendering ===================== */
+let RLINE=false;
 function restSvg(d,x){
   const k='#2b2320';
-  if(near(d,4))return `<rect x="${x-7}" y="30" width="14" height="5.5" fill="${k}"/>`;
-  if(near(d,2)||near(d,3))return `<rect x="${x-7}" y="34.5" width="14" height="5.5" fill="${k}"/>`+(near(d,3)?`<circle cx="${x+12}" cy="35" r="2.4" fill="${k}"/>`:'');
+  if(near(d,4))return (RLINE?`<line x1="${x-13}" x2="${x+13}" y1="30" y2="30" stroke="${k}" stroke-width="1.8"/>`:'')+`<rect x="${x-7}" y="30" width="14" height="5.5" fill="${k}"/>`;
+  if(near(d,2)||near(d,3))return (RLINE?`<line x1="${x-13}" x2="${x+13}" y1="40" y2="40" stroke="${k}" stroke-width="1.8"/>`:'')+`<rect x="${x-7}" y="34.5" width="14" height="5.5" fill="${k}"/>`+(near(d,3)?`<circle cx="${x+12}" cy="35" r="2.4" fill="${k}"/>`:'');
   if(near(d,1))return `<path d="M${x-3},22 L${x+4},31 L${x-1.5},38 L${x+5},47 Q${x-5},43 ${x+1},55" fill="none" stroke="${k}" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`;
   if(near(d,.5))return `<circle cx="${x-3}" cy="34" r="3" fill="${k}"/><path d="M${x-3},36 Q${x+1},37 ${x+4},32 L${x-1},51" fill="none" stroke="${k}" stroke-width="2" stroke-linecap="round"/>`;
   return `<circle cx="${x-1}" cy="31" r="2.8" fill="${k}"/><path d="M${x-1},33 Q${x+3},34 ${x+6},29" fill="none" stroke="${k}" stroke-width="2"/>`+
@@ -622,6 +668,7 @@ function notation(ev,scale=1.6,compact=false,off=null,noStaff=false){
   const W=(noStaff&&it.length===1)?44:PAD*2+cum+(cum<BW?10:0),HY=55,TOP=20,SX=6,K='#2b2320';
   const X=o=>it.length===1?W/2-3:PAD+o.x0+(o.d>=1?12:8);
   let s='';
+  RLINE=noStaff;
   if(!noStaff)for(const y of [20,30,40,50,60])s+=`<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="#a89a8f" stroke-width="1.2"/>`;
   const groups={};
   it.forEach(o=>{if(o.d<1){const b=Math.floor(o.t+1e-6);(groups[b]=groups[b]||[]).push(o);}});
@@ -652,8 +699,9 @@ function notation(ev,scale=1.6,compact=false,off=null,noStaff=false){
     if(n[0].tp){const bx1=X(n[0])-4,bx2=X(n[n.length-1])+SX+4,mx=(bx1+bx2)/2;
       s+=`<path d="M${bx1},15 V9 H${mx-8} M${mx+8},9 H${bx2} V15" fill="none" stroke="${K}" stroke-width="1.4"/><text x="${mx}" y="13" text-anchor="middle" font-size="12" font-weight="700" fill="${K}" font-family="serif">${n[0].tp}</text>`;}
   });
-  const vb=noStaff?(it.every(o=>!o.r&&near(o.d,4))?`0 40 ${W} 26`:`0 4 ${W} 66`):`0 0 ${W} 72`;
-  return `<svg viewBox="${vb}" overflow="visible" style="width:${Math.round(W*scale)}px;max-width:100%;height:auto;display:block">${s}</svg>`;
+  const vb=noStaff?(it.every(o=>!o.r&&near(o.d,4))?`0 40 ${W} 26`:it.every(o=>o.r&&o.d>=2)?`0 22 ${W} 26`:`0 4 ${W} 66`):`0 0 ${W} 72`;
+  const vbh=+vb.split(' ')[3];
+  return `<svg viewBox="${vb}" overflow="visible" style="--vh:${vbh};width:${Math.round(W*scale)}px;max-width:100%;height:auto;display:block">${s}</svg>`;
 }
 function blocks(w,u,cls=''){
   let h=`<div class="blocks ${cls}" style="--u:${u}px;--bh:${Math.round(Math.min(u,95))}px">`,t=0;
@@ -736,7 +784,7 @@ let VIEW='home';
 const PARENT={menu:'home',step:'home',bento:'menu',list:'menu',detail:'list',nobashi:'menu',quizSetup:'menu',quizPlay:'quizSetup'};
 function go(v){
   stopPlay();nbReset(true);if(window.speechSynthesis)try{speechSynthesis.cancel()}catch(e){}
-  QZ.alive=false;if(v!=='quizPlay')metroStop();
+  QZ.alive=false;if(v!=='quizPlay')metroStop();if(QZ.mel){stopMel(QZ.mel);QZ.mel=null;}
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   $('#v-'+v).classList.add('on');VIEW=v;
   $('#backBtn').style.visibility=v==='home'?'hidden':'visible';
@@ -745,7 +793,7 @@ function go(v){
   window.scrollTo(0,0);
   if(v==='list')renderList();
   if(v==='nobashi')renderNobashi();
-  if(v==='quizSetup')renderQuizSetup();
+  if(v==='quizSetup'){QZ.showOpts=false;renderQuizSetup();}
   if(v==='bento')renderBento();
   if(v==='home')renderHome();
   if(v!=='step'){ST.run++;stClear();ST.window=false;stMetroStop();}
@@ -777,9 +825,9 @@ function renderList(){
   const ws=WORDS.filter(w=>w.g===LIST_G);
   $('#listGrid').innerHTML=ws.map(w=>`<button class="card" data-id="${w.id}">
       ${pic(w,'emj')}
-      ${notation(w.ev,1,true)}
+      ${notation(w.ev,1,true,null,true)}
       ${blocks(w,Math.min(34,Math.floor(120/len(w))),'nolabel')}
-      <div class="w">${W(w)}</div></button>`).join('');
+      <div class="w"${w.w.length>6?' style="font-size:15px;white-space:nowrap"':''}>${W(w)}</div></button>`).join('');
   $('#listGrid').querySelectorAll('.card').forEach(c=>c.onclick=()=>{ac();openDetail(c.dataset.id);});
 }
 let DETAIL_ID=null,DETAIL_NAV={};
@@ -796,7 +844,7 @@ function openDetail(id,silent){
   const ws=WORDS.filter(x=>x.g===w.g),i=ws.indexOf(w);
   $('#detailBox').innerHTML=`
     <button class="flip show-back" id="dFlip" aria-label="おんぷ">
-      <span class="fl-in"><span class="fl-front">${notation(w.ev,1,true,null,!w.ev.some(e=>e.r&&e.d>=2))}</span>
+      <span class="fl-in"><span class="fl-front">${notation(w.ev,1,true,null,true)}</span>
       <span class="fl-back">${pic(w,'fl-emj')}<span class="fl-word">${W(w)}</span></span></span>
     </button>
     <div class="hint" style="margin:0">👆 おんぷを おすと こたえが みえるよ</div>
@@ -1076,7 +1124,7 @@ function bnDrawPal(){
   const rem=BN.cap-bnLen(),nw=BN.mode==='odai'?bnNewIds():[];
   $('#bnPal').innerHTML=bnUnlocked().map(w=>`<button class="bn-pc${len(w)>rem+1e-6?' no':''}" data-id="${w.id}">
       ${nw.includes(w.id)&&BP.lv>1?'<span class="newb">NEW</span>':''}
-      ${notation(w.ev,1,true)}${blocks(w,Math.min(22,Math.floor(80/len(w))),'nolabel')}<div class="w">${W(w)}</div></button>`).join('');
+      ${notation(w.ev,1,true,null,true)}${blocks(w,Math.min(22,Math.floor(80/len(w))),'nolabel')}<div class="w"${w.w.length>6?' style="font-size:15px;white-space:nowrap"':''}>${W(w)}</div></button>`).join('');
   $('#bnPal').querySelectorAll('.bn-pc').forEach(b=>b.onclick=()=>bnAdd(byId(b.dataset.id),b));
 }
 function bnShake(el){el.classList.remove('bad');void el.offsetWidth;el.classList.add('bad');}
@@ -1332,7 +1380,7 @@ function seqHTML(items,cap){
         if(!e.r){x=x.replace('<div class="blk','<div data-on="'+on+'" class="blk');on++;}inner+=x;t+=e.d;});
         blks+=`<div class="pc" data-pi="${pi++}">${inner}</div>`;});
       const cells=Array.from({length:Math.min(cap,4)},()=>'<div class="cell"></div>').join('');
-      h+=`<div class="seq-m">${ev.some(e=>e.d<1)||S.lbl?`<div class="seq-n">${notation(ev,1.2,false,mT)}</div>`:''}
+      h+=`<div class="seq-m">${ev.some(e=>e.d<1)||S.lbl?`<div class="seq-n">${notation(ev,1.2,false,mT,true)}</div>`:''}
         <div class="bento sm" style="width:${Math.min(cap,4)*u+22}px"><div class="cells">${cells}</div>
         <div class="lay blocks" style="--u:${u}px;--bh:${bh}px;height:${bh+6}px;justify-content:flex-start">${blks}</div></div></div>`;
     }
@@ -1345,7 +1393,7 @@ function cardsHTML(items){
   let t=0,on=0,pi=0,h=`<div class="ncards${n>4?' many':''}">`;
   items.forEach(w=>{let inner='';const cT=t;w.ev.forEach(e=>{let x=evBlkIcon(e,t,w);
       if(!e.r){x=x.replace('<div class="blk','<div data-on="'+on+'" class="blk');on++;}inner+=x;t+=e.d;});
-    h+=`<div class="ncard" data-pi="${pi++}"><div class="nc-n">${notation(w.ev,1,true,cT)}</div>
+    h+=`<div class="ncard" data-pi="${pi++}"><div class="nc-n">${notation(w.ev,1,true,cT,true)}</div>
       <div class="lay blocks nc-b" style="--u:${u}px;--bh:${Math.round(u*.38)}px;height:${Math.round(u*.38)+6}px"><div class="pc">${inner}</div></div></div>`;});
   return h+'</div>';
 }
@@ -1357,7 +1405,7 @@ function renderStep(){
     <div id="stSeq" class="${(s.cap||0)>16?'seqscroll':''}">${s.cards&&ST.items.length>1?cardsHTML(ST.items):seqHTML(ST.items,s.cap||Math.ceil(patLen()-1e-6))}</div>
     <div class="st-msg" id="stMsg"></div>
     <div class="holdwrap"><button class="hold drum" id="stBtn"></button></div>
-    <div class="st-sub"><button class="tog" id="stHear">🎵 うたの おてほん</button><button class="tog" id="stPause">⏸ とめる</button><button class="tog" id="stMode">${S.clap?'👏 てびょうし':'👆 タップ'}</button>${S.unlock&&!ST.custom&&COURSE[ST.i+1]?'<button class="tog" id="stSkip">⏭ つぎの ステップ</button>':''}${s.hold?`<button class="tog" id="stLen">📏 ながさ ${S.len?'あり':'なし'}</button>`:''}</div>
+    <div class="st-sub"><button class="tog" id="stHear">🎵 おてほん</button><button class="tog" id="stPause">⏸</button><button class="tog" id="stMode">${S.clap?'👏':'👆'}</button>${s.hold?`<button class="tog${S.len?' on2':''}" id="stLen">📏 ${S.len?'ながさ':'なし'}</button>`:''}${S.unlock&&!ST.custom&&COURSE[ST.i+1]?'<button class="tog" id="stSkip">⏭</button>':''}</div>
     <div class="st-names">${namesOf(ST.items)}</div>`;
   const b=$('#stBtn');
   b.addEventListener('pointerdown',stBtnDown);b.addEventListener('contextmenu',e=>e.preventDefault());
@@ -1365,10 +1413,10 @@ function renderStep(){
   $('#stHear').onclick=async()=>{ac();if(ST.window)return;stStop();ST.failRow=0;stBtnState('auto','👂');$('#stMsg').textContent='うたの おてほん';const tok=ST.run;
     if(!(await stModel(()=>tok===ST.run&&VIEW==='step')))return;stFlow(false,true);};
   $('#stPause').onclick=()=>{stStop();stBtnState('retry');$('#stMsg').textContent='とめたよ。ボタンを おすと つづきから';};
-  const sl=$('#stLen');if(sl)sl.onclick=()=>{S.len=S.len?0:1;store.set('rz_set',S);sl.textContent='📏 ながさ '+(S.len?'あり':'なし');
+  const sl=$('#stLen');if(sl)sl.onclick=()=>{S.len=S.len?0:1;store.set('rz_set',S);sl.textContent='📏 '+(S.len?'ながさ':'なし');sl.classList.toggle('on2',!!S.len);
     $('#stMsg').textContent=S.len?'つぎの もんだいから ながさも みるよ':'つぎの もんだいから たたくだけ';};
   $('#stMode').onclick=async()=>{S.clap=S.clap?0:1;store.set('rz_set',S);if(S.clap){const ok=await micStart();if(!ok){S.clap=0;store.set('rz_set',S);}}
-    $('#stMode').textContent=S.clap?'👏 てびょうし':'👆 タップ';};
+    $('#stMode').textContent=S.clap?'👏':'👆';};
 }
 function stBtnState(st,label){
   ST.btn=st;const b=$('#stBtn');if(!b)return;
@@ -1377,12 +1425,14 @@ function stBtnState(st,label){
   if(st==='drum'){b.classList.add('glow');b.innerHTML=S.clap?'👏':'🥁';}
   if(st==='next'){b.classList.add('okb','glow');b.innerHTML='つぎ ▶';}
   if(st==='retry'){b.innerHTML='▶<br><small>もういちど</small>';b.classList.add('glow2');}
+  if(st==='again'){b.innerHTML='もういちど<br>▶';b.classList.add('glow2','againb');}
 }
 function stBtnDown(e){
   e.preventDefault();ac();
   if(ST.btn==='drum'){if(!S.clap){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}stTap(ac().currentTime,true);}return;}
   if(ST.btn==='next'){ST.items=genPattern(curStep());renderStep();stBtnState('auto');stFlow(false);return;}
   if(ST.btn==='retry'){ST.noTap=0;ST.failRow=0;stBtnState('auto');stFlow(false);return;}
+  if(ST.btn==='again'){stBtnState('auto');stFlow(false,!ST.retryFull);return;}
 }
 function stMetroStart(){
   if(ST.m)return;const a=ac(),B=beat();
@@ -1499,9 +1549,8 @@ async function stFlow(first,tapOnly){
     if(ST.noTap>=2){stMetroStop();stBtnState('retry');$('#stMsg').textContent='ボタンを おすと もういちど できるよ';P('osuto');return;}
     if(!r.noTap)ST.failRow=(ST.failRow||0)+1;
     const full=ST.failRow>=3;if(full)ST.failRow=0;
-    if(full){$('#stMsg').textContent='もういちど いいながら やってみよう';}
-    await wait(900);if(!alive(tok))return;
-    stFlow(false,!full);
+    ST.retryFull=full;stMetroStop();stBtnState('again');
+    await wait(700);if(!alive(tok))return;P('again');
   }
 }
 function stUp(t){
@@ -1634,7 +1683,7 @@ async function micStart(){
       else if(!nearClick)MIC.noise=MIC.noise*.98+pk*.02;
       e.outputBuffer.getChannelData(0).fill(0);
     };
-    const g=a.createGain();g.gain.value=0;src.connect(sp);sp.connect(g);g.connect(a.destination);
+    const g=a.createGain();g.gain.value=0;src.connect(sp);sp.connect(g);g.connect(out());
     Object.assign(MIC,{on:true,stream:st,node:sp});
     return true;
   }catch(e){
@@ -1706,7 +1755,7 @@ function nameQuiz(){
   $('#stepBox').innerHTML=`<div class="st-head"><span class="st-no">${ST.i+1}</span><span class="st-t">${s.t}</span><span class="pd">${stepNeedDots(s)}</span></div>
     <div class="qprompt">「${ans.nm}」は どれ？</div>
     <div class="btns" style="margin-bottom:10px"><button class="bigbtn" id="nqHear">🔊 きく</button></div>
-    <div class="qchoices">${ch.map(x=>`<button class="qchoice" data-id="${x.id}">${notation(x.ev,1,true)}</button>`).join('')}</div>
+    <div class="qchoices">${ch.map(x=>`<button class="qchoice" data-id="${x.id}">${notation(x.ev,1,true,null,true)}</button>`).join('')}</div>
     <div class="btns" style="margin-top:12px"><button class="tog" id="nqLesson">📛 なまえの ひみつ を もういちど</button></div>${S.unlock&&COURSE[ST.i+1]?'<div class="btns" style="margin-top:10px"><button class="tog" id="stSkip">⏭ つぎの ステップ</button></div>':''}`;
   const sayIt=()=>speak('na-'+(byId(ans.id)||{nk:''}).nk,ans.nm);
   $('#nqHear').onclick=sayIt;sayIt();
@@ -1721,14 +1770,28 @@ function nameQuiz(){
   });
 }
 
+/* どうぶつの メロディー */
+function playMel(w,vol){
+  const a=ac(),n=clipName('mel-'+w.mel),b=n&&CLIPS[n];
+  const g=a.createGain();g.gain.value=vol;g.connect(out());
+  if(b){const src=a.createBufferSource();src.buffer=b;src.connect(g);src.start(a.currentTime+.05,b._lead||0);const m={src,g,ended:false};src.onended=()=>{m.ended=true;};return m;}
+  // ファイルが ないときは リズムを おとで
+  const pat={zou:[2,2,2,2],inu:[1,1,1,1,1,1,1,1],risu:[.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5]}[w.mel];
+  const B=beat();let t=a.currentTime+.1;pat.forEach(d=>{tone(t,d*B*.9,g,w.mel==='zou'?392:w.mel==='inu'?523:784,.22);t+=d*B;});
+  return {src:null,g,ended:false};
+}
+function fadeMel(m,sec){if(!m)return;const a=ac(),g=m.g.gain;g.cancelScheduledValues(a.currentTime);g.setValueAtTime(g.value,a.currentTime);g.linearRampToValueAtTime(.0001,a.currentTime+sec);}
+function stopMel(m){if(!m)return;try{m.g.gain.cancelScheduledValues(0);m.g.gain.value=0;if(m.src)m.src.stop();}catch(e){}}
 /* ===================== quiz ===================== */
 const QZ={type:'longer',groups:new Set([1]),choices:2,show:true,rest:false,i:0,total:5,score:0,alive:false,lock:false,prev:null,mute:false,m:null};
 const METRO_TYPES=['longer','listen','count'];
 function renderQuizSetup(){
   $('#qTypes').querySelectorAll('.qtype').forEach(b=>{b.classList.toggle('on',b.dataset.t===QZ.type);
-    b.onclick=()=>{QZ.type=b.dataset.t;renderQuizSetup();};});
+    if(!b.querySelector('.qgear')){const g=document.createElement('span');g.className='qgear';g.textContent='⚙';b.appendChild(g);}
+    b.onclick=e=>{QZ.type=b.dataset.t;if(e.target.classList.contains('qgear')){QZ.showOpts=true;renderQuizSetup();return;}renderQuizSetup();$('#qStart').click();};});
+  $('#qOpts').style.display=QZ.showOpts?'':'none';$('#qStartRow').style.display=QZ.showOpts?'flex':'none';
   let h='';
-  if(QZ.type==='animal'){h+=`<div class="hint">ぜんおんぷ（ぞう）・にぶおんぷ（ねこ）・しぶおんぷ（いぬ）の 3つ</div>`;}
+  if(QZ.type==='animal'){h+=`<div class="hint">ぞう（にぶおんぷ）・いぬ（しぶおんぷ）・リス（はちぶおんぷ）の メロディー</div>`;}
   else if(QZ.type==='count'||QZ.type==='name'){h+=`<div class="hint">${QZ.type==='count'?'たん・たんにー・たんにーさん・たんにーさんしー で あそぶよ':'ぜんおんぷ・にぶおんぷ・しぶおんぷ・はちぶおんぷ・じゅうろくぶおんぷ・ふてん にぶおんぷ'}</div><button class="tog${QZ.rest?' on':''}" id="qRest" style="margin-right:8px"><span class="box"></span>きゅうふも いれる</button>`;}
   else if(QZ.type!=='longer'){
     h+=`<div class="hint">どの なかまで あそぶ？（いくつでも）</div><div class="chips" id="qGroups">`+
@@ -1781,7 +1844,7 @@ function progHTML(){let h='<div class="qtop"><div class="qprog">';for(let i=0;i<
   h+='</div>';if(QZ.m)h+=`<button class="tog" id="qMute">${QZ.mute?'🔇':'🔈'} カチカチ</button>`;return h+'</div>';}
 function bindMute(){const b=$('#qMute');if(b)b.onclick=()=>{QZ.mute=!QZ.mute;b.textContent=(QZ.mute?'🔇':'🔈')+' カチカチ';};}
 function choiceCard(w){
-  return `<button class="qchoice" data-id="${w.id}">${QZ.show?pic(w,'qemj','font-size:28px'):''}${notation(w.ev,1,true)}${QZ.show?blocks(w,Math.min(34,Math.floor(130/len(w))),'nolabel'):''}</button>`;
+  return `<button class="qchoice" data-id="${w.id}">${QZ.show?pic(w,'qemj','font-size:28px'):''}${notation(w.ev,1,true,null,true)}${QZ.show?blocks(w,Math.min(34,Math.floor(130/len(w))),'nolabel'):''}</button>`;
 }
 function textChoice(id,label,sayKey,sayText){
   return `<div class="qchoice tchoice" data-id="${id}"><button class="qsay" data-k="${sayKey}" data-t="${sayText}" aria-label="きく">🔊</button><div class="w">${label}</div></div>`;
@@ -1795,18 +1858,26 @@ async function nextQ(){
   if(!QZ.alive)return;
   if(QZ.i>=QZ.total){showResult();return;}
   QZ.lock=true;const box=$('#qBox');stopPlay();
-  /* ⓪ これは なに おんぷ？（どうぶつ） */
+  /* ⓪ どうぶつさん だれかな？（メロディー） */
   if(QZ.type==='animal'){
-    const list=['w','h','q'].map(byId);const ans=pickAns(list);
-    const apic=w=>AV.has('e-'+w.k+'.png')?`<img class="pic" src="e-${w.k}.png" alt="" style="height:64px">`:`<span style="font-size:56px">${w.ani}</span>`;
-    box.innerHTML=progHTML()+`<div class="qprompt">これは なに おんぷ？</div>
-      <button class="qnote qtapnote" id="qAniNote">${notation(ans.ev,2.6,true)}<div class="hint" style="margin:0">👆 おんぷを おすと おとが なるよ</div></button>
+    const list=['h','q','ee'].map(byId);const ans=pickAns(list);
+    const apic=w=>AV.has('e-'+w.k+'.png')?`<img class="pic" src="e-${w.k}.png" alt="" style="height:72px">`:`<span style="font-size:60px">${w.ani}</span>`;
+    const far=Math.random()<.5;
+    box.innerHTML=progHTML()+`<div class="qprompt" style="font-size:22px">どの どうぶつさんが<br>あそびに きてるかな？</div>
+      <div class="btns" style="margin:6px 0 14px"><button class="bigbtn" id="qReplay">🔊 もういちど きく</button></div>
       <div class="qchoices" style="grid-template-columns:repeat(3,1fr)">${shuffle(list).map(w=>`<button class="qchoice" data-id="${w.id}">${apic(w)}<div class="w" style="font-size:20px">${w.anm}</div></button>`).join('')}</div>`;
-    const play=()=>playWord(ans,{clicks:true});
-    $('#qAniNote').onclick=()=>{ac();play();};
-    box.querySelectorAll('.qchoice').forEach(c=>c.onclick=()=>{if(QZ.lock||!QZ.alive)return;
-      if(c.dataset.id===ans.id)qGood(c,async()=>{await say(ans.anm+'さん。'+ans.nm);});else qBad(c);});
-    await say('これは なに おんぷ');if(!QZ.alive)return;QZ.lock=false;play();return;
+    let mel=null;
+    const play=()=>{stopMel(mel);mel=playMel(ans,far?.35:1);QZ.mel=mel;};
+    $('#qReplay').onclick=()=>{ac();play();};
+    box.querySelectorAll('.qchoice').forEach(c=>c.onclick=async()=>{if(QZ.lock||!QZ.alive)return;
+      if(c.dataset.id===ans.id){QZ.lock=true;c.classList.add('good');yay();QZ.score++;addStar();
+        const line={zou:'ゾウさんが バイバイって かえって いったよー',inu:'ワンちゃんと いっしょに おさんぽに いこう！',risu:'リスさんは はしって いっちゃった'}[ans.mel];
+        if(!mel||mel.ended)mel=playMel(ans,far?.35:1);fadeMel(mel,4);
+        await speak('koe-bye-'+ans.mel,line);await wait(2200);if(!QZ.alive)return;stopMel(mel);QZ.i++;
+        if(QZ.i<QZ.total){await speak('koe-tsuginodare','つぎは だれが きたのかな？');}nextQ();}
+      else{qBad(c);await speak('koe-chigau','ちがう みたい。もういちど きいてね');if(QZ.alive)play();}});
+    await speak('koe-dare','どの どうぶつさんが あそびに きてるかな？');if(!QZ.alive)return;QZ.lock=false;play();
+    return;
   }
   /* ① ながいのは どっち？ */
   if(QZ.type==='longer'){
@@ -1845,7 +1916,7 @@ async function nextQ(){
     const ans=pickAns(pool());QZ.ans=ans;const n=len(ans),r=ans.ev[0].r;
     const u=Math.min(70,Math.floor((availW()-40)/4));
     box.innerHTML=progHTML()+`<div class="qprompt">${r?'うん':'たん'} なんこ ぶん？</div>
-      <div class="qnote" id="qcNote" style="flex-direction:column;align-items:center;gap:8px">${notation(ans.ev,2)}<div id="qcB"></div></div>
+      <div class="qnote" id="qcNote" style="flex-direction:column;align-items:center;gap:8px">${notation(ans.ev,2,true,null,true)}<div id="qcB"></div></div>
       <div class="btns" style="margin-bottom:12px"><button class="bigbtn" id="qReplay">🔊 きく</button></div>
       <div class="qchoices" style="grid-template-columns:repeat(4,1fr)">${[1,2,3,4].map(k=>`<button class="qchoice qnum" data-n="${k}"><div class="w">${k}</div></button>`).join('')}</div>`;
     bindMute();
@@ -1865,7 +1936,7 @@ async function nextQ(){
     const others=shuffle(list.filter(x=>x!==ans)).slice(0,2);const ch=shuffle([ans,...others]);
     const key=x=>'na-'+((byId(x.id)||{}).nk||x.id);
     box.innerHTML=progHTML()+`<div class="qprompt">なんて いう おんぷ？</div>
-      <button class="qnote qtapnote" id="qNameNote">${notation(ans.ev,2.4,true)}<div class="hint" style="margin:0">👆 おんぷを おすと なまえを いうよ</div></button>
+      <button class="qnote qtapnote" id="qNameNote">${notation(ans.ev,2.4,true,null,true)}<div class="hint" style="margin:0">👆 おんぷを おすと なまえを いうよ</div></button>
       <div class="qchoices tlist">${ch.map(x=>textChoice(x.id,x.nm,key(x),x.nm)).join('')}</div>`;
     $('#qNameNote').onclick=()=>{ac();speak(key(ans),ans.nm);};
     bindSay();
@@ -1879,7 +1950,7 @@ async function nextQ(){
     const ch=pickChoices(ans,Math.max(3,QZ.choices));
     const u=Math.min(60,Math.floor((availW()-60)/Math.max(1,len(ans))));
     box.innerHTML=progHTML()+`<div class="qprompt">なんて いうかな？</div>
-      <button class="qnote qtapnote" id="qWordNote">${notation(ans.ev,len(ans)<1?3:2)}<div id="qwB"></div><div class="hint" style="margin:0">👆 おんぷを おすと リズムが なるよ</div></button>
+      <button class="qnote qtapnote" id="qWordNote">${notation(ans.ev,len(ans)<1?3:2,true,null,true)}<div id="qwB"></div><div class="hint" style="margin:0">👆 おんぷを おすと リズムが なるよ</div></button>
       <div class="qchoices tlist">${ch.map(w=>textChoice(w.id,W(w),'koe-'+w.k,w.w)).join('')}</div>`;
     $('#qWordNote').onclick=()=>{ac();playWord(ans,{clicks:true,el:$('#qwB .blocks')});};
     bindSay();
