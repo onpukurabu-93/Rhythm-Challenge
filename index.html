@@ -554,7 +554,7 @@ function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_T
 new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
   else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/11-a';
+const VERSION='11/11-b';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -670,9 +670,9 @@ const P=k=>speak('koe-'+k,PROMPTS[k]);
 const SYLMAP={'たん':'tan','うん':'un','にー':'ni','さん':'san','しー':'shi','タ':'ta','カ':'ka','ウ':'u'};
 const SYLBUF={};
 const CHUNKBUF={};
-const KANAR={'た':'ta','こ':'ko','や':'ya','き':'ki','ら':'ra','あ':'a','め':'me','ん':'n','す':'su','て':'te','え':'e','じゅ':'ju','う':'u','ぜ':'ze','り':'ri','い':'i','ま':'ma','ご':'go','お':'o','は':'ha','さ':'sa','く':'ku','ろ':'ro','け':'ke','む':'mu','の':'no','み':'mi','し':'shi','だ':'da','か':'ka','じ':'ji','ゆ':'yu'};
-const KANA16={f1:['た','こ','や','き'],f2:['ら','あ','め','ん'],f3:['す','て','え','き'],f4:['じ','ゆ','う','す'],f5:['ぜ','り','い','い'],
-  f6:['ま','ん','ご','お'],f7:['は',null,'さ','く'],f8:['こ','ろ',null,'け'],f9:['く',null,'き','い'],
+const KANAR={'た':'ta','こ':'ko','や':'ya','き':'ki','ら':'ra','あ':'a','め':'me','ん':'n','す':'su','て':'te','え':'e','じゅ':'ju','う':'u','ぜ':'ze','り':'ri','い':'i','ま':'ma','ご':'go','お':'o','は':'ha','さ':'sa','く':'ku','ろ':'ro','け':'ke','む':'mu','の':'no','み':'mi','し':'shi','だ':'da','か':'ka','じ':'ji','ゆ':'yu','らー':'raa','てー':'tee','じゅー':'juu','りー':'rii','きー':'kii'};
+const KANA16={f1:['た','こ','や','き'],f2:['らー',null,'め','ん'],f3:['す','てー',null,'き'],f4:['じゅー',null,null,'す'],f5:['ぜ','りー',null,null],
+  f6:['ま','ん','ご','お'],f7:['は',null,'さ','く'],f8:['こ','ろ',null,'け'],f9:['く',null,'きー',null],
   t5:['お','む','ら','い','す'],t6:['お','こ','の','み','や','き'],t7:['み','た','ら','し','だ','ん','ご'],
   ee:['た','か'],er:['た',null],re:[null,'か']};
 const KANABUF={};
@@ -688,7 +688,7 @@ async function loadSyl(){
 }
 function sylList(){const out=[];let t=0;ST.items.forEach(w=>{
     if(isChunk(w)){const ks=KANA16[w.id];
-      if(ks&&ks.every(x=>x===null||KANABUF[KANAR[x]])){const sl=1/ks.length;ks.forEach((x,i)=>{if(x)out.push([t+i*sl,x,KANABUF[KANAR[x]],sl]);});}
+      if(ks&&ks.every(x=>x===null||KANABUF[KANAR[x]])){const sl=1/ks.length;ks.forEach((x,i)=>{if(!x)return;let n=1;while(ks[i+n]===null&&i+n<ks.length)n++;out.push([t+i*sl,x,KANABUF[KANAR[x]],sl*n]);});}
       else out.push([t,null,CHUNKBUF[w.k]||null,1]);t+=1;return;}
     w.ev.forEach(e=>{if(e.d>=1){for(let k=0;k<e.d;k++)out.push([t+k,e.syl[k],SYLBUF[SYLMAP[e.syl[k]]]||null]);}else out.push([t,e.syl[0],SYLBUF[SYLMAP[e.syl[0]]]||null]);t+=e.d;});});return out;}
 function sylReady(){return sylList().every(x=>x[2]);}
