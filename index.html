@@ -574,7 +574,7 @@ function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_T
 new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
   else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/11-c';
+const VERSION='11/11-d';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -1423,6 +1423,7 @@ const COURSE=[
   R_('g1s2',1,'say','たんにー',{cap:4,pool:['q','h'],must:['h'],say:'たんにー は 2つ のばすよ'}),
   R_('g1s3',1,'say','たんにーさん',{cap:4,pool:['q','h','dh'],must:['dh'],say:'たんにーさん は 3つ のばすよ'}),
   R_('g1s4',1,'say','たんにーさんしー',{cap:4,pool:A1,must:['w'],say:'たんにーさんしー は 4つ のばすよ'}),
+  R_('g1s5',1,'say','まぜて（2しょうせつ）',{cap:8,pool:A1,say:'いろいろ まぜて いってみよう'}),
   R_('g1t1',1,'tap','たん',{seqs:TAN_SEQS,need:4,say:'こんどは いいながら たたいてみよう'}),
   R_('g1t2',1,'tap','たんにー',{cap:4,pool:['q','h'],must:['h']}),
   R_('g1t3',1,'tap','たんにーさん',{cap:4,pool:['q','h','dh'],must:['dh']}),
@@ -1436,6 +1437,7 @@ const COURSE=[
   R_('g2s2',2,'say','うんにー',{cap:4,pool:['q','qr','h','hr'],must:['hr'],say:'うんにー は 2つ おやすみ'}),
   R_('g2s3',2,'say','うんにーさん',{cap:4,pool:['q','qr','h','hr','dh','dhr'],must:['dhr'],say:'うんにーさん は 3つ おやすみ'}),
   R_('g2s4',2,'say','うんにーさんしー',{cap:4,pool:A4,must:['wr'],say:'うんにーさんしー は 4つ おやすみ'}),
+  R_('g2s5',2,'say','まぜて（2しょうせつ）',{cap:8,pool:A4,say:'いろいろ まぜて いってみよう'}),
   R_('g2t1',2,'tap','うん',{cap:4,pool:['q','qr'],must:['qr'],need:3,say:'こんどは いいながら たたいてみよう。うん では たたかないよ'}),
   R_('g2t2',2,'tap','うんにー',{cap:4,pool:['q','qr','h','hr'],must:['hr']}),
   R_('g2t3',2,'tap','うんにーさん',{cap:4,pool:['q','qr','h','hr','dh','dhr'],must:['dhr']}),
@@ -1721,7 +1723,7 @@ function stStop(){ST.run++;stClear();stMetroStop();ST.window=false;const el=$('#
 function genPattern(s){
   if(s.fixed)return s.fixed.map(byId);
   if(s.gen==='one'){const out=[];for(let m=0;m<s.cap/4;m++){const pos=Math.random()*4|0;for(let k=0;k<4;k++)out.push(k===pos?byId(s.pool[Math.random()*s.pool.length|0]):byId('q'));}return out;}
-  if(s.seqs){const p=CS.passes[s.id]||0;const k=p<s.seqs.length?p:Math.floor(Math.random()*s.seqs.length);return s.seqs[k].map(byId);}
+  if(s.seqs){const k=(ST.vpass||0)%s.seqs.length;return s.seqs[k].map(byId);}
   const pool=s.pool.map(byId);
   for(let tries=0;tries<60;tries++){
     let out=[];
@@ -1742,13 +1744,13 @@ function genPattern(s){
   return [byId('q'),byId('q'),byId('q'),byId('q')];
 }
 function openStep(i){
-  stStop();ST.custom=null;go('step');ST.i=i;if(COURSE[i]&&COURSE[i].g)CUR_G=COURSE[i].g;setTitle(gInfo(COURSE[i].g).name||'れんしゅう');ST.noTap=0;ST.first=true;const s=COURSE[i];
+  stStop();ST.custom=null;go('step');ST.i=i;ST.vpass=0;if(COURSE[i]&&COURSE[i].g)CUR_G=COURSE[i].g;setTitle(gInfo(COURSE[i].g).name||'れんしゅう');ST.noTap=0;ST.first=true;const s=COURSE[i];
   if(s.kind==='name'){nameStepStart();return;}
   ST.items=[];ST.items=genPattern(s);
   renderStep();stBtnState('auto','👂');
   stFlow(true);
 }
-function stepNeedDots(s){const p=ST.custom?ST.cpass:(CS.passes[s.id]||0),n=s.need;let d='';for(let k=0;k<n;k++)d+=`<i class="${k<Math.min(p,n)?'ok':''}"></i>`;return d;}
+function stepNeedDots(s){const p=ST.custom?ST.cpass:(ST.vpass||0),n=s.need;let d='';for(let k=0;k<n;k++)d+=`<i class="${k<Math.min(p,n)?'ok':''}"></i>`;return d;}
 function seqHTML(items,cap){
   const perRow=cap>4?2:1,beatsRow=Math.min(cap,4)*perRow;
   const u=Math.floor(Math.min(cap<4?110:92,(availW()-24-perRow*20)/beatsRow));
@@ -1809,6 +1811,7 @@ function stBtnState(st,label){
   b.className='hold drum';b.style.background='';
   if(st==='auto'){b.classList.add('idle');b.innerHTML=label||'👂';}
   if(st==='drum'){b.classList.add('glow');b.innerHTML=S.clap?'👏':'🥁';}
+  if(st==='free'){b.classList.add('glow');b.innerHTML='🗣👏<br><small>いいながら たたいても いいよ</small>';}
   if(st==='next'){b.classList.add('okb','glow');b.innerHTML='つぎ ▶';}
   if(st==='retry'){b.innerHTML='▶<br><small>もういちど</small>';b.classList.add('glow2');}
   if(st==='again'){b.innerHTML='もういちど<br>▶';b.classList.add('glow2','againb');}
@@ -1816,6 +1819,7 @@ function stBtnState(st,label){
 function stBtnDown(e){
   e.preventDefault();ac();
   if(ST.btn==='drum'){if(!S.clap){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}stTap(ac().currentTime,true);}return;}
+  if(ST.btn==='free'){tone(ac().currentTime,.12,null,330,.32);const b=e.currentTarget;b.classList.add('down');setTimeout(()=>b.classList.remove('down'),90);return;}
   if(ST.btn==='next'){ST.items=genPattern(curStep());renderStep();stBtnState('auto');stFlow(false);return;}
   if(ST.btn==='retry'){ST.noTap=0;ST.failRow=0;stBtnState('auto');stFlow(false);return;}
   if(ST.btn==='again'){stBtnState('auto');stFlow(false,!ST.retryFull);return;}
@@ -1906,10 +1910,14 @@ async function stFlow(first,tapOnly){
   $('#stMsg').textContent=stg==='say'?'ずんだもんと いっしょに いおう':'いっしょに いいながら たたこう';stBtnState('auto',stg==='say'?'🗣':'👏');
   await P(stg==='say'?'issho':'rhythm');if(!alive(tok))return;
   sess=newSess();ST.sess=sess;D=countIn(a.currentTime+.2,sess);
-  if(sylReady()){scheduleSyl(D,sess);schedulePattern(D,sess,false,S.click);}else schedulePattern(D,sess,true,S.click);
-  lightSeq(D,false,true);glowSeq(D);
-  ST.timers.push(setTimeout(()=>{if(alive(tok))stBtnState('auto','👏');},(D-a.currentTime)*1000));
-  await wait((D-a.currentTime+patLen()*B)*1000+300);if(!alive(tok))return;
+  /* いっしょに いおう は とめずに くりかえす（4しょうせつぶん）。みじかい リズムは しょうせつの あたまから */
+  const L=patLen(),span=stg==='say'?Math.max(4,Math.ceil(L/4-1e-6)*4):L,REP=stg==='say'?Math.max(1,Math.round(16/span)):1;
+  for(let r=0;r<REP;r++){const T0=D+r*span*B;
+    if(sylReady()){scheduleSyl(T0,sess);schedulePattern(T0,sess,false,r===0&&S.click);}else schedulePattern(T0,sess,true,r===0&&S.click);
+    lightSeq(T0,false,true);glowSeq(T0);
+    if(REP>1)ST.timers.push(setTimeout(()=>{if(alive(tok))$('#stMsg').textContent=`いっしょに いおう　${r+1} / ${REP}`;},(T0-a.currentTime)*1000));}
+  ST.timers.push(setTimeout(()=>{if(alive(tok))stBtnState(stg==='say'?'free':'auto','👏');},(D-a.currentTime)*1000));
+  await wait((D-a.currentTime+((REP-1)*span+L)*B)*1000+300);if(!alive(tok))return;
   await wait(250);if(!alive(tok))return;
   }
   if(stg==='say'){/* いっしょに いおう：はんていなし */
@@ -2023,7 +2031,7 @@ function stJudge(){
 }
 function stRegPass(s){let cleared=false;
   if(ST.custom){ST.cpass++;cleared=ST.cpass>=s.need;}
-  else{CS.passes[s.id]=(CS.passes[s.id]||0)+1;if(CS.passes[s.id]>=s.need&&!CS.done[s.id]){CS.done[s.id]=today();CS.stamps[s.id]=today();cleared=true;}csSave();}
+  else{CS.passes[s.id]=(CS.passes[s.id]||0)+1;ST.vpass=(ST.vpass||0)+1;if(ST.vpass>=s.need){if(!CS.done[s.id]){CS.done[s.id]=today();CS.stamps[s.id]=today();}cleared=true;}csSave();}
   return cleared;}
 function renderStepHead(){const s=curStep();const pd=$('#stepBox .st-head .pd');if(pd)pd.innerHTML=stepNeedDots(s);}
 function stCleared(){
