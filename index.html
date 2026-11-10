@@ -188,6 +188,11 @@ h2{font-size:22px;margin:6px 0 12px}
 .bento.good{border-color:var(--c3);box-shadow:0 5px 0 #2f7d4c}
 .modal{position:fixed;inset:0;background:rgba(40,30,25,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:14px}
 .modal.on{display:flex}
+#cap{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translate(-50%,20px);max-width:92vw;background:#3a2a1e;color:#fff;font-weight:800;font-size:16px;padding:10px 16px;border-radius:16px;opacity:0;pointer-events:none;transition:.25s;z-index:60;text-align:center}
+#cap.on{opacity:.94;transform:translate(-50%,0)}
+.sndt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.sndt button{padding:12px 6px;font-size:15px}
+.sndst{font-family:ui-monospace,monospace;font-size:12px;text-align:left;background:#f4ede3;border-radius:10px;padding:8px;white-space:pre-wrap;max-height:30vh;overflow:auto}
+.chk{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.chk button{font-size:13px;padding:8px 10px}.chkh{font-weight:800;text-align:left;margin-top:6px}
 .bento.wood .blk{--c:#d9ad72!important;color:#3a2a1e;text-shadow:none}
 .bento.wood .blk.rest{background:#fff}
 .bento .pc{position:relative}.bento .pcn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
@@ -413,8 +418,7 @@ body.sheeton #v-step{padding-bottom:210px}
     <div class="row"><span class="lab">つみきの もじ</span><div class="seg" id="setLbl"><button data-v="0">おんぷだけ</button><button data-v="1">ことばも だす</button></div></div>
     <div class="row"><span class="lab">かぞえかた</span><div class="seg" id="setNum"><button data-v="0">にー さん しー</button><button data-v="1">2 3 4</button></div></div>
     <div class="row"><span class="lab">カチカチ</span><div class="seg" id="setClick"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
-    <div class="row"><span class="lab">iPhoneの よみあげ</span><div class="seg" id="setTts"><button data-v="1">つかう</button><button data-v="0">つかわない</button></div></div>
-    <div class="hint" style="margin:-4px 0 8px;text-align:left">ずんだもんの ファイルが ない ことばを iPhoneが よみます。音が とまる ときは「つかわない」に してみてください。</div>
+    <div class="row" style="gap:8px;justify-content:center;margin:10px 0"><button class="tog" id="sndTestBtn" style="color:var(--ink)">🔊 おとの テスト</button><button class="tog" id="chkMenuBtn" style="color:var(--ink)">🧭 チェック用メニュー</button></div>
     <div class="row"><span class="lab">せんせいよう</span><div class="seg" id="setUnlock"><button data-v="0">ふつう</button><button data-v="1">ぜんぶ ひらく（チェック用）</button></div></div>
     <div class="row" style="justify-content:space-between"><span class="hint" style="margin:0" id="verLbl"></span><button class="tog" id="resetBtn" style="font-size:13px">せんせいよう：おべんとうの きろくを けす</button></div>
   </div>
@@ -481,6 +485,7 @@ body.sheeton #v-step{padding-bottom:210px}
 <!-- QUIZ PLAY -->
 <section class="view" id="v-quizPlay"><div id="qBox"></div></section>
 
+<div id="cap"></div>
 <div id="credit" style="display:none;text-align:center;color:var(--sub);font-size:12px;padding:10px 0 24px"><div id="crVoice">こえ：VOICEVOX:ずんだもん</div><div id="crIllust" style="display:none">イラスト：ジャパクリップ</div></div>
 <div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
 <div class="ov" id="ov"></div>
@@ -527,7 +532,7 @@ function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_T
 new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
   else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/10-a';
+const VERSION='11/10-b';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -546,7 +551,8 @@ let AC=null;
 let MASTER=null;
 function out(){const a=ac();if(!MASTER){const g=a.createGain();g.gain.value=1;const c=a.createDynamicsCompressor();c.threshold.value=-4;c.knee.value=3;c.ratio.value=20;c.attack.value=.002;c.release.value=.1;g.connect(c);c.connect(a.destination);MASTER=g;}return MASTER;}
 let VBUS=null;function vout(){const a=ac();if(!VBUS){VBUS=a.createGain();VBUS.gain.value=.75;VBUS.connect(out());}return VBUS;}
-function ac(){if(!AC){try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}AC=new (window.AudioContext||window.webkitAudioContext)();}if(AC.state!=='running'){try{AC.resume();}catch(e){}}return AC;}
+const ALOG=[];function alog(m){const d=new Date();ALOG.push(`${d.toTimeString().slice(0,8)} ${m}`);if(ALOG.length>14)ALOG.shift();}
+function ac(){if(!AC){try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}AC=new (window.AudioContext||window.webkitAudioContext)();alog('おとの しくみ スタート：'+AC.state);AC.onstatechange=()=>alog('じょうたい → '+AC.state);}if(AC.state!=='running'){try{AC.resume();}catch(e){}}return AC;}
 /* iPhone: 音が とまったら つぎに さわったときに もどす */
 let AUDIO_UNLOCKED=false;
 function audioKick(){try{try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}const a=ac();if(!AUDIO_UNLOCKED){const b=a.createBuffer(1,1,22050);const s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);AUDIO_UNLOCKED=true;}}catch(e){}}
@@ -630,7 +636,7 @@ function speak(key,text){
   if(!S.voice)return Promise.resolve();
   if(!n||!CLIPS[n])return say(text);
   return new Promise(res=>{
-    try{if(window.speechSynthesis)speechSynthesis.cancel();if(CLIP_NOW){try{CLIP_NOW.stop();}catch(e){}}
+    try{if(CLIP_NOW){try{CLIP_NOW.stop();}catch(e){}}
       const a=ac(),b=CLIPS[n],src=a.createBufferSource();src.buffer=b;src.connect(vout());CLIP_NOW=src;
       let done=false;const fin=()=>{if(!done){done=true;res();}};src.onended=fin;
       src.start(a.currentTime+.02,b._lead||0);setTimeout(fin,(b.duration+.5)*1000);
@@ -670,18 +676,14 @@ function scheduleSyl(t0,sess){const a=ac(),B=beat(),L=sylList();L.forEach(([t,x,
 
 /* speech */
 function say(text){
+  /* iPhoneの よみあげは つかわない（音が とまる げんいんに なるため）。文字で だす */
   return new Promise(res=>{
-    if(!S.voice||!S.tts||!window.speechSynthesis){res();return;}
-    let done=false;const fin=()=>{if(!done){done=true;res();}};
-    try{
-      speechSynthesis.cancel();
-      const u=new SpeechSynthesisUtterance(text);u.lang='ja-JP';u.rate=.9;u.pitch=1.15;
-      const v=speechSynthesis.getVoices().find(v=>/ja/i.test(v.lang));if(v)u.voice=v;
-      const fin2=()=>{fin();try{if(AC&&AC.state!=='running')AC.resume().catch(()=>{});}catch(e){}};u.onend=fin2;u.onerror=fin2;speechSynthesis.speak(u);
-      setTimeout(fin,Math.min(20000,900+text.length*330));
-    }catch(e){fin();}
+    if(!text||!String(text).trim()){res();return;}
+    showCap(text);setTimeout(res,Math.min(2200,500+String(text).length*80));
   });
 }
+let CAP_T=null;
+function showCap(text){const c=$('#cap');if(!c)return;c.textContent='💬 '+text;c.classList.add('on');clearTimeout(CAP_T);CAP_T=setTimeout(()=>c.classList.remove('on'),Math.min(4000,1400+String(text).length*120));}
 
 /* ===================== rendering ===================== */
 let RLINE=false;
@@ -818,7 +820,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 let VIEW='home';
 const PARENT={menu:'home',step:'home',bento:'menu',list:'menu',detail:'list',nobashi:'menu',quizSetup:'menu',quizPlay:'quizSetup'};
 function go(v){
-  stopPlay();nbReset(true);if(window.speechSynthesis)try{speechSynthesis.cancel()}catch(e){}
+  stopPlay();nbReset(true);
   QZ.alive=false;if(v!=='quizPlay')metroStop();if(QZ.mel){stopMel(QZ.mel);QZ.mel=null;}
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   $('#v-'+v).classList.add('on');VIEW=v;
@@ -841,7 +843,7 @@ function bindSeg(id,key){
   const el=$(id);const sync=()=>el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===+S[key]));
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{S[key]=+b.dataset.v;store.set('rz_set',S);sync();});sync();
 }
-bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');bindSeg('#setNum','num');bindSeg('#setLbl','lbl');bindSeg('#setUnlock','unlock');bindSeg('#setLen','len');bindSeg('#setClap','clap');bindSeg('#setTts','tts');$('#setNum').addEventListener('click',()=>{numTogSync();numWalk(document.body);});
+bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');bindSeg('#setNum','num');bindSeg('#setLbl','lbl');bindSeg('#setUnlock','unlock');bindSeg('#setLen','len');bindSeg('#setClap','clap');$('#setNum').addEventListener('click',()=>{numTogSync();numWalk(document.body);});
 $('#setClap').addEventListener('click',async()=>{if(S.clap){const ok=await micStart();if(!ok){S.clap=0;store.set('rz_set',S);$('#setClap').querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===0));}}});
 
 function numTogSync(){const b=$('#numTog');if(!b)return;const show=!['home'].includes(VIEW);
@@ -1297,6 +1299,48 @@ function bnHelp(){
   say('おべんとうばこは 4マス。おかずの ながさが おんぷの ながさだよ');
 }
 $('#bnHelpBtn').onclick=()=>{ac();bnHelp();};
+/* ===== せんせいよう：おとの テスト ===== */
+let SND_T=null;
+function sndTest(){
+  const st=()=>{const el=$('#sndSt');if(!el){clearInterval(SND_T);return;}
+    const ses=navigator.audioSession?navigator.audioSession.type:'（なし）';
+    el.textContent=`版：${VERSION}\nおとの じょうたい：${AC?AC.state:'まだ'}　${AC&&AC.state==='running'?'✅':'⚠️'}\niPhoneの おとの しゅるい：${ses}\nずんだもんの こえ：${Object.values(CLIPS).filter(x=>x&&x.duration).length}こ　1おん：${Object.keys(KANABUF).length}こ\n---- きろく ----\n${ALOG.slice().reverse().join('\n')}`;};
+  openModal(`<h3>🔊 おとの テスト</h3><div class="hint">1つずつ おして、きこえたか みてください。<br>きこえない ものが あったら、この がめんの スクショを おくってください。</div>
+    <div class="sndt"><button class="bigbtn" id="tPi" style="background:var(--c1)">ピー</button><button class="bigbtn" id="tClick" style="background:var(--c2)">カチカチ 4かい</button>
+    <button class="bigbtn" id="tZun" style="background:var(--c3)">ずんだもん「たん」</button><button class="bigbtn" id="tMel" style="background:var(--c4)">ぞうの メロディー</button>
+    <button class="bigbtn" id="tAll" style="background:#c98b4a">ぜんぶ つづけて</button><button class="bigbtn gray" id="tFix">おとを なおす</button></div>
+    <div class="sndst" id="sndSt"></div><div class="btns" style="margin-top:10px"><button class="bigbtn gray" id="tClose">とじる</button></div>`);
+  const pi=()=>{const a=ac();tone(a.currentTime+.05,.5,null,660);alog('ピー を ならした');};
+  const cl=()=>{const a=ac(),B=.5,t=a.currentTime+.05;for(let k=0;k<4;k++)click(t+k*B,k===0);alog('カチカチ を ならした');};
+  const zn=()=>{alog('ずんだもん：'+(clipName('koe-tan')?'ファイル あり':'ファイル なし'));speak('koe-tan','たん');};
+  let mm=null;const ml=()=>{stopMel(mm);mm=playMel(byId('h'),'come');alog('メロディー：'+(clipName('mel-zou')?'ファイル あり':'ファイル なし'));setTimeout(()=>{fadeMel(mm,1.5);},5000);};
+  $('#tPi').onclick=pi;$('#tClick').onclick=cl;$('#tZun').onclick=zn;$('#tMel').onclick=ml;
+  $('#tAll').onclick=()=>{pi();setTimeout(cl,800);setTimeout(zn,3200);setTimeout(ml,4400);};
+  $('#tFix').onclick=()=>{try{AC.resume().then(()=>alog('なおす：'+AC.state)).catch(e=>alog('なおす しっぱい：'+e.name));}catch(e){alog('なおす しっぱい');}};
+  $('#tClose').onclick=()=>{stopMel(mm);clearInterval(SND_T);closeModal();};
+  clearInterval(SND_T);SND_T=setInterval(st,400);st();
+}
+/* ===== せんせいよう：チェック用メニュー（その がめんに すぐ とぶ） ===== */
+function chkMenu(){
+  const b=(l,f)=>`<button class="tog" data-f="${f}">${l}</button>`;
+  openModal(`<h3>🧭 チェック用メニュー</h3><div class="hint">おすと その がめんに すぐ とびます。</div>
+    <div class="chkh">おと</div><div class="chk">${b('🔊 おとの テスト','snd')}</div>
+    <div class="chkh">つみき</div><div class="chk">${b('いちらん','list')}${[1,2,3,4,5].map(g=>b(GROUPS[g-1].name+' の もんだい','pr'+g)).join('')}</div>
+    <div class="chkh">なまえの ひみつ</div><div class="chk">${b('ぜんおんぷ','nl:w')}${b('はちぶおんぷ','nl:ee')}${b('16ぶおんぷ','nl:f1')}</div>
+    <div class="chkh">リズムへの みち（ステップ）</div><div class="chk">${[1,6,9,11,16,21].filter(n=>n<=COURSE.length).map(n=>b('ステップ '+n,'st'+(n-1))).join('')}</div>
+    <div class="chkh">クイズ</div><div class="chk">${[...document.querySelectorAll('#qTypes .qtype')].map(q=>b(q.querySelector('span:nth-child(2)').firstChild.textContent.trim(),'qz:'+q.dataset.t)).join('')}</div>
+    <div class="chkh">そのほか</div><div class="chk">${b('おべんとうばこ','bento')}${b('のばして あそぼう','nobashi')}</div>
+    <div class="btns" style="margin-top:8px"><button class="bigbtn gray" id="ckClose">とじる</button></div>`);
+  $('#ckClose').onclick=closeModal;
+  $('#mbox').querySelectorAll('[data-f]').forEach(x=>x.onclick=()=>{ac();const f=x.dataset.f;closeModal();
+    if(f==='snd')return sndTest();
+    if(f==='list'||f==='bento'||f==='nobashi')return go(f);
+    if(f.startsWith('pr'))return openPracticePage(+f.slice(2));
+    if(f.startsWith('nl:')){go('list');return openNameLesson(byId(f.slice(3)));}
+    if(f.startsWith('st')){S.unlock=1;store.set('rz_set',S);return openStep(+f.slice(2));}
+    if(f.startsWith('qz:')){go('quizSetup');const q=document.querySelector(`#qTypes .qtype[data-t="${f.slice(3)}"]`);if(q)q.click();}});
+}
+$('#sndTestBtn').onclick=()=>{ac();sndTest();};$('#chkMenuBtn').onclick=()=>{ac();chkMenu();};
 $('#bnUndo').onclick=()=>{if(BN.done&&BN.mode==='odai')return;BN.items.pop();bnDrawBox();bnDrawPal();$('#bnMsg').textContent='';};
 $('#bnClear').onclick=()=>{if(BN.done&&BN.mode==='odai')return;BN.items=[];bnDrawBox();bnDrawPal();$('#bnMsg').textContent='';};
 $('#bnNext').onclick=()=>{ac();if(!BN.done&&BN.mode==='odai'){BP.hist.push(0);if(BP.hist.length>12)BP.hist.shift();bpSave();}bnNewQ();renderBento();};
@@ -1904,7 +1948,7 @@ function renderQuizSetup(){
   const qs=$('#qShow');if(qs)qs.onclick=()=>{QZ.show=!QZ.show;renderQuizSetup();};
   const qr=$('#qRest');if(qr)qr.onclick=()=>{QZ.rest=!QZ.rest;renderQuizSetup();};
 }
-$('#qStart').onclick=()=>{ac();if(window.speechSynthesis)try{speechSynthesis.speak(new SpeechSynthesisUtterance(''))}catch(e){}
+$('#qStart').onclick=()=>{ac();
   go('quizPlay');QZ.i=0;QZ.score=0;QZ.alive=true;QZ.prev=null;
   if(METRO_TYPES.includes(QZ.type))metroStart();nextQ();};
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
@@ -2069,7 +2113,7 @@ function showResult(){
 probeFiles();
 renderHome();
 $('#verLbl').textContent='版：'+VERSION;
-if(window.speechSynthesis){try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();}catch(e){}}
+
 </script>
 </body>
 </html>
