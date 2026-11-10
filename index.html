@@ -188,6 +188,10 @@ h2{font-size:22px;margin:6px 0 12px}
 .bento.good{border-color:var(--c3);box-shadow:0 5px 0 #2f7d4c}
 .modal{position:fixed;inset:0;background:rgba(40,30,25,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:14px}
 .modal.on{display:flex}
+i.lb{font-style:normal}
+.qchoice.plainn svg{height:92px!important;width:auto!important;max-width:100%}
+.qhead{font-weight:800;font-size:15px;color:var(--sub);margin:10px 4px 2px;text-align:left}
+.singbox{display:flex;flex-direction:column;align-items:center;gap:10px}
 #cap{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translate(-50%,20px);max-width:92vw;background:#3a2a1e;color:#fff;font-weight:800;font-size:16px;padding:10px 16px;border-radius:16px;opacity:0;pointer-events:none;transition:.25s;z-index:60;text-align:center}
 #cap.on{opacity:.94;transform:translate(-50%,0)}
 .sndt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.sndt button{padding:12px 6px;font-size:15px}
@@ -471,11 +475,14 @@ body.sheeton #v-step{padding-bottom:210px}
 <section class="view" id="v-quizSetup">
   <div class="qtypes" id="qTypes">
     <button class="qtype" data-t="animal"><span class="em">🐘</span><span>どうぶつさん だれかな？<small>はじめての レッスン・ちいさい子むけ。メロディーを きいて どうぶつを あてる</small></span></button>
-    <button class="qtype on" data-t="longer"><span class="em">📏</span><span>ながいのは どっち？<small>2つの おとを くらべる（いちばん やさしい）</small></span></button>
-    <button class="qtype" data-t="listen"><span class="em">👂</span><span>どの おとかな？<small>おとを きいて、おんぷを えらぶ（じが よめなくても できる）</small></span></button>
-    <button class="qtype" data-t="count"><span class="em">🔢</span><span>いくつ のばす？<small>おんぷを いくつ のばすかな？ すうじで こたえる</small></span></button>
-    <button class="qtype" data-t="name"><span class="em">📛</span><span>なんていう おんぷ？<small>おんぷの なまえを えらぶ（「2 3 4」で すうじの なまえ）</small></span></button>
-    <button class="qtype" data-t="word"><span class="em">🔤</span><span>なんて うたう？<small>おんぷを みて、リズムの うたいかたを えらぶ</small></span></button>
+    <div class="qhead">📏 ながさ</div>
+    <button class="qtype on" data-t="longer"><span class="em">↔️</span><span>ながいのは どっち？<small>2つの おとを くらべる（いちばん やさしい）</small></span></button>
+    <button class="qtype" data-t="listen"><span class="em">👂</span><span>どっちの ながさかな？<small>おとを きいて、その ながさの おんぷを えらぶ</small></span></button>
+    <button class="qtype" data-t="count"><span class="em">🔢</span><span>いくつ のばす？<small>おんぷを みて、いくつ のばすか すうじで こたえる</small></span></button>
+    <div class="qhead">📛 なまえ</div>
+    <button class="qtype" data-t="name"><span class="em">❓</span><span>これは なに？<small>おんぷや きゅうふの なまえを えらぶ</small></span></button>
+    <div class="qhead">🎤 うたう</div>
+    <button class="qtype" data-t="word"><span class="em">🎵</span><span>リズムを うたおう<small>おんぷを みて、くちで うたって みよう</small></span></button>
   </div>
   <div class="hint" style="text-align:center">おすと すぐ はじまるよ。⚙ で くわしい せってい</div>
   <div id="qOpts"></div>
@@ -522,7 +529,9 @@ const WORDS=[
 const GROUPS=[{g:1,name:'のばす おと'},{g:2,name:'おやすみ'},{g:3,name:'はんぶん'},{g:4,name:'たべもの'},{g:5,name:'れんぷ'}];
 const byId=id=>WORDS.find(w=>w.id===id);
 const NUMMAP={'にー':'2','さん':'3','しー':'4'};
-const lab=x=>S.num&&NUMMAP[x]?NUMMAP[x]:x;
+const lab0=x=>S.num&&NUMMAP[x]?NUMMAP[x]:x;
+const lab=x=>NUMMAP[x]?`<i class="lb" data-s="${x}">${lab0(x)}</i>`:x;
+function numRelabel(){document.querySelectorAll('.lb').forEach(i=>i.textContent=lab0(i.dataset.s));document.querySelectorAll('[data-wid]').forEach(e=>{const w=byId(e.dataset.wid);if(w)e.textContent=W(w);});}
 const W=w=>S.num?w.w.replace(/にー/g,'2').replace(/さん/g,'3').replace(/しー/g,'4'):w.w;
 /* 2 3 4 の ときは おんぷの なまえも すうじ（しぶおんぷ → 4ぶおんぷ）。こえは そのまま */
 const NUMRE=/(じゅうろく|はち|し|に)ぶ(おんぷ|きゅうふ)/g,NUMV={'じゅうろく':'16','はち':'8','し':'4','に':'2'};
@@ -532,7 +541,7 @@ function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_T
 new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
   else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/10-b';
+const VERSION='11/10-c';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -596,7 +605,7 @@ function buzz(){const a=ac();const t=a.currentTime;tone(t,.18,null,220,.35);tone
 
 /* own files (images / voices) on GitHub */
 const AV=new Set();const CLIPS={};let CLIP_NOW=null;
-const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて うたうかな',
+const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて うたうかな',docchinagasa:'どっちの ながさかな',donagasa:'どの ながさかな',koreha:'これは なに',utaou:'リズムを くちで うたって みよう',utattara:'うたえたかな？ ずんだもんと くらべてみよう',
   pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは ひとりで。いいながら ボタンを たたいてね',tebyoushi:'こんどは ひとりで。いいながら てを たたいてね',rhythm:'ずんだもんと いっしょに、くちで いいながら たたこう',osaete:'こんどは おんぷの ながさだけ ボタンを おさえてみよう',mouichidoosu:'もういちど おしてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',again:'もういちど やるときは ボタンを おしてね',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',yatta:'やったー おめでとう',nanko:'いくつ のばすかな',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
 const CLIP_ALIAS={'koe-tan3':'koe-tan23','koe-tan4':'koe-tan234','koe-un3':'koe-un23','koe-un4':'koe-un234'};
 function picName(w){const a='e-'+w.k+'.png',b='e-'+w.k+'.PNG';return AV.has(a)?a:AV.has(b)?b:null;}
@@ -843,12 +852,12 @@ function bindSeg(id,key){
   const el=$(id);const sync=()=>el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===+S[key]));
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{S[key]=+b.dataset.v;store.set('rz_set',S);sync();});sync();
 }
-bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');bindSeg('#setNum','num');bindSeg('#setLbl','lbl');bindSeg('#setUnlock','unlock');bindSeg('#setLen','len');bindSeg('#setClap','clap');$('#setNum').addEventListener('click',()=>{numTogSync();numWalk(document.body);});
+bindSeg('#setSpeed','bpm');bindSeg('#setVoice','voice');bindSeg('#setClick','click');bindSeg('#setNum','num');bindSeg('#setLbl','lbl');bindSeg('#setUnlock','unlock');bindSeg('#setLen','len');bindSeg('#setClap','clap');$('#setNum').addEventListener('click',()=>{numTogSync();numWalk(document.body);numRelabel();});
 $('#setClap').addEventListener('click',async()=>{if(S.clap){const ok=await micStart();if(!ok){S.clap=0;store.set('rz_set',S);$('#setClap').querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===0));}}});
 
 function numTogSync(){const b=$('#numTog');if(!b)return;const show=!['home'].includes(VIEW);
   b.style.display=show?'':'none';b.innerHTML=S.num?'<b>2 3 4</b>':'<b>にーさんしー</b>';}
-$('#numTog').onclick=()=>{S.num=S.num?0:1;store.set('rz_set',S);numTogSync();numWalk(document.body);
+$('#numTog').onclick=()=>{S.num=S.num?0:1;store.set('rz_set',S);numTogSync();numWalk(document.body);numRelabel();
   $('#setNum').querySelectorAll('button').forEach(x=>x.classList.toggle('on',+x.dataset.v===S.num));
   if(VIEW==='list')renderList();else if(VIEW==='detail'&&DETAIL_ID)openDetail(DETAIL_ID,true);
   else if(VIEW==='nobashi'&&NB.state!=='hold'&&NB.state!=='count')renderNobashi();
@@ -1923,7 +1932,7 @@ function fadeMel(m,sec){if(!m)return;const a=ac(),g=m.g.gain,n=a.currentTime;g.c
   if(m.lp){const f=m.lp.frequency;f.cancelScheduledValues(n);f.setValueAtTime(Math.max(f.value,2000),n);f.exponentialRampToValueAtTime(400,n+sec);}}
 function stopMel(m){if(!m)return;try{m.g.gain.cancelScheduledValues(0);m.g.gain.value=0;if(m.src)m.src.stop();}catch(e){}}
 /* ===================== quiz ===================== */
-const QZ={type:'longer',groups:new Set([1]),choices:2,show:true,rest:false,i:0,total:5,score:0,alive:false,lock:false,prev:null,mute:false,m:null};
+const QZ={type:'longer',groups:new Set([1]),choices:2,show:true,rest:false,sing:true,i:0,total:5,score:0,alive:false,lock:false,prev:null,mute:false,m:null};
 const METRO_TYPES=['longer','listen','count'];
 function renderQuizSetup(){
   $('#qTypes').querySelectorAll('.qtype').forEach(b=>{b.classList.toggle('on',b.dataset.t===QZ.type);
@@ -1932,14 +1941,15 @@ function renderQuizSetup(){
   $('#qOpts').style.display=QZ.showOpts?'':'none';$('#qStartRow').style.display=QZ.showOpts?'flex':'none';
   let h='';
   if(QZ.type==='animal'){h+=`<div class="hint">ぞう（にぶおんぷ）・いぬ（しぶおんぷ）・リス（はちぶおんぷ）の メロディー</div>`;}
-  else if(QZ.type==='count'||QZ.type==='name'){h+=`<div class="hint">${QZ.type==='count'?'たん・たんにー・たんにーさん・たんにーさんしー で あそぶよ':'ぜんおんぷ・にぶおんぷ・しぶおんぷ・はちぶおんぷ・じゅうろくぶおんぷ・ふてん にぶおんぷ'}</div><button class="tog${QZ.rest?' on':''}" id="qRest" style="margin-right:8px"><span class="box"></span>きゅうふも いれる</button>`;}
+  else if(QZ.type==='count'||QZ.type==='name'){h+=`<div class="hint">${QZ.type==='count'?'たん・たんにー・たんにーさん・たんにーさんしー で あそぶよ':'ぜんおんぷ・にぶおんぷ・しぶおんぷ・はちぶおんぷ・じゅうろくぶおんぷ・ふてん にぶおんぷ'}</div><button class="tog${QZ.rest?' on':''}" id="qRest" style="margin-right:8px"><span class="box"></span>おんぷと きゅうふを まぜる</button>`;}
   else if(QZ.type!=='longer'){
     h+=`<div class="hint">どの なかまで あそぶ？（いくつでも）</div><div class="chips" id="qGroups">`+
       GROUPS.map(g=>`<button class="chip${QZ.groups.has(g.g)?' on':''}" data-g="${g.g}">${g.name}</button>`).join('')+'</div>';
     h+=`<div class="row" style="margin-bottom:10px"><span class="lab">えらぶ かず</span><div class="seg" id="qN">
       <button data-v="2" class="${QZ.choices===2?'on':''}">2つ</button><button data-v="4" class="${QZ.choices===4?'on':''}">4つ</button></div></div>`;
   }else h+=`<div class="hint">「のばす おと」（たん〜たんにーさんしー）で くらべるよ</div>`;
-  if(QZ.type==='longer'||QZ.type==='listen')h+=`<button class="tog${QZ.show?' on':''}" id="qShow"><span class="box"></span>つみきを みせる</button>`;
+  if(QZ.type==='longer')h+=`<button class="tog${QZ.show?' on':''}" id="qShow"><span class="box"></span>つみきを みせる</button>`;
+  if(QZ.type==='word')h+=`<div class="row" style="margin-top:8px"><span class="lab">こたえかた</span><div class="seg" id="qSing"><button data-v="1" class="${QZ.sing?'on':''}">🎤 うたう</button><button data-v="0" class="${QZ.sing?'':'on'}">👆 ことばを えらぶ</button></div></div>`;
   if(QZ.type==='listen'&&QZ.groups.has(2)&&QZ.groups.size===1)h+=`<div class="hint" style="color:var(--c1)">「おやすみ」だけだと おとが ならないので、ほかの なかまも えらんでね</div>`;
   $('#qOpts').innerHTML=h;
   $('#qOpts').querySelectorAll('#qGroups .chip').forEach(c=>c.onclick=()=>{const g=+c.dataset.g;
@@ -1947,6 +1957,7 @@ function renderQuizSetup(){
   $('#qOpts').querySelectorAll('#qN button').forEach(b=>b.onclick=()=>{QZ.choices=+b.dataset.v;renderQuizSetup();});
   const qs=$('#qShow');if(qs)qs.onclick=()=>{QZ.show=!QZ.show;renderQuizSetup();};
   const qr=$('#qRest');if(qr)qr.onclick=()=>{QZ.rest=!QZ.rest;renderQuizSetup();};
+  $('#qOpts').querySelectorAll('#qSing button').forEach(b=>b.onclick=()=>{QZ.sing=b.dataset.v==='1';renderQuizSetup();});
 }
 $('#qStart').onclick=()=>{ac();
   go('quizPlay');QZ.i=0;QZ.score=0;QZ.alive=true;QZ.prev=null;
@@ -1983,11 +1994,12 @@ function pickChoices(ans,k){
 function progHTML(){let h='<div class="qtop"><div class="qprog">';for(let i=0;i<QZ.total;i++)h+=`<i class="${i<QZ.i?'done':i===QZ.i?'now':''}"></i>`;
   h+='</div>';if(QZ.m)h+=`<button class="tog" id="qMute">${QZ.mute?'🔇':'🔈'} カチカチ</button>`;return h+'</div>';}
 function bindMute(){const b=$('#qMute');if(b)b.onclick=()=>{QZ.mute=!QZ.mute;b.textContent=(QZ.mute?'🔇':'🔈')+' カチカチ';};}
-function choiceCard(w){
+function choiceCard(w,plain){
+  if(plain)return `<button class="qchoice plainn" data-id="${w.id}" style="min-height:130px">${notation(w.ev,2,true,null,true)}</button>`;
   return `<button class="qchoice" data-id="${w.id}">${QZ.show?pic(w,'qemj','font-size:28px'):''}${notation(w.ev,1,true,null,true)}${QZ.show?blocks(w,Math.min(34,Math.floor(130/len(w))),'nolabel'):''}</button>`;
 }
-function textChoice(id,label,sayKey,sayText){
-  return `<div class="qchoice tchoice" data-id="${id}"><button class="qsay" data-k="${sayKey}" data-t="${sayText}" aria-label="きく">🔊</button><div class="w">${label}</div></div>`;
+function textChoice(id,label,sayKey,sayText,wid){
+  return `<div class="qchoice tchoice" data-id="${id}"><button class="qsay" data-k="${sayKey}" data-t="${sayText}" aria-label="きく">🔊</button><div class="w"${wid?` data-wid="${wid}"`:''}>${label}</div></div>`;
 }
 function bindSay(){$('#qBox').querySelectorAll('.qsay').forEach(b=>b.onclick=e=>{e.stopPropagation();ac();speak(b.dataset.k,b.dataset.t);});}
 function pickAns(p){let ans;do{ans=p[Math.random()*p.length|0];}while(p.length>1&&ans===QZ.prev);QZ.prev=ans;return ans;}
@@ -2040,15 +2052,15 @@ async function nextQ(){
   /* ② どの おとかな？ */
   else if(QZ.type==='listen'){
     const ans=pickAns(pool());const ch=pickChoices(ans,QZ.choices);QZ.ans=ans;
-    box.innerHTML=progHTML()+`<div class="qprompt">どの おとかな？</div>
+    box.innerHTML=progHTML()+`<div class="qprompt">${ch.length===2?'どっちの ながさかな？':'どの ながさかな？'}</div>
       <div class="btns" style="margin-bottom:14px"><button class="bigbtn" id="qReplay" style="font-size:26px">🔊 もういちど きく</button></div>
-      <div class="qchoices">${ch.map(w=>choiceCard(w)).join('')}</div>`;
+      <div class="qchoices">${ch.map(w=>choiceCard(w,true)).join('')}</div>`;
     bindMute();
     const play=async first=>{QZ.lock=true;const at=first?firstAt():soonAt();qPlay(ans,at);await wait((at+len(ans)*(QZ.m?QZ.m.B:beat())-ac().currentTime)*1000+150);if(QZ.alive)QZ.lock=false;};
     $('#qReplay').onclick=()=>{if(!QZ.lock)play(false);};
     box.querySelectorAll('.qchoice').forEach(c=>c.onclick=async()=>{if(QZ.lock||!QZ.alive)return;const w=byId(c.dataset.id);
       if(w===ans||sameSound(w,ans))qGood(c);else{qBad(c);await wait(500);if(QZ.alive)play(false);}});
-    await P('dono');if(!QZ.alive)return;await play(true);
+    await P(ch.length===2?'docchinagasa':'donagasa');if(!QZ.alive)return;await play(true);
   }
   /* ③ たん なんこ ぶん？ */
   else if(QZ.type==='count'){
@@ -2074,23 +2086,40 @@ async function nextQ(){
     const list=NAMEQ.concat(QZ.rest?NAMEQR:[]);const ans=pickAns(list);
     const others=shuffle(list.filter(x=>x!==ans)).slice(0,3);const ch=shuffle([ans,...others]);
     const key=x=>'na-'+(x.nk||(byId(x.id)||{}).nk||x.id);
-    box.innerHTML=progHTML()+`<div class="qprompt">なんて いう おんぷ？</div>
+    box.innerHTML=progHTML()+`<div class="qprompt">これは なに？</div>
       <button class="qnote qtapnote" id="qNameNote">${notation(ans.ev,2.4,true,null,true)}<div class="hint" style="margin:0">👆 おんぷを おすと なまえを いうよ</div></button>
       <div class="qchoices tlist">${ch.map(x=>textChoice(x.id,x.nm,key(x),x.nm)).join('')}</div>`;
     $('#qNameNote').onclick=()=>{ac();speak(key(ans),ans.nm);};
     bindSay();
     box.querySelectorAll('.tchoice').forEach(c=>c.onclick=()=>{if(QZ.lock||!QZ.alive)return;
       if(c.dataset.id===ans.id)qGood(c,async()=>{speak(key(ans),ans.nm);});else qBad(c);});
-    QZ.lock=false;
+    await P('koreha');QZ.lock=false;
   }
-  /* ⑤ ことばを えらぼう */
+  /* ⑤ リズムを うたおう（うたう → ずんだもんと くらべる） */
+  else if(QZ.sing){
+    const ans=pickAns(pool());QZ.ans=ans;
+    const u=Math.min(60,Math.floor((availW()-60)/Math.max(1,len(ans))));
+    box.innerHTML=progHTML()+`<div class="qprompt">くちで うたって みよう</div>
+      <div class="qnote singbox">${notation(ans.ev,len(ans)<1?3:2,true,null,true)}<div id="qsB"></div></div>
+      <div class="btns" id="qsBtns"><button class="bigbtn" id="qsAns" style="background:var(--c3);font-size:22px">🔊 うたったら おしてね</button></div>`;
+    const sing=async()=>{QZ.lock=true;$('#qsB').innerHTML=blocks(ans,u);
+      const a=ac(),t0=a.currentTime+.25;const save=ST.items;ST.items=[ans];const sess=newSess();try{scheduleSyl(t0,sess);}catch(e){}ST.items=save;
+      await wait(playWord(ans,{at:t0,keep:true,clicks:true,el:$('#qsB .blocks')}));if(QZ.alive)QZ.lock=false;};
+    $('#qsAns').onclick=async()=>{if(QZ.lock||!QZ.alive)return;ac();await sing();if(!QZ.alive)return;
+      $('#qsBtns').innerHTML=`<button class="bigbtn" id="qsOk" style="background:var(--c3)">⭕ できた</button><button class="bigbtn" id="qsRe">🔁 もういちど</button>`;
+      P('utattara');
+      $('#qsOk').onclick=()=>{if(QZ.lock||!QZ.alive)return;qGood($('#qsOk'));};
+      $('#qsRe').onclick=()=>{if(QZ.lock||!QZ.alive)return;sing();};};
+    await P('utaou');QZ.lock=false;
+  }
+  /* ⑤' ことばを えらぶ */
   else{
     const ans=pickAns(pool());QZ.ans=ans;
     const ch=pickChoices(ans,4);
     const u=Math.min(60,Math.floor((availW()-60)/Math.max(1,len(ans))));
     box.innerHTML=progHTML()+`<div class="qprompt">なんて うたうかな？</div>
       <button class="qnote qtapnote" id="qWordNote">${notation(ans.ev,len(ans)<1?3:2,true,null,true)}<div id="qwB"></div><div class="hint" style="margin:0">👆 おんぷを おすと リズムが なるよ</div></button>
-      <div class="qchoices tlist">${ch.map(w=>textChoice(w.id,W(w),'koe-'+w.k,w.w)).join('')}</div>`;
+      <div class="qchoices tlist">${ch.map(w=>textChoice(w.id,W(w),'koe-'+w.k,w.w,w.id)).join('')}</div>`;
     $('#qWordNote').onclick=()=>{ac();playWord(ans,{clicks:true,el:$('#qwB .blocks')});};
     bindSay();
     box.querySelectorAll('.tchoice').forEach(c=>c.onclick=()=>{if(QZ.lock||!QZ.alive)return;
