@@ -196,6 +196,16 @@ i.lb{font-style:normal}
 .qtapnote.hglow .hfing{animation:hfing .55s ease-in-out 6 alternate}.qtapnote.hglow1 .hfing{animation:hfing .55s ease-in-out 2 alternate}
 @keyframes hglow{50%{box-shadow:0 0 0 6px #ffd27a,0 0 22px 6px #ffcf6e}}
 @keyframes hfing{from{opacity:1;transform:translateX(0)}to{opacity:1;transform:translateX(-16px)}}
+.acc{background:#fff;border-radius:20px;margin:10px 0;box-shadow:0 3px 0 var(--line,#e8dccb);overflow:hidden}
+.acc-h{width:100%;display:flex;justify-content:space-between;align-items:center;padding:16px 18px;font-size:20px;font-weight:800;background:none;border:0;color:var(--ink)}
+.acc-h i{font-style:normal;transition:transform .2s;color:var(--sub)}.acc.open .acc-h i{transform:rotate(180deg)}
+.acc-b{display:none;padding:0 12px 14px}.acc.open .acc-b{display:block}
+.grpgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grpbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 6px;border-radius:16px;background:var(--bg);border:2px solid #efe3d2;font-weight:800;color:var(--ink)}
+.grpbtn .gi{font-size:34px}.grpbtn .gn{font-size:17px}.grpbtn .gp{font-size:12px;color:var(--sub);text-align:center}.grpbtn.opt{border-style:dashed}
+.qmini{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}.qmini .tog{font-size:14px}
+.grp-top{display:flex;align-items:center;gap:12px;justify-content:center;margin:4px 0}.grp-top .gi{font-size:46px}.grp-top .gn{font-size:24px;font-weight:800}.grp-top .gp{font-size:13px;color:var(--sub)}
+.hzun{text-align:center}.zunb{background:#eaf6df;border:2px solid #b9dc9c;border-radius:18px;padding:10px 14px;font-weight:800;font-size:16px;color:#3d6b26;margin:4px 0 8px;line-height:1.5}
 .qhead{font-weight:800;font-size:15px;color:var(--sub);margin:10px 4px 2px;text-align:left}
 .singbox{display:flex;flex-direction:column;align-items:center;gap:10px}
 #cap{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translate(-50%,20px);max-width:92vw;background:#3a2a1e;color:#fff;font-weight:800;font-size:16px;padding:10px 16px;border-radius:16px;opacity:0;pointer-events:none;transition:.25s;z-index:60;text-align:center}
@@ -406,26 +416,22 @@ body.sheeton #v-step{padding-bottom:210px}
 
 <!-- HOME -->
 <section class="view on" id="v-home">
+  <div class="hzun" id="homeZun"></div>
   <div class="homenow" id="homeNow"></div>
-  <div class="btns"><button class="bigbtn gobtn" id="homeGo">▶ はじめる</button></div>
-  <div class="btns" style="margin-top:10px"><button class="tog" id="homeCards" style="color:var(--ink)">🎫 カード</button></div>
-  <div class="road" id="road"></div>
-  <div class="btns" style="margin-top:20px"><button class="tog" data-go="menu" style="color:var(--ink)">🧑‍🏫 せんせいと あそぶ・せってい</button></div>
+  <div class="btns"><button class="bigbtn gobtn" id="homeGo">▶ つづきから</button></div>
+  <div class="acc" id="accT"><button class="acc-h" data-a="T"><span>🧱 つみきで おぼえよう</span><i>▼</i></button><div class="acc-b" id="accTB"></div></div>
+  <div class="acc" id="accQ"><button class="acc-h" data-a="Q"><span>🎵 クイズ</span><i>▼</i></button><div class="acc-b" id="accQB"></div></div>
+  <div class="acc" id="accB"><button class="acc-h" data-a="B"><span>🍱 おべんとうばこ</span><i>▼</i></button><div class="acc-b" id="accBB"></div></div>
+  <div class="row" style="gap:8px;justify-content:center;margin-top:16px"><button class="tog" id="homeCards" style="color:var(--ink)">🎫 カード</button><button class="tog" data-go="menu" style="color:var(--ink)">⚙ せってい</button></div>
 </section>
+<section class="view" id="v-grp"><div id="grpBox"></div></section>
 
 <section class="view" id="v-menu">
-  <div class="tiles">
-    <button class="tile" style="background:var(--c1)" data-go="list"><span class="em">🧱</span><span>つみきで おぼえよう<small>おんぷの ながさと ことば</small></span></button>
-    <button class="tile" style="background:var(--c3)" data-go="nobashi"><span class="em">🎈</span><span>のばして あそぼう<small>ちょうどの ながさで ゆびを はなそう</small></span></button>
-    <button class="tile" style="background:var(--c4)" data-go="quizSetup"><span class="em">❓</span><span>クイズ<small>きいて えらぶ・どっちが ながい</small></span></button>
-    <button class="tile" style="background:#c98b4a" data-go="bento"><span class="em">🍱</span><span>おべんとうばこ<small>4マスに おかずを つめて リズムを つくろう</small></span></button>
-    
-  </div>
   <div class="settings">
     <div class="row"><span class="lab">はやさ</span><div class="seg" id="setSpeed"><button data-v="72">ふつう</button><button data-v="56">ゆっくり</button></div></div>
     <div class="row"><span class="lab">こえ</span><div class="seg" id="setVoice"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
     <div class="row"><span class="lab">たたきかた</span><div class="seg" id="setClap"><button data-v="0">👆 タップ</button><button data-v="1">👏 てびょうし</button></div></div>
-    <div class="row"><span class="lab">ながさも みる</span><div class="seg" id="setLen"><button data-v="0">なし（たたくだけ）</button><button data-v="1">あり（6から）</button></div></div>
+    <div class="row" style="display:none"><span class="lab">ながさも みる</span><div class="seg" id="setLen"><button data-v="0">なし（たたくだけ）</button><button data-v="1">あり（6から）</button></div></div>
     <div class="row"><span class="lab">つみきの もじ</span><div class="seg" id="setLbl"><button data-v="0">おんぷだけ</button><button data-v="1">ことばも だす</button></div></div>
     <div class="row"><span class="lab">かぞえかた</span><div class="seg" id="setNum"><button data-v="0">にー さん しー</button><button data-v="1">2 3 4</button></div></div>
     <div class="row"><span class="lab">カチカチ</span><div class="seg" id="setClick"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
@@ -548,7 +554,7 @@ function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_T
 new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
   else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/10-e';
+const VERSION='11/11-a';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -626,7 +632,7 @@ async function probeFiles(){
   ['zou','inu','risu'].forEach(k=>keys.push('mel-'+k));for(let k=1;k<=16;k++)keys.push('kazu-'+k);
   [...new Set(Object.values(KANAR))].forEach(k=>keys.push('kana-'+k));
   /* PROMPTS の ほかに よぶ こえ（どうぶつクイズ・おべんとう・なまえ・ステップ） */
-  ['bye-zou','bye-inu','bye-risu','dare','chigau','tsuginodare','ana','sukima'].forEach(k=>keys.push('koe-'+k));
+  ['bye-zou','bye-inu','bye-risu','dare','chigau','tsuginodare','ana','sukima','zunda'].forEach(k=>keys.push('koe-'+k));
   [...NAMEQ,...NAMEQR].forEach(x=>keys.push('koe-dore-'+x.id));COURSE.forEach(c=>keys.push('koe-step-'+c.id));
   const names=[...new Set(keys)].flatMap(k=>/^kana-/.test(k)?[k+'.mp3']:/^mel-/.test(k)?[k+'.m4a',k+'.mp3']:[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.flatMap(w=>['e-'+w.k+'.png','e-'+w.k+'.PNG']));
   await Promise.all(names.map(n=>fetch(n,{method:'HEAD',cache:'no-cache'}).then(r=>{if(r.ok)AV.add(n);}).catch(()=>{})));
@@ -838,7 +844,7 @@ function wakeOff(){try{if(WL)WL.release();}catch(e){}WL=null;}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&['step','quizPlay'].includes(VIEW))wakeOn();});
 /* ===================== navigation ===================== */
 let VIEW='home';
-const PARENT={menu:'home',step:'home',bento:'menu',list:'menu',detail:'list',nobashi:'menu',quizSetup:'menu',quizPlay:'quizSetup'};
+const PARENT={menu:'home',grp:'home',step:'home',bento:'home',list:'home',detail:'list',nobashi:'home',quizSetup:'home',quizPlay:'quizSetup'};
 function setTitle(t){const e=$('#hdTitle');if(e){e.textContent=t;e.style.fontSize=t.length>9?'15px':'';}}
 function qTitle(){const q=document.querySelector(`#qTypes .qtype[data-t="${QZ.type}"] span:nth-child(2)`);return q?q.firstChild.textContent.trim():'クイズ';}
 function go(v){
@@ -847,7 +853,7 @@ function go(v){
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   $('#v-'+v).classList.add('on');VIEW=v;
   $('#backBtn').style.visibility=v==='home'?'hidden':'visible';
-  setTitle(v==='quizPlay'?qTitle():({home:'リズムチャレンジ',menu:'せんせいと あそぶ',list:'つみきで おぼえよう',detail:'つみきで おぼえよう',nobashi:'のばして あそぼう',quizSetup:'クイズ',bento:'おべんとうばこ',step:'リズムへの みち'}[v]||'リズムチャレンジ'));
+  setTitle(v==='quizPlay'?qTitle():({home:'リズムチャレンジ',menu:'せってい',grp:'つみきで おぼえよう',list:'つみきで おぼえよう',detail:'つみきで おぼえよう',nobashi:'のばして あそぼう',quizSetup:'クイズ',bento:'おべんとうばこ',step:'リズムへの みち'}[v]||'リズムチャレンジ'));
   numTogSync();
   if(['step','quizPlay'].includes(v))wakeOn();else wakeOff();
   window.scrollTo(0,0);
@@ -858,7 +864,7 @@ function go(v){
   if(v==='home')renderHome();
   if(v!=='step'){ST.run++;stClear();ST.window=false;stMetroStop();}
 }
-$('#backBtn').onclick=()=>{if(VIEW==='step'&&ST.custom){stStop();openPracticePage(ST.cg);return;}go(PARENT[VIEW]||'home');};
+$('#backBtn').onclick=()=>{if(VIEW==='step'){stStop();if(ST.custom)return openPracticePage(ST.cg);return openGroup(CUR_G);}go(PARENT[VIEW]||'home');};
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ac();go(b.dataset.go);if(b.dataset.go==='bento'&&!store.get('rz_bnhelp',0)){store.set('rz_bnhelp',1);setTimeout(bnHelp,300);}});
 
 /* settings */
@@ -1348,9 +1354,10 @@ function chkMenu(){
   const b=(l,f)=>`<button class="tog" data-f="${f}">${l}</button>`;
   openModal(`<h3>🧭 チェック用メニュー</h3><div class="hint">おすと その がめんに すぐ とびます。</div>
     <div class="chkh">おと</div><div class="chk">${b('🔊 おとの テスト','snd')}</div>
-    <div class="chkh">つみき</div><div class="chk">${b('いちらん','list')}${[1,2,3,4,5].map(g=>b(GROUPS[g-1].name+' の もんだい','pr'+g)).join('')}</div>
+    <div class="chkh">つみき</div><div class="chk">${b('カード いちらん','list')}</div>
     <div class="chkh">なまえの ひみつ</div><div class="chk">${b('ぜんおんぷ','nl:w')}${b('はちぶおんぷ','nl:ee')}${b('16ぶおんぷ','nl:f1')}</div>
-    <div class="chkh">リズムへの みち（ステップ）</div><div class="chk">${[1,6,9,11,16,21].filter(n=>n<=COURSE.length).map(n=>b('ステップ '+n,'st'+(n-1))).join('')}</div>
+    <div class="chkh">れんしゅう（なかま）</div><div class="chk">${LGROUPS.map(G=>b(G.icon+' '+G.name,'gp'+G.g)).join('')}</div>
+    <div class="chkh">れんしゅう（だんかい）</div><div class="chk">${['g1s1','g1t2','g1h1','g2t1','g3t1','g4s1','g5t1'].map(id=>{const i=COURSE.findIndex(c=>c.id===id);return b(gInfo(COURSE[i].g).name+' '+STAGES[COURSE[i].stage].icon+' '+COURSE[i].t,'st'+i);}).join('')}</div>
     <div class="chkh">クイズ</div><div class="chk">${[...document.querySelectorAll('#qTypes .qtype')].map(q=>b(q.querySelector('span:nth-child(2)').firstChild.textContent.trim(),'qz:'+q.dataset.t)).join('')}</div>
     <div class="chkh">そのほか</div><div class="chk">${b('おべんとうばこ','bento')}${b('のばして あそぼう','nobashi')}</div>
     <div class="btns" style="margin-top:8px"><button class="bigbtn gray" id="ckClose">とじる</button></div>`);
@@ -1359,6 +1366,7 @@ function chkMenu(){
     if(f==='snd')return sndTest();
     if(f==='list'||f==='bento'||f==='nobashi')return go(f);
     if(f.startsWith('pr'))return openPracticePage(+f.slice(2));
+    if(f.startsWith('gp'))return openGroup(+f.slice(2));
     if(f.startsWith('nl:')){go('list');return openNameLesson(byId(f.slice(3)));}
     if(f.startsWith('st')){S.unlock=1;store.set('rz_set',S);return openStep(+f.slice(2));}
     if(f.startsWith('qz:')){go('quizSetup');const q=document.querySelector(`#qTypes .qtype[data-t="${f.slice(3)}"]`);if(q)q.click();}});
@@ -1373,57 +1381,108 @@ $('#bnNext').onclick=()=>{ac();if(!BN.done&&BN.mode==='odai'){BP.hist.push(0);if
 
 /* ===================== リズムへの みち（コース） ===================== */
 const A4=['q','qr','h','hr','dh','dhr','w','wr'];
+const FOODS=['f1','f2','f3','f4','f5','f6','f7','f8','f9'];
+const A1=['q','h','dh','w'];
+const LGROUPS=[{g:1,name:'のばす おと',icon:'🐘'},{g:2,name:'おやすみ',icon:'😴'},{g:3,name:'はんぶん',icon:'🐿️'},{g:4,name:'たべもの',icon:'🐙',opt:1},{g:5,name:'れんぷ',icon:'🍡',opt:1}];
+const STAGES={say:{icon:'🗣',nm:'いっしょに いおう'},tap:{icon:'👏',nm:'たたこう'},hold:{icon:'📏',nm:'ながさまで'}};
+const TAN_SEQS=[['q'],['q','q'],['q','q','q'],['q','q','q','q']];
+const R_=(id,g,stage,t,o)=>Object.assign({id,g,stage,t,need:2},o||{});
+const FS=(f)=>[[f],[f,f],[f,'q',f,'q']];
+const C4={cards:1,bpm:50},C5={cards:1,bpm:40};
 const COURSE=[
-  {id:'a1',t:'たん 1こ',cap:1,fixed:['q'],need:2,say:'たん を たたいてみよう'},
-  {id:'a2',t:'たん 2こ',cap:2,fixed:['q','q'],need:2,say:'たん たん'},
-  {id:'a3',t:'たん 3こ',cap:3,fixed:['q','q','q'],need:2,say:'たん たん たん'},
-  {id:'a4',t:'たん 4こ',cap:4,fixed:['q','q','q','q'],need:2,say:'たん たん たん たん'},
-  {id:'a5',t:'うん が でてきたよ',cap:4,pool:['q','qr'],must:['qr'],need:3,say:'うん は たん と おなじ ながさの おやすみ'},
-  {id:'a6',t:'たんにー・うんにー',cap:4,pool:['q','qr','h','hr'],must:['h','hr'],need:3,hold:1,say:'たんにー と うんにー。ここからは ながい おんぷは ながーく おしてね'},
-  {id:'a7',t:'たんにーさん・うんにーさん',cap:4,pool:['q','qr','h','hr','dh','dhr'],must:['dh','dhr'],need:3,hold:1,say:'たんにーさん と うんにーさん'},
-  {id:'a8',t:'たんにーさんしー',cap:4,pool:A4,must:['w','wr'],need:3,hold:1,say:'たんにーさんしー と うんにーさんしー'},
-  {id:'a9',t:'ながい リズム（2しょうせつ）',cap:8,pool:A4,need:3,hold:1,say:'ながい リズムに ちょうせん'},
-  {id:'a10',t:'ながい リズム（4しょうせつ）',cap:16,pool:A4,need:2,hold:1,say:'もっと ながい リズム'},
-  {id:'b1',kind:'name',t:'なまえ：ぜんおんぷ',nid:'w',need:3},
-  {id:'b2',kind:'name',t:'なまえ：にぶおんぷ',nid:'h',need:3},
-  {id:'b3',kind:'name',t:'なまえ：しぶおんぷ',nid:'q',need:3},
-  {id:'b4',kind:'name',t:'なまえ：はちぶおんぷ',nid:'ee',need:3},
-  {id:'b5',kind:'name',t:'なまえ：じゅうろくぶおんぷ',nid:'f1',need:3},
-  {id:'b7',kind:'name',t:'なまえ：ふてん にぶおんぷ',nid:'dh',need:3},
-  {id:'b6',kind:'name',t:'なまえ：きゅうふ',nid:'qr',need:3,rest:1},
-  {id:'c1',t:'タカ（はちぶおんぷ）',cap:4,pool:['q','qr','h','ee'],must:['ee'],need:3,say:'はちぶおんぷ 2つで タカ'},
-  {id:'c2',t:'タウ・ウカ',cap:4,pool:['q','qr','h','ee','er','re'],must:['er','re'],need:3,say:'タウ と ウカ'},
-  {id:'c3',t:'はちぶの ながい リズム',cap:8,pool:['q','qr','h','hr','dh','w','ee','er','re'],need:2,say:'ながい リズム'},
-  {id:'d_f1',opt:1,cards:1,bpm:50,t:'たこやき',seqs:[['f1'],['f1','f1'],['f1','q','f1','q']],need:3,say:'たこやき。この かたちが たこやき だよ'},
-  {id:'d_f2',opt:1,cards:1,bpm:50,t:'ラーメン',seqs:[['f2'],['f2','f2'],['f2','q','f2','q']],need:3,say:'ラーメン。この かたちが ラーメン だよ'},
-  {id:'d_f6',opt:1,cards:1,bpm:50,t:'マンゴー',seqs:[['f6'],['f6','f6'],['f6','q','f6','q']],need:3,say:'マンゴー。この かたちが マンゴー だよ'},
-  {id:'dm1',opt:1,cards:1,bpm:50,t:'たこやき・ラーメン・マンゴー を まぜて',cap:4,pool:['q', 'f1', 'f2', 'f6'],must:['f1', 'f2', 'f6'],need:3,say:'たこやき と ラーメン と マンゴー を まぜて よんでみよう'},
-  {id:'d_f3',opt:1,cards:1,bpm:50,t:'ステーキ',seqs:[['f3'],['f3','f3'],['f3','q','f3','q']],need:3,say:'ステーキ。この かたちが ステーキ だよ'},
-  {id:'d_f4',opt:1,cards:1,bpm:50,t:'ジュース',seqs:[['f4'],['f4','f4'],['f4','q','f4','q']],need:3,say:'ジュース。この かたちが ジュース だよ'},
-  {id:'d_f5',opt:1,cards:1,bpm:50,t:'ゼリー',seqs:[['f5'],['f5','f5'],['f5','q','f5','q']],need:3,say:'ゼリー。この かたちが ゼリー だよ'},
-  {id:'dm2',opt:1,cards:1,bpm:50,t:'ステーキ・ジュース・ゼリー を まぜて',cap:4,pool:['q', 'f1', 'f2', 'f6', 'f3', 'f4', 'f5'],must:['f3', 'f4', 'f5'],need:3,say:'ステーキ と ジュース と ゼリー を まぜて よんでみよう'},
-  {id:'d_f7',opt:1,cards:1,bpm:50,t:'はっさく',seqs:[['f7'],['f7','f7'],['f7','q','f7','q']],need:3,say:'はっさく。この かたちが はっさく だよ'},
-  {id:'d_f8',opt:1,cards:1,bpm:50,t:'コロッケ',seqs:[['f8'],['f8','f8'],['f8','q','f8','q']],need:3,say:'コロッケ。この かたちが コロッケ だよ'},
-  {id:'d_f9',opt:1,cards:1,bpm:50,t:'クッキー',seqs:[['f9'],['f9','f9'],['f9','q','f9','q']],need:3,say:'クッキー。この かたちが クッキー だよ'},
-  {id:'dm3',opt:1,cards:1,bpm:50,t:'はっさく・コロッケ・クッキー を まぜて',cap:4,pool:['q', 'f1', 'f2', 'f6', 'f3', 'f4', 'f5', 'f7', 'f8', 'f9'],must:['f7', 'f8', 'f9'],need:3,say:'はっさく と コロッケ と クッキー を まぜて よんでみよう'},
-  {id:'l8',opt:1,t:'ながい リズム（8しょうせつ）',cap:32,pool:A4,need:2,hold:1,tol:.1,say:'8しょうせつの ながい リズム'},
-  {id:'l16',opt:1,t:'ながい リズム（16しょうせつ）',cap:64,pool:A4,need:1,hold:1,tol:.1,say:'16しょうせつの ながい リズム。さいごまで がんばろう'},
-  {id:'e1',opt:1,bpm:40,t:'れんぷ（おまけ）',cap:4,pool:['q','qr','h','t5','t6','t7'],must:['t5','t6','t7'],need:2,say:'れんぷ'},
+  R_('g1s1',1,'say','たん',{seqs:TAN_SEQS,need:4,say:'ずんだもんと いっしょに いってみよう。たん は 1つ'}),
+  R_('g1s2',1,'say','たんにー',{cap:4,pool:['q','h'],must:['h'],say:'たんにー は 2つ のばすよ'}),
+  R_('g1s3',1,'say','たんにーさん',{cap:4,pool:['q','h','dh'],must:['dh'],say:'たんにーさん は 3つ のばすよ'}),
+  R_('g1s4',1,'say','たんにーさんしー',{cap:4,pool:A1,must:['w'],say:'たんにーさんしー は 4つ のばすよ'}),
+  R_('g1t1',1,'tap','たん',{seqs:TAN_SEQS,need:4,say:'こんどは いいながら たたいてみよう'}),
+  R_('g1t2',1,'tap','たんにー',{cap:4,pool:['q','h'],must:['h']}),
+  R_('g1t3',1,'tap','たんにーさん',{cap:4,pool:['q','h','dh'],must:['dh']}),
+  R_('g1t4',1,'tap','たんにーさんしー',{cap:4,pool:A1,must:['w']}),
+  R_('g1t5',1,'tap','2しょうせつ',{cap:8,pool:A1}),
+  R_('g1h1',1,'hold','1しょうせつ',{cap:4,pool:A1,need:3,say:'こんどは おんぷの ながさだけ ボタンを おさえてみよう'}),
+  R_('g1h2',1,'hold','2しょうせつ',{cap:8,pool:A1}),
+  R_('g1h3',1,'hold','4しょうせつ',{cap:16,pool:A1}),
+  R_('g1h4',1,'hold','8しょうせつ',{cap:32,pool:A1,need:1,tol:.1,opt:1}),
+  R_('g2s1',2,'say','うん',{cap:4,pool:['q','qr'],must:['qr'],say:'うん は たん と おなじ ながさの おやすみ'}),
+  R_('g2s2',2,'say','うんにー',{cap:4,pool:['q','qr','h','hr'],must:['hr'],say:'うんにー は 2つ おやすみ'}),
+  R_('g2s3',2,'say','うんにーさん',{cap:4,pool:['q','qr','h','hr','dh','dhr'],must:['dhr'],say:'うんにーさん は 3つ おやすみ'}),
+  R_('g2s4',2,'say','うんにーさんしー',{cap:4,pool:A4,must:['wr'],say:'うんにーさんしー は 4つ おやすみ'}),
+  R_('g2t1',2,'tap','うん',{cap:4,pool:['q','qr'],must:['qr'],need:3,say:'こんどは いいながら たたいてみよう。うん では たたかないよ'}),
+  R_('g2t2',2,'tap','うんにー',{cap:4,pool:['q','qr','h','hr'],must:['hr']}),
+  R_('g2t3',2,'tap','うんにーさん',{cap:4,pool:['q','qr','h','hr','dh','dhr'],must:['dhr']}),
+  R_('g2t4',2,'tap','うんにーさんしー',{cap:4,pool:A4,must:['wr']}),
+  R_('g2t5',2,'tap','2しょうせつ',{cap:8,pool:A4}),
+  R_('g2t6',2,'tap','4しょうせつ',{cap:16,pool:A4}),
+  R_('g2h1',2,'hold','1しょうせつ',{cap:4,pool:A4,need:3,say:'こんどは おんぷの ながさだけ ボタンを おさえてみよう'}),
+  R_('g2h2',2,'hold','2しょうせつ',{cap:8,pool:A4}),
+  R_('g2h3',2,'hold','4しょうせつ',{cap:16,pool:A4}),
+  R_('g2h4',2,'hold','8しょうせつ',{cap:32,pool:A4,need:1,tol:.1,opt:1}),
+  R_('g2h5',2,'hold','16しょうせつ',{cap:64,pool:A4,need:1,tol:.1,opt:1,say:'16しょうせつの ながい リズム。さいごまで がんばろう'}),
+  R_('g3s1',3,'say','タカ',{cap:4,pool:['q','qr','h','ee'],must:['ee'],say:'はちぶおんぷ 2つで タカ'}),
+  R_('g3s2',3,'say','タウ・ウカ',{cap:4,pool:['q','qr','h','ee','er','re'],must:['er','re'],say:'タウ と ウカ'}),
+  R_('g3t1',3,'tap','タカ',{cap:4,pool:['q','qr','h','ee'],must:['ee'],need:3,say:'こんどは いいながら たたいてみよう'}),
+  R_('g3t2',3,'tap','タウ・ウカ',{cap:4,pool:['q','qr','h','ee','er','re'],must:['er','re'],need:3}),
+  R_('g3t3',3,'tap','2しょうせつ',{cap:8,pool:['q','qr','h','hr','dh','w','ee','er','re']}),
+  R_('g4s1',4,'say','たこやき',Object.assign({seqs:FS('f1'),need:3,say:'たこやき。この かたちが たこやき だよ'},C4)),
+  R_('g4s2',4,'say','ラーメン',Object.assign({seqs:FS('f2'),need:3,say:'ラーメン。この かたちが ラーメン だよ'},C4)),
+  R_('g4s3',4,'say','マンゴー',Object.assign({seqs:FS('f6'),need:3,say:'マンゴー。この かたちが マンゴー だよ'},C4)),
+  R_('g4s4',4,'say','たこやき・ラーメン・マンゴー',Object.assign({cap:4,pool:['q','f1','f2','f6'],must:['f1','f2','f6']},C4)),
+  R_('g4s5',4,'say','ステーキ',Object.assign({seqs:FS('f3'),need:3,say:'ステーキ。この かたちが ステーキ だよ'},C4)),
+  R_('g4s6',4,'say','ジュース',Object.assign({seqs:FS('f4'),need:3,say:'ジュース。この かたちが ジュース だよ'},C4)),
+  R_('g4s7',4,'say','ゼリー',Object.assign({seqs:FS('f5'),need:3,say:'ゼリー。この かたちが ゼリー だよ'},C4)),
+  R_('g4s8',4,'say','ステーキ・ジュース・ゼリー',Object.assign({cap:4,pool:['q','f1','f2','f6','f3','f4','f5'],must:['f3','f4','f5']},C4)),
+  R_('g4s9',4,'say','はっさく',Object.assign({seqs:FS('f7'),need:3,say:'はっさく。この かたちが はっさく だよ'},C4)),
+  R_('g4s10',4,'say','コロッケ',Object.assign({seqs:FS('f8'),need:3,say:'コロッケ。この かたちが コロッケ だよ'},C4)),
+  R_('g4s11',4,'say','クッキー',Object.assign({seqs:FS('f9'),need:3,say:'クッキー。この かたちが クッキー だよ'},C4)),
+  R_('g4s12',4,'say','はっさく・コロッケ・クッキー',Object.assign({cap:4,pool:['q'].concat(FOODS),must:['f7','f8','f9']},C4)),
+  R_('g4t1',4,'tap','たこやき・ラーメン・マンゴー',Object.assign({cap:4,pool:['q','f1','f2','f6'],must:['f1','f2','f6'],need:3,say:'こんどは いいながら たたいてみよう'},C4)),
+  R_('g4t2',4,'tap','ステーキ・ジュース・ゼリー',Object.assign({cap:4,pool:['q','f1','f2','f6','f3','f4','f5'],must:['f3','f4','f5'],need:3},C4)),
+  R_('g4t3',4,'tap','はっさく・コロッケ・クッキー',Object.assign({cap:4,pool:['q'].concat(FOODS),must:['f7','f8','f9'],need:3},C4)),
+  R_('g4t4',4,'tap','たべものだけ 4つ',Object.assign({cap:4,pool:FOODS,need:3},C4)),
+  R_('g4t5',4,'tap','たんの なかに たべもの',Object.assign({cap:8,gen:'one',pool:FOODS},C4)),
+  R_('g4t6',4,'tap','おんぷ・きゅうふと まぜて',Object.assign({cap:8,pool:['q','qr','h'].concat(FOODS),must:FOODS},C4)),
+  R_('g5s1',5,'say','オムライス',Object.assign({seqs:[['t5'],['t5','q','t5','q']],say:'オムライス。5つで 1つぶん'},C5)),
+  R_('g5s2',5,'say','おこのみやき',Object.assign({seqs:[['t6'],['t6','q','t6','q']]},C5)),
+  R_('g5s3',5,'say','みたらしだんご',Object.assign({seqs:[['t7'],['t7','q','t7','q']]},C5)),
+  R_('g5t1',5,'tap','れんぷ ゲーム',Object.assign({cap:4,pool:['q','t5','t6','t7'],must:['t5','t6','t7'],need:3,say:'こんどは いいながら たたいてみよう'},C5)),
+  R_('g5t2',5,'tap','れんぷだけ',Object.assign({cap:4,pool:['t5','t6','t7']},C5)),
 ];
+const OLD_IDS=['a1','a2','a3','a4','a5','a6','a7','a8','a9','a10','b1','b2','b3','b4','b5','b7','b6','c1','c2','c3','d_f1','d_f2','d_f6','dm1','d_f3','d_f4','d_f5','dm2','d_f7','d_f8','d_f9','dm3','l8','l16','e1'];
 const NAMEQ=[{id:'w',nm:'ぜんおんぷ',ev:[N(4,'')]},{id:'h',nm:'にぶおんぷ',ev:[N(2,'')]},{id:'q',nm:'しぶおんぷ',ev:[N(1,'')]},
   {id:'ee',nk:'hachibu',nm:'はちぶおんぷ',ev:[N(.5,'')]},{id:'f1',nm:'じゅうろくぶおんぷ',ev:[N(.25,'')]},{id:'dh',nm:'ふてん にぶおんぷ',ev:[N(3,'')]}];
 const NAMEQR=[{id:'wr',nm:'ぜんきゅうふ',ev:[N(4,'',1)]},{id:'hr',nm:'にぶきゅうふ',ev:[N(2,'',1)]},{id:'qr',nm:'しぶきゅうふ',ev:[N(1,'',1)]},{id:'er8',nk:'hachibu-kyuufu',nm:'はちぶきゅうふ',ev:[N(.5,'',1)]}];
-const CS=Object.assign({cur:0,passes:{},stamps:{}},store.get('rz_course',{}));
+const CS=Object.assign({cur:0,passes:{},stamps:{},done:{}},store.get('rz_course',{}));
 const csSave=()=>store.set('rz_course',CS);
+/* まえの「みち」の きろくを あたらしい かたちへ（1かいだけ） */
+if(!CS.v2){CS.done=CS.done||{};const old=OLD_IDS.slice(0,CS.cur||0),has=id=>old.includes(id),d=today();
+  const mark=f=>COURSE.forEach(c=>{if(f(c))CS.done[c.id]=CS.done[c.id]||d;});
+  if(has('a4'))mark(c=>['g1s1','g1s2','g1s3','g1s4','g1t1'].includes(c.id));
+  if(has('a8')){mark(c=>c.g===1&&!c.opt);mark(c=>c.g===2&&(c.stage==='say'||['g2t1','g2t2','g2t3','g2t4'].includes(c.id)));}
+  if(has('a10'))mark(c=>c.g===2&&!c.opt);
+  if(has('c3'))mark(c=>c.g===3);
+  if(has('dm3'))mark(c=>c.g===4);
+  if(has('l16'))mark(c=>c.opt&&(c.g===1||c.g===2));
+  if(has('e1'))mark(c=>c.g===5);
+  CS.v2=1;csSave();}
+const isDone=c=>!!CS.done[c.id];
+const gRungs=g=>COURSE.map((c,i)=>[c,i]).filter(([c])=>c.g===g);
+function gNext(g,withOpt){const r=gRungs(g);let x=r.find(([c])=>!isDone(c)&&!c.opt);if(!x&&withOpt)x=r.find(([c])=>!isDone(c));return x?x[1]:-1;}
+function gDone(g){return gRungs(g).every(([c])=>c.opt||isDone(c));}
+function rungOpen(i){if(S.unlock)return true;const c=COURSE[i],r=gRungs(c.g),k=r.findIndex(([,j])=>j===i);return k===0||r.slice(0,k).every(([x])=>x.opt||isDone(x));}
+function contTarget(){for(const g of [1,2,3]){const i=gNext(g);if(i>=0)return i;}for(const g of [4,5]){const i=gNext(g);if(i>=0)return i;}
+  for(const g of [1,2,3,4,5]){const i=gNext(g,true);if(i>=0)return i;}return -1;}
+const gInfo=g=>LGROUPS.find(x=>x.g===g)||{};
+const rungLabel=c=>`${gInfo(c.g).name}・${STAGES[c.stage].icon} ${STAGES[c.stage].nm}：${c.t}`;
 const ST={i:0,items:[],taps:[],timers:[],sess:null,run:0,btn:'auto',window:false,noTap:0,first:true,D:0,custom:null,cpass:0,cg:0,m:null};
 
 const MASTERS=[
-  {key:'A',last:'a10',name:'まねっこマスター',icon:'👏',col:'#ec6450',how:'リズムを まねっこ（ステップ1〜10）を クリア'},
-  {key:'B',last:'b6',name:'なまえマスター',icon:'📛',col:'#3f92dc',how:'おんぷの なまえ を クリア'},
-  {key:'C',last:'c3',name:'はちぶおんぷマスター',icon:'🐿️',col:'#f07f2e',how:'はちぶおんぷ を クリア'},
-  {key:'D',last:'dm3',name:'じゅうろくぶおんぷマスター',icon:'🐙',col:'#d4609f',how:'チャレンジの じゅうろくぶおんぷを ぜんぶ クリア'},
-  {key:'L',last:'l16',name:'ながいリズム名人',icon:'📜',col:'#4fb172',how:'8しょうせつと 16しょうせつを クリア'},
-  {key:'E',last:'e1',name:'れんぷマスター',icon:'🍡',col:'#d4a017',how:'おまけの れんぷを クリア'}
+  {key:'A',last:'g1h3',name:'のばす おとマスター',icon:'🐘',col:'#ec6450',how:'「のばす おと」を ながさまで クリア'},
+  {key:'R',last:'g2h3',name:'おやすみマスター',icon:'😴',col:'#8a6fd1',how:'「おやすみ」を ながさまで クリア'},
+  {key:'C',last:'g3t3',name:'はちぶおんぷマスター',icon:'🐿️',col:'#f07f2e',how:'「はんぶん」を クリア'},
+  {key:'B',last:null,name:'なまえマスター',icon:'📛',col:'#3f92dc',how:'クイズ「これは なに？」で ぜんぶ せいかい'},
+  {key:'D',last:'g4t6',name:'じゅうろくぶおんぷマスター',icon:'🐙',col:'#d4609f',how:'「たべもの」を クリア'},
+  {key:'L',last:'g2h5',name:'ながいリズム名人',icon:'📜',col:'#4fb172',how:'16しょうせつを クリア'},
+  {key:'E',last:'g5t2',name:'れんぷマスター',icon:'🍡',col:'#d4a017',how:'「れんぷ」を クリア'}
 ];
 function masterCardHTML(m,got){
   return got?`<div class="mcard2" style="--mc:${m.col}"><div class="big">${m.icon}</div><div class="t">${m.name}</div><div class="d">${got}</div></div>`
@@ -1435,7 +1494,6 @@ function showCards(){
   $('#mClose').onclick=closeModal;
 }
 /* ---------- つみき の もんだい（れんしゅう） ---------- */
-const FOODS=['f1','f2','f3','f4','f5','f6','f7','f8','f9'];
 const PRACTICE={
   1:[{t:'のばす おと 4しょうせつ',cap:16,pool:['q','h','dh','w'],need:2,hold:1},
      {t:'のばす おと 8しょうせつ',cap:32,pool:['q','h','dh','w'],need:1,hold:1,tol:.1}],
@@ -1451,7 +1509,8 @@ const PRACTICE={
      {t:'れんぷだけ',cap:4,pool:['t5','t6','t7'],cards:1,bpm:40,need:2}]
 };
 function navTo(id){if(!id)return;if(String(id).startsWith('P'))openPracticePage(+String(id).slice(1));else openDetail(id);}
-function openPracticePage(g){
+function openPracticePage(g){return openGroup(g);}
+function openPracticePageOld(g){
   go('detail');setTitle('つみきの もんだい');DETAIL_ID=null;const ws=WORDS.filter(x=>x.g===g);
   DETAIL_NAV={prev:ws[ws.length-1].id,next:null};
   const gname=(GROUPS.find(x=>x.g===g)||{}).name||'';
@@ -1466,27 +1525,55 @@ function openPractice(def,g){
   stStop();go('step');setTitle('つみきの もんだい');ST.custom=def;ST.cg=g;ST.i=-1;ST.cpass=0;ST.noTap=0;ST.first=true;ST.failRow=0;
   ST.items=[];ST.items=genPattern(def);renderStep();stBtnState('auto','👂');stFlow(true);
 }
-/* ---------- home (みち) ---------- */
+/* ---------- home ---------- */
+let ACC=null;
 function renderHome(){
-  const cur=Math.min(CS.cur,COURSE.length-1),c=COURSE[cur];
-  const done=CS.cur>=COURSE.length;
-  $('#homeNow').innerHTML=`<div class="hn-lab">${done?'ぜんぶ クリア！ すきな ところを おさらいしよう':c.opt?'🏆 メインの みちは クリア！ いまは チャレンジ':'いまの ステップ'}</div>
-    <div class="hn-t">${done?'🏆':`<span class="hn-no">${cur+1}</span>${c.t}`}</div>`;
-  $('#homeGo').textContent=done?'▶ おさらい':(CS.passes[c.id]?'▶ つづきから':'▶ はじめる');
-  let h='';
-  COURSE.forEach((s,i)=>{
-    const st=i<CS.cur?'done':i===CS.cur?'now':(S.unlock?'open':'lock');
-    const sec=i===0?'リズムを まねっこ':s.id==='b1'?'おんぷの なまえ':s.id==='c1'?'はちぶおんぷ':s.id==='d_f1'?'⭐ チャレンジ（できる子むけ・やらなくても OK）':s.id==='l8'?'⭐ ながい リズム チャレンジ':s.id==='e1'?'おまけ（れんぷ）':'';
-    if(sec)h+=`<div class="road-sec">${sec}</div>`;
-    h+=`<button class="road-st ${st}${s.opt?' opt':''}" data-i="${i}" ${st==='lock'?'disabled':''}>
-      <span class="rs-dot">${st==='done'?'⭐':st==='now'?'🐕':i+1}</span><span class="rs-t">${s.t}</span></button>`;
-  });
-  $('#road').innerHTML=h;
-  $('#road').querySelectorAll('.road-st:not([disabled])').forEach(b=>b.onclick=()=>{ac();openStep(+b.dataset.i);});
+  const ci=contTarget(),c=COURSE[ci];
+  $('#homeNow').innerHTML=c?`<div class="hn-lab">つぎの れんしゅう</div><div class="hn-t" style="font-size:18px">${gInfo(c.g).icon} ${rungLabel(c)}</div>`:'<div class="hn-lab">ぜんぶ できたね！ すきな ところを おさらいしよう</div><div class="hn-t">🏆</div>';
+  $('#homeGo').textContent=c?(Object.keys(CS.done).length?'▶ つづきから':'▶ はじめる'):'▶ おさらい';
+  const hz=$('#homeZun');hz.innerHTML=store.get('rz_hello',0)?'':'<button class="zunb" id="zunB">🫛 わたしは ずんだもん。<br>いっしょに れんしゅうしよう！ <span>🔊</span></button>';
+  const zb=$('#zunB');if(zb)zb.onclick=()=>{ac();speak('koe-zunda','わたしは ずんだもん。いっしょに れんしゅうしよう');};
+  // つみき
+  $('#accTB').innerHTML=`<div class="grpgrid">${LGROUPS.map(G=>{const r=gRungs(G.g),dn=r.filter(([x])=>isDone(x)).length;
+      return `<button class="grpbtn${G.opt?' opt':''}" data-g="${G.g}"><span class="gi">${G.icon}</span><span class="gn">${G.name}</span><span class="gp">⭐ ${dn}/${r.length}${G.opt?'<br><small>チャレンジ</small>':''}</span></button>`;}).join('')}</div>
+    <div class="row" style="gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px"><button class="tog" data-go="list" style="color:var(--ink)">🧱 カードで おぼえる</button><button class="tog" data-go="nobashi" style="color:var(--ink)">🎈 のばして あそぼう</button></div>`;
+  $('#accTB').querySelectorAll('.grpbtn').forEach(b=>b.onclick=()=>{ac();openGroup(+b.dataset.g);});
+  // クイズ
+  const qs=[...document.querySelectorAll('#qTypes .qtype')].map(q=>[q.dataset.t,q.querySelector('.em').textContent,q.querySelector('span:nth-child(2)').firstChild.textContent.trim()]);
+  $('#accQB').innerHTML=`<div class="qmini">${qs.map(([t,e,n])=>`<button class="tog" data-qt="${t}" style="color:var(--ink)">${e} ${n}</button>`).join('')}</div>
+    <div class="btns" style="margin-top:6px"><button class="tog" data-go="quizSetup" style="font-size:13px">⚙ クイズの せってい</button></div>`;
+  $('#accQB').querySelectorAll('[data-qt]').forEach(b=>b.onclick=()=>{ac();go('quizSetup');const q=document.querySelector(`#qTypes .qtype[data-t="${b.dataset.qt}"]`);if(q)q.click();});
+  // おべんとう
+  $('#accBB').innerHTML=`<div class="row" style="gap:8px;justify-content:center"><button class="bigbtn" data-bn="odai" style="background:#c98b4a;font-size:18px">⭐ チャレンジ</button><button class="bigbtn gray" data-bn="free" style="font-size:18px">🎨 じゆう</button></div>`;
+  $('#accBB').querySelectorAll('[data-bn]').forEach(b=>b.onclick=()=>{ac();BN.mode=b.dataset.bn;go('bento');if(!store.get('rz_bnhelp',0)){store.set('rz_bnhelp',1);setTimeout(bnHelp,300);}});
+  ['T','Q','B'].forEach(k=>{$('#acc'+k).classList.toggle('open',ACC===k);});
+  bindGo($('#v-home'));
 }
-$('#homeGo').onclick=()=>{ac();openStep(Math.min(CS.cur,COURSE.length-1));};
+function bindGo(root){root.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ac();go(b.dataset.go);});}
+document.querySelectorAll('.acc-h').forEach(h=>h.onclick=()=>{ac();const k=h.dataset.a;ACC=ACC===k?null:k;['T','Q','B'].forEach(x=>$('#acc'+x).classList.toggle('open',ACC===x));});
+$('#homeGo').onclick=async()=>{ac();if(!store.get('rz_hello',0)){store.set('rz_hello',1);await speak('koe-zunda','わたしは ずんだもん。いっしょに れんしゅうしよう');}const i=contTarget();if(i>=0)openStep(i);else openGroup(1);};
 $('#homeCards').onclick=()=>{ac();showCards();};
-
+/* ---------- なかまの ページ ---------- */
+const GNAMES={1:['w','h','q','dh'],2:['qr'],3:['ee'],4:['f1'],5:[]};
+let CUR_G=1;
+function openGroup(g){
+  stStop();CUR_G=g;go('grp');const G=gInfo(g);setTitle(G.name);
+  const r=gRungs(g),dn=r.filter(([x])=>isDone(x)).length;
+  let h=`<div class="grp-top"><span class="gi">${G.icon}</span><div><div class="gn">${G.name}</div><div class="gp">⭐ ${dn} / ${r.length}${G.opt?'　（チャレンジ：できる子むけ）':''}</div></div></div>
+    <div class="row" style="gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0 4px"><button class="tog" id="gCards" style="color:var(--ink)">🧱 カードを みる</button>
+    ${GNAMES[g].length?`<button class="tog" id="gNames" style="color:var(--ink)">📛 なまえの ひみつ</button>`:''}</div>`;
+  const nx=gNext(g,true);
+  ['say','tap','hold'].forEach(stg=>{const rs=r.filter(([c])=>c.stage===stg);if(!rs.length)return;
+    h+=`<div class="road-sec">${STAGES[stg].icon} ${STAGES[stg].nm}</div>`;
+    rs.forEach(([c,i])=>{const op=rungOpen(i),st=isDone(c)?'done':i===nx?'now':op?'open':'lock';
+      h+=`<button class="road-st ${st}${c.opt?' opt':''}" data-i="${i}" ${st==='lock'?'disabled':''}><span class="rs-dot">${st==='done'?'⭐':st==='now'?'🐕':STAGES[stg].icon}</span><span class="rs-t">${c.t}${c.opt?' <small>（チャレンジ）</small>':''}</span></button>`;});});
+  $('#grpBox').innerHTML=h;
+  $('#grpBox').querySelectorAll('.road-st:not([disabled])').forEach(b=>b.onclick=()=>{ac();openStep(+b.dataset.i);});
+  $('#gCards').onclick=()=>{ac();LIST_G=g;go('list');renderList();};
+  const gn=$('#gNames');if(gn)gn.onclick=()=>{ac();const ns=GNAMES[g];
+    openModal(`<h3>📛 なまえの ひみつ</h3><div class="hint">しりたい おんぷを えらんでね</div><div class="row" style="gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0">${ns.map(id=>`<button class="tog" data-n="${id}" style="color:var(--ink);padding:10px">${notation(byId(id).ev,1,true,null,true)}</button>`).join('')}</div><div class="btns"><button class="bigbtn gray" id="gnClose">とじる</button></div>`);
+    $('#gnClose').onclick=closeModal;$('#mbox').querySelectorAll('[data-n]').forEach(x=>x.onclick=()=>{closeModal();openNameLesson(byId(x.dataset.n));});};
+}
 /* ---------- step ---------- */
 function stClear(){ST.timers.forEach(clearTimeout);ST.timers=[];killSess(ST.sess);ST.sess=null;}
 function stStop(){ST.run++;stClear();stMetroStop();ST.window=false;const el=$('#stSeq');if(el)el.classList.remove('playing');}
@@ -1514,7 +1601,7 @@ function genPattern(s){
   return [byId('q'),byId('q'),byId('q'),byId('q')];
 }
 function openStep(i){
-  stStop();ST.custom=null;go('step');ST.i=i;ST.noTap=0;ST.first=true;const s=COURSE[i];
+  stStop();ST.custom=null;go('step');ST.i=i;if(COURSE[i]&&COURSE[i].g)CUR_G=COURSE[i].g;setTitle(gInfo(COURSE[i].g).name||'れんしゅう');ST.noTap=0;ST.first=true;const s=COURSE[i];
   if(s.kind==='name'){nameStepStart();return;}
   ST.items=[];ST.items=genPattern(s);
   renderStep();stBtnState('auto','👂');
@@ -1556,18 +1643,19 @@ function cardsHTML(items){
 }
 function namesOf(items){const m=new Map();items.forEach(w=>{if(w.nm&&w.g<=3)m.set(w.nm.replace(' 2つ',''),1);});return [...m.keys()].join('・');}
 function renderStep(){
-  const s=curStep();ST.holdView=!!(s.hold&&!S.clap&&S.len);
+  const s=curStep();ST.holdView=!!((s.stage==='hold'||(s.hold&&S.len))&&!S.clap);
   $('#stepBox').innerHTML=`
-    <div class="st-head"><span class="st-no">${ST.custom?'📝':ST.i+1}</span><span class="st-t">${s.t}</span><span class="pd">${stepNeedDots(s)}</span></div>
+    <div class="st-head"><span class="st-no">${ST.custom?'📝':s.stage?STAGES[s.stage].icon:ST.i+1}</span><span class="st-t">${s.stage?`<small>${STAGES[s.stage].nm}</small> `:''}${s.t}</span><span class="pd">${stepNeedDots(s)}</span></div>
     <div id="stSeq" class="${(s.cap||0)>16?'seqscroll':''}">${s.cards&&ST.items.length>1?cardsHTML(ST.items):seqHTML(ST.items,s.cap||Math.ceil(patLen()-1e-6))}</div>
     <div class="st-msg" id="stMsg"></div>
     <div class="holdwrap"><button class="hold drum" id="stBtn"></button></div>
-    <div class="st-sub"><button class="tog" id="stHear">🎵 おてほん</button><button class="tog" id="stPause">⏸</button><button class="tog" id="stMode">${S.clap?'👏':'👆'}</button>${s.hold?`<button class="tog${S.len?' on2':''}" id="stLen">📏 ${S.len?'ながさ':'なし'}</button>`:''}${S.unlock&&!ST.custom&&COURSE[ST.i+1]?'<button class="tog" id="stSkip">⏭</button>':''}</div>
+    <div class="st-sub"><button class="tog" id="stHear">🎵 おてほん</button><button class="tog" id="stPause">⏸</button><button class="tog" id="stMode">${S.clap?'👏':'👆'}</button>${s.hold&&!s.stage?`<button class="tog${S.len?' on2':''}" id="stLen">📏 ${S.len?'ながさ':'なし'}</button>`:''}${S.unlock&&!ST.custom&&COURSE[ST.i+1]?'<button class="tog" id="stSkip">⏭</button>':''}</div>
     <div class="st-names">${namesOf(ST.items)}</div>`;
   const b=$('#stBtn');
   b.addEventListener('pointerdown',stBtnDown);b.addEventListener('contextmenu',e=>e.preventDefault());
   ['pointerup','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>stUp(ac().currentTime)));
   $('#stHear').onclick=async()=>{ac();if(ST.window)return;stStop();ST.failRow=0;stBtnState('auto','👂');$('#stMsg').textContent='うたの おてほん';const tok=ST.run;
+    if(curStep().stage==='say'){stFlow(false);return;}
     if(!(await stModel(()=>tok===ST.run&&VIEW==='step')))return;stFlow(false,true);};
   $('#stPause').onclick=()=>{stStop();stBtnState('retry');$('#stMsg').textContent='とめたよ。ボタンを おすと つづきから';};
   const sl=$('#stLen');if(sl)sl.onclick=()=>{S.len=S.len?0:1;store.set('rz_set',S);sl.textContent='📏 '+(S.len?'ながさ':'なし');sl.classList.toggle('on2',!!S.len);
@@ -1667,15 +1755,15 @@ async function stFlow(first,tapOnly){
   const s=curStep(),a=ac(),B=beat();
   $('#stSeq').querySelectorAll('.mk').forEach(x=>x.remove());
   if(S.clap&&!MIC.on){const ok=await micStart();if(!ok){S.clap=0;store.set('rz_set',S);const m=$('#stMode');if(m)m.textContent='👆 タップ';}}
-  let sess,D;
+  let sess,D;const stg=s.stage||'old';
+  if(stg==='say'&&tapOnly)tapOnly=false;
   if(!tapOnly){
-  // くちで いいながら たたこう（おてほんの プレイは なし）
-  $('#stMsg').textContent='いっしょに いいながら たたこう';stBtnState('auto','👏');
-  if(first&&ST.first){ST.first=false;let sy=s.say||s.t;if(s.hold&&!S.len)sy=sy.split('。')[0];await speak('koe-step-'+(s.id||'p'),sy);if(!alive(tok))return;await wait(250);}
+  if(first&&ST.first){ST.first=false;let sy=s.say||s.t;if(s.hold&&!S.len&&!s.stage)sy=sy.split('。')[0];await speak('koe-step-'+(s.id||'p'),sy);if(!alive(tok))return;await wait(250);}
   $('#stMsg').textContent='きいてね';stBtnState('auto','👂');
   if(!(await stModel(()=>alive(tok))))return;
-  $('#stMsg').textContent='いっしょに いいながら たたこう';stBtnState('auto','👏');
-  await P('rhythm');if(!alive(tok))return;
+  if(stg==='old'||stg==='say'){
+  $('#stMsg').textContent=stg==='say'?'ずんだもんと いっしょに いおう':'いっしょに いいながら たたこう';stBtnState('auto',stg==='say'?'🗣':'👏');
+  await P(stg==='say'?'issho':'rhythm');if(!alive(tok))return;
   sess=newSess();ST.sess=sess;D=countIn(a.currentTime+.2,sess);
   if(sylReady()){scheduleSyl(D,sess);schedulePattern(D,sess,false,S.click);}else schedulePattern(D,sess,true,S.click);
   lightSeq(D,false,true);glowSeq(D);
@@ -1683,8 +1771,13 @@ async function stFlow(first,tapOnly){
   await wait((D-a.currentTime+patLen()*B)*1000+300);if(!alive(tok))return;
   await wait(250);if(!alive(tok))return;
   }
+  if(stg==='say'){/* いっしょに いおう：はんていなし */
+    const cleared=stRegPass(s);addStar(1);yay();$('#stMsg').textContent='いえたね！';renderStepHead();
+    stMetroStop();P('dekita');if(cleared){await wait(900);if(alive(tok))stCleared();return;}
+    await wait(500);if(!alive(tok))return;stBtnState('next');return;}
+  }
   // 3) たたこう
-  const HOLD=!!(s.hold&&!S.clap&&S.len);ST.hold=HOLD;
+  const HOLD=!!((stg==='hold'||(stg==='old'&&s.hold&&S.len))&&!S.clap);ST.hold=HOLD;
   $('#stMsg').textContent=S.clap?'こんどは ひとりで てを たたこう':HOLD?'ながさだけ おさえてみよう':'こんどは ひとりで たたこう';
   stBtnState('drum');
   await P(tapOnly?(HOLD?'mouichidoosu':'mouichidotataku'):(S.clap?'tebyoushi':HOLD?'osaete':'tataku'));if(!alive(tok))return;
@@ -1776,10 +1869,7 @@ function stJudge(){
   const errs=miss+extra+lenErr,allow=s.tol?Math.floor(res.length*s.tol):0;
   const pass=errs<=allow&&(s.tol||(miss===0&&extra===0&&lenErr===0));let cleared=false;
   if(pass){
-    if(ST.custom){ST.cpass++;cleared=ST.cpass>=s.need;}
-    else{CS.passes[s.id]=(CS.passes[s.id]||0)+1;
-    if(CS.passes[s.id]>=s.need&&ST.i===CS.cur){CS.stamps[s.id]=today();CS.cur++;cleared=true;}
-    csSave();}addStar(okc===res.length?2:1);yay();
+    cleared=stRegPass(s);addStar(okc===res.length?2:1);yay();
     $('#stMsg').textContent=(s.tol?`⭕ ${res.length-errs}/${res.length}　`:'')+(okc===res.length?'ぴったり！ すごい！':'できた！ ⭕ を ふやしてみよう');
     P(okc===res.length?'pittari':'dekita');renderStepHead();
   }else{
@@ -1790,6 +1880,10 @@ function stJudge(){
   }
   return {pass,cleared,noTap:taps.length===0};
 }
+function stRegPass(s){let cleared=false;
+  if(ST.custom){ST.cpass++;cleared=ST.cpass>=s.need;}
+  else{CS.passes[s.id]=(CS.passes[s.id]||0)+1;if(CS.passes[s.id]>=s.need&&!CS.done[s.id]){CS.done[s.id]=today();CS.stamps[s.id]=today();cleared=true;}csSave();}
+  return cleared;}
 function renderStepHead(){const s=curStep();const pd=$('#stepBox .st-head .pd');if(pd)pd.innerHTML=stepNeedDots(s);}
 function stCleared(){
   if(ST.custom){const c=ST.custom;
@@ -1797,26 +1891,22 @@ function stCleared(){
       <div class="btns" style="margin-top:10px"><button class="bigbtn glow" id="mAgain" style="background:var(--c3)">もういちど</button><button class="bigbtn gray" id="mBack">もどる</button></div>`,true);
     yay();P('yatta');
     $('#mAgain').onclick=()=>{closeModal();openPractice(c,ST.cg);};$('#mBack').onclick=()=>{closeModal();openPracticePage(ST.cg);};return;}
-  const s=COURSE[ST.i],nx=COURSE[ST.i+1];
+  const s=COURSE[ST.i],g=s.g,ni=gNext(g,true),nx=ni>=0?COURSE[ni]:null,G=gInfo(g);
+  const allDone=gDone(g),ci=contTarget(),cn=ci>=0?COURSE[ci]:null;
+  const goNext=()=>{closeModal();if(nx&&!(allDone&&nx.opt))openStep(ni);else if(cn)openStep(ci);else openGroup(g);};
   const ms=MASTERS.find(m=>m.last===s.id);
   if(ms&&!(CS.cards||{})[ms.key]){CS.cards=CS.cards||{};CS.cards[ms.key]=today();csSave();
-    const main=nx&&nx.opt&&!s.opt;
     openModal(`<h3>🎉 ${ms.name}！</h3>${masterCardHTML(ms,CS.cards[ms.key]).replace('mcard2','mcard2 award')}
-      ${main?'<div style="font-weight:800;margin:8px 0">🏆 メインの みち ぜんぶ クリア！</div>':''}
       <div class="hint">この がめんを せんせいに みせてね</div>
-      ${nx?`<div style="font-weight:800;margin:10px 0">${main?'できる子は「⭐ チャレンジ」に すすめるよ':`つぎは「${nx.t}」`}</div>`:''}
-      <div class="btns"><button class="bigbtn glow" id="mNext" style="background:var(--c3)">${nx?(main?'チャレンジ ▶':'つぎへ ▶'):'おわり'}</button><button class="bigbtn gray" id="mHome">みちに もどる</button></div>`);
+      ${cn?`<div style="font-weight:800;margin:10px 0">つぎは「${rungLabel(cn)}」</div>`:''}
+      <div class="btns"><button class="bigbtn glow" id="mNext" style="background:var(--c3)">${cn?'つぎへ ▶':'おわり'}</button><button class="bigbtn gray" id="mHome">${G.name}に もどる</button></div>`);
     yay();P('master');
-    $('#mNext').onclick=()=>{closeModal();if(nx)openStep(ST.i+1);else go('home');};$('#mHome').onclick=()=>{closeModal();go('home');};return;}
-  if(nx&&nx.opt&&!s.opt){openModal(`<h3>🏆 メインの みち ぜんぶ クリア！</h3><div class="mcard"><div class="big">🏆</div><div class="t">リズムの みち</div><div>まねっこ・なまえ・はちぶおんぷ ぜんぶ できたね</div><div class="d">${today()}</div></div>
-    <div class="hint">この がめんを せんせいに みせてね</div><div style="font-weight:800;margin:10px 0">できる子は「⭐ チャレンジ」に すすめるよ</div>
-    <div class="btns"><button class="bigbtn glow" id="mNext" style="background:var(--c3)">チャレンジ ▶</button><button class="bigbtn gray" id="mHome">みちに もどる</button></div>`);
-    yay();P('yatta');$('#mNext').onclick=()=>{closeModal();openStep(ST.i+1);};$('#mHome').onclick=()=>{closeModal();go('home');};return;}
-  openModal(`<h3>🎉 ステップ ${ST.i+1} クリア！</h3><div class="sh-row"><div class="stamp got">⭐</div><div class="hint">「${s.t}」が できたね<br>${nx?`つぎは「${nx.t}」`:'ぜんぶ クリア！'}</div></div>
-    <div class="btns"><button class="bigbtn glow" id="mNext" style="background:var(--c3)">${nx?'つぎへ ▶':'おわり'}</button><button class="bigbtn gray" id="mHome">みちに もどる</button></div>`,true);
+    $('#mNext').onclick=()=>{closeModal();if(cn)openStep(ci);else go('home');};$('#mHome').onclick=()=>{closeModal();openGroup(g);};return;}
+  const nextTxt=allDone&&(!nx||nx.opt)?(cn?`「${G.name}」 ぜんぶ できたね！<br>つぎは「${rungLabel(cn)}」`:'ぜんぶ できたね！'):(nx?`つぎは「${STAGES[nx.stage].nm}：${nx.t}」`:'');
+  openModal(`<h3>🎉 できた！</h3><div class="sh-row"><div class="stamp got">⭐</div><div class="hint">「${STAGES[s.stage].nm}：${s.t}」が できたね<br>${nextTxt}</div></div>
+    <div class="btns"><button class="bigbtn glow" id="mNext" style="background:var(--c3)">${nx||cn?'つぎへ ▶':'おわり'}</button><button class="bigbtn gray" id="mHome">${G.name}に もどる</button></div>`,true);
   yay();P('yatta').then(()=>P('tsugi'));
-  $('#mNext').onclick=()=>{closeModal();if(nx)openStep(ST.i+1);else go('home');};
-  $('#mHome').onclick=()=>{closeModal();go('home');};
+  $('#mNext').onclick=goNext;$('#mHome').onclick=()=>{closeModal();openGroup(g);};
 }
 
 /* ---------- てびょうし（マイク） ---------- */
@@ -2153,6 +2243,8 @@ function showResult(){
     <div class="btns"><button class="bigbtn" id="qAgain" style="background:var(--c3)">もういちど</button>
     <button class="bigbtn gray" id="qEnd">おわり</button></div></div>`;
   yay();P(all?'zenbu':'ganbatta');
+  if(all&&QZ.type==='name'&&QZ.rest&&!(CS.cards||{}).B){CS.cards=CS.cards||{};CS.cards.B=today();csSave();const ms=MASTERS.find(m=>m.key==='B');
+    setTimeout(()=>{openModal(`<h3>🎉 ${ms.name}！</h3>${masterCardHTML(ms,CS.cards.B).replace('mcard2','mcard2 award')}<div class="hint">この がめんを せんせいに みせてね</div><div class="btns"><button class="bigbtn gray" id="mClose">とじる</button></div>`);$('#mClose').onclick=closeModal;P('master');},1200);}
   $('#qAgain').onclick=()=>{ac();QZ.i=0;QZ.score=0;QZ.alive=true;if(METRO_TYPES.includes(QZ.type))metroStart();nextQ();};
   $('#qEnd').onclick=()=>go('menu');
 }
