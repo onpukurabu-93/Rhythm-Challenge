@@ -481,7 +481,7 @@ body.sheeton #v-step{padding-bottom:210px}
 <!-- QUIZ PLAY -->
 <section class="view" id="v-quizPlay"><div id="qBox"></div></section>
 
-<div id="credit" style="display:none;text-align:center;color:var(--sub);font-size:12px;padding:10px 0 24px">こえ：VOICEVOX:ずんだもん</div>
+<div id="credit" style="display:none;text-align:center;color:var(--sub);font-size:12px;padding:10px 0 24px"><div id="crVoice">こえ：VOICEVOX:ずんだもん</div><div id="crIllust" style="display:none">イラスト：ジャパクリップ</div></div>
 <div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
 <div class="ov" id="ov"></div>
 
@@ -527,7 +527,7 @@ function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_T
 new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
   else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/9-g';
+const VERSION='11/10-a';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -593,6 +593,7 @@ const AV=new Set();const CLIPS={};let CLIP_NOW=null;
 const PROMPTS={dono:'どの おとかな',nagai:'ながいのは どっち',mijikai:'みじかいのは どっち',nante:'なんて うたうかな',
   pittari:'ぴったり',mousukoshi:'もうすこし',nagasugi:'ながすぎたよ',seikai:'せいかい',hairanai:'はいらないよ',kiite:'きいてね',issho:'いっしょに いってみよう',tataku:'こんどは ひとりで。いいながら ボタンを たたいてね',tebyoushi:'こんどは ひとりで。いいながら てを たたいてね',rhythm:'ずんだもんと いっしょに、くちで いいながら たたこう',osaete:'こんどは おんぷの ながさだけ ボタンを おさえてみよう',mouichidoosu:'もういちど おしてみよう',tsugi:'つぎに すすむなら ボタンを おしてね',osuto:'ボタンを おすと もういちど できるよ',dekita:'できた',mouichido:'おしい。もういちど きいてみよう',again:'もういちど やるときは ボタンを おしてね',oshii:'おしい',mouichidotataku:'もういちど たたいてみよう',mouichidokiku:'もういちど きいてみよう',yatta:'やったー おめでとう',nanko:'いくつ のばすかな',levelup:'レベルアップ',master:'リズムマスター おめでとう',zenbu:'ぜんぶ できたね',ganbatta:'よく がんばったね'};
 const CLIP_ALIAS={'koe-tan3':'koe-tan23','koe-tan4':'koe-tan234','koe-un3':'koe-un23','koe-un4':'koe-un234'};
+function picName(w){const a='e-'+w.k+'.png',b='e-'+w.k+'.PNG';return AV.has(a)?a:AV.has(b)?b:null;}
 function clipName0(key){return AV.has(key+'.mp3')?key+'.mp3':AV.has(key+'.wav')?key+'.wav':AV.has(key+'.m4a')?key+'.m4a':null;}
 function clipName(key){return clipName0(key)||(CLIP_ALIAS[key]?clipName0(CLIP_ALIAS[key]):null);}
 async function probeFiles(){
@@ -605,17 +606,18 @@ async function probeFiles(){
   /* PROMPTS の ほかに よぶ こえ（どうぶつクイズ・おべんとう・なまえ・ステップ） */
   ['bye-zou','bye-inu','bye-risu','dare','chigau','tsuginodare','ana','sukima'].forEach(k=>keys.push('koe-'+k));
   [...NAMEQ,...NAMEQR].forEach(x=>keys.push('koe-dore-'+x.id));COURSE.forEach(c=>keys.push('koe-step-'+c.id));
-  const names=[...new Set(keys)].flatMap(k=>/^kana-/.test(k)?[k+'.mp3']:/^mel-/.test(k)?[k+'.m4a',k+'.mp3']:[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.map(w=>'e-'+w.k+'.png'));
+  const names=[...new Set(keys)].flatMap(k=>/^kana-/.test(k)?[k+'.mp3']:/^mel-/.test(k)?[k+'.m4a',k+'.mp3']:[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.flatMap(w=>['e-'+w.k+'.png','e-'+w.k+'.PNG']));
   await Promise.all(names.map(n=>fetch(n,{method:'HEAD',cache:'no-cache'}).then(r=>{if(r.ok)AV.add(n);}).catch(()=>{})));
-  AV.forEach(n=>{if(!/\.png$/.test(n)&&!/^(syl|kana)-/.test(n))CLIPS[n]=null;});
+  AV.forEach(n=>{if(!/\.png$/i.test(n)&&!/^(syl|kana)-/.test(n))CLIPS[n]=null;});
   decodeClips();
-  if([...AV].some(n=>!/\.png$/.test(n)))$('#credit').style.display='block';
+  const hasV=[...AV].some(n=>!/\.png$/i.test(n)),hasI=[...AV].some(n=>/^e-.*\.png$/i.test(n));
+  if(hasV||hasI)$('#credit').style.display='block';$('#crVoice').style.display=hasV?'':'none';$('#crIllust').style.display=hasI?'':'none';
   loadSyl();
   if(VIEW==='list')renderList();
   if(VIEW==='detail'&&DETAIL_ID){const b=document.querySelector('#detailBox .emj');const w=byId(DETAIL_ID);if(b&&w)b.outerHTML=pic(w,'emj');}
 }
 function pic(w,cls,style=''){
-  if(AV.has('e-'+w.k+'.png'))return `<div class="${cls}" style="${style}"><img class="pic" src="e-${w.k}.png" alt=""></div>`;
+  const pn=picName(w);if(pn)return `<div class="${cls}" style="${style}"><img class="pic" src="${pn}" alt=""></div>`;
   return w.emj?`<div class="${cls}" style="${style}">${w.emj}</div>`:'';
 }
 async function decodeClips(){
@@ -1955,7 +1957,7 @@ async function nextQ(){
   /* ⓪ どうぶつさん だれかな？（メロディー） */
   if(QZ.type==='animal'){
     const list=['h','q','ee'].map(byId);const ans=pickAns(list);
-    const apic=w=>AV.has('e-'+w.k+'.png')?`<img class="pic" src="e-${w.k}.png" alt="" style="height:72px">`:`<span style="font-size:60px">${w.ani}</span>`;
+    const apic=w=>picName(w)?`<img class="pic" src="${picName(w)}" alt="" style="height:72px">`:`<span style="font-size:60px">${w.ani}</span>`;
     box.innerHTML=progHTML()+`<div class="qprompt" style="font-size:22px">どの どうぶつさんが<br>あそびに きてるかな？</div>
       <div class="btns" style="margin:6px 0 14px"><button class="bigbtn" id="qReplay">🔊 もういちど きく</button></div>
       <div class="qchoices" style="grid-template-columns:repeat(3,1fr)">${shuffle(list).map(w=>`<button class="qchoice" data-id="${w.id}">${apic(w)}<div class="w" style="font-size:20px">${w.anm}</div></button>`).join('')}</div>`;
