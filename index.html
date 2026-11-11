@@ -222,6 +222,11 @@ i.lb{font-style:normal}
 .sy-blk{display:flex;margin:8px auto 0;border:4px solid #c98b4a;border-radius:14px;padding:3px;background:#fff8ee;gap:0}
 .sy-cell{height:60px;display:flex;align-items:center;justify-content:center;border-right:2px dashed #e1c9a5}.sy-cell:last-child{border-right:0}
 .sy-cell.on{background:#d9ad72}.sy-cell.on b{color:#3a2a1e;font-size:18px}.sy-cell.lit{background:#ffcf6e;transform:scale(1.04)}
+.acc-link{width:100%;border:0;text-align:left}
+.nhead{font-weight:800;font-size:17px;color:var(--sub);margin:12px 4px 6px}
+.ngrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ntile{background:#fff;border:0;border-radius:18px;box-shadow:0 3px 0 #e8dccb;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:118px}
+.ntile svg{height:70px!important;width:auto!important;max-width:100%}.ntile span{font-size:12px;font-weight:800;color:var(--sub);line-height:1.3}
 .qhead{font-weight:800;font-size:15px;color:var(--sub);margin:10px 4px 2px;text-align:left}
 .singbox{display:flex;flex-direction:column;align-items:center;gap:10px}
 #cap{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translate(-50%,20px);max-width:92vw;background:#3a2a1e;color:#fff;font-weight:800;font-size:16px;padding:10px 16px;border-radius:16px;opacity:0;pointer-events:none;transition:.25s;z-index:60;text-align:center}
@@ -256,7 +261,7 @@ body.sheeton #v-step{padding-bottom:210px}
 .nl-row.top .nl-p.in{opacity:1;transform:none}
 .nl-p.base{height:var(--nh,50px);font-size:17px}
 .nl-g{position:relative;display:flex;gap:2px}
-.nl-g .si{display:flex;justify-content:center;transition:opacity .35s}.nl-g.pair .nl-p:nth-child(-n+2) .si,.nl-g.in .si{opacity:0}
+.nl-g .si{display:flex;justify-content:center;align-items:center;height:100%;width:100%;transition:opacity .35s}.nl-g.pair .nl-p:nth-child(-n+2) .si,.nl-g.in .si{opacity:0}
 .nl-gi2{position:absolute;left:0;top:0;bottom:0;width:50%;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .35s}
 .nl-g.pair .nl-gi2{opacity:1}.nl-gi2 svg{width:80%!important;max-height:90%;filter:brightness(0) invert(1)}.nl-gi{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .3s}.nl-g.in .nl-gi{opacity:1}.nl-gi svg{width:86%!important;max-height:92%;filter:brightness(0) invert(1)}
 .nl-cap{display:flex;gap:10px;justify-content:center;height:46px}
@@ -439,12 +444,14 @@ body.sheeton #v-step{padding-bottom:210px}
   <div class="homenow" id="homeNow"></div>
   <div class="btns"><button class="bigbtn gobtn" id="homeGo">▶ つづきから</button></div>
   <div class="acc" id="accT"><button class="acc-h" data-a="T"><span>🧱 つみきで おぼえよう</span><i>▼</i></button><div class="acc-b" id="accTB"></div></div>
+  <button class="acc acc-h acc-link" id="homeNames"><span>📛 なまえの ひみつ</span><i>▶</i></button>
   <div class="acc" id="accQ"><button class="acc-h" data-a="Q"><span>🎵 クイズ</span><i>▼</i></button><div class="acc-b" id="accQB"></div></div>
   <div class="acc" id="accB"><button class="acc-h" data-a="B"><span>🍱 おべんとうばこ</span><i>▼</i></button><div class="acc-b" id="accBB"></div></div>
   <div class="row" style="gap:8px;justify-content:center;margin-top:16px"><button class="tog" id="homeCards" style="color:var(--ink)">🎫 カード</button><button class="tog" data-go="menu" style="color:var(--ink)">⚙ せってい</button></div>
 </section>
 <section class="view" id="v-grp"><div id="grpBox"></div></section>
 <section class="view" id="v-story"><div id="storyBox"></div></section>
+<section class="view" id="v-names"><div id="namesBox"></div></section>
 
 <section class="view" id="v-menu">
   <div class="settings">
@@ -574,7 +581,7 @@ function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_T
 new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
   else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/11-d';
+const VERSION='11/11-e';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -864,7 +871,7 @@ function wakeOff(){try{if(WL)WL.release();}catch(e){}WL=null;}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&['step','quizPlay'].includes(VIEW))wakeOn();});
 /* ===================== navigation ===================== */
 let VIEW='home';
-const PARENT={menu:'home',grp:'home',story:'home',step:'home',bento:'home',list:'home',detail:'list',nobashi:'home',quizSetup:'home',quizPlay:'quizSetup'};
+const PARENT={menu:'home',names:'home',grp:'home',story:'home',step:'home',bento:'home',list:'home',detail:'list',nobashi:'home',quizSetup:'home',quizPlay:'quizSetup'};
 function setTitle(t){const e=$('#hdTitle');if(e){e.textContent=t;e.style.fontSize=t.length>9?'15px':'';}}
 function qTitle(){const q=document.querySelector(`#qTypes .qtype[data-t="${QZ.type}"] span:nth-child(2)`);return q?q.firstChild.textContent.trim():'クイズ';}
 function go(v){
@@ -873,7 +880,7 @@ function go(v){
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   $('#v-'+v).classList.add('on');VIEW=v;
   $('#backBtn').style.visibility=v==='home'?'hidden':'visible';
-  setTitle(v==='quizPlay'?qTitle():({home:'リズムチャレンジ',menu:'せってい',grp:'つみきで おぼえよう',story:'おんぷの おはなし',list:'つみきで おぼえよう',detail:'つみきで おぼえよう',nobashi:'のばして あそぼう',quizSetup:'クイズ',bento:'おべんとうばこ',step:'リズムへの みち'}[v]||'リズムチャレンジ'));
+  setTitle(v==='quizPlay'?qTitle():({home:'リズムチャレンジ',menu:'せってい',names:'なまえの ひみつ',grp:'つみきで おぼえよう',story:'おんぷの おはなし',list:'つみきで おぼえよう',detail:'つみきで おぼえよう',nobashi:'のばして あそぼう',quizSetup:'クイズ',bento:'おべんとうばこ',step:'リズムへの みち'}[v]||'リズムチャレンジ'));
   numTogSync();
   if(['step','quizPlay'].includes(v))wakeOn();else wakeOff();
   window.scrollTo(0,0);
@@ -1383,7 +1390,7 @@ function chkMenu(){
     <div class="chkh">おと</div><div class="chk">${b('🔊 おとの テスト','snd')}</div>
     <div class="chkh">つみき</div><div class="chk">${b('カード いちらん','list')}</div>
     <div class="chkh">はじめ</div><div class="chk">${b('📖 おんぷの おはなし','story')}</div>
-    <div class="chkh">なまえの ひみつ</div><div class="chk">${b('ぜんおんぷ','nl:w')}${b('はちぶおんぷ','nl:ee')}${b('16ぶおんぷ','nl:f1')}</div>
+    <div class="chkh">なまえの ひみつ</div><div class="chk">${b('📛 なまえの ひみつ（いちらん）','names')}${b('ぜんおんぷ','nl:w')}${b('はちぶおんぷ','nl:ee')}${b('16ぶおんぷ','nl:f1')}</div>
     <div class="chkh">れんしゅう（なかま）</div><div class="chk">${LGROUPS.map(G=>b(G.icon+' '+G.name,'gp'+G.g)).join('')}</div>
     <div class="chkh">れんしゅう（だんかい）</div><div class="chk">${['g1s1','g1t2','g1h1','g2t1','g3t1','g4s1','g5t1'].map(id=>{const i=COURSE.findIndex(c=>c.id===id);return b(gInfo(COURSE[i].g).name+' '+STAGES[COURSE[i].stage].icon+' '+COURSE[i].t,'st'+i);}).join('')}</div>
     <div class="chkh">クイズ</div><div class="chk">${[...document.querySelectorAll('#qTypes .qtype')].map(q=>b(q.querySelector('span:nth-child(2)').firstChild.textContent.trim(),'qz:'+q.dataset.t)).join('')}</div>
@@ -1393,6 +1400,7 @@ function chkMenu(){
   $('#mbox').querySelectorAll('[data-f]').forEach(x=>x.onclick=()=>{ac();const f=x.dataset.f;closeModal();
     if(f==='snd')return sndTest();
     if(f==='story')return openStory(0);
+    if(f==='names')return openNames();
     if(f==='list'||f==='bento'||f==='nobashi')return go(f);
     if(f.startsWith('pr'))return openPracticePage(+f.slice(2));
     if(f.startsWith('gp'))return openGroup(+f.slice(2));
@@ -1586,6 +1594,7 @@ function bindGo(root){root.querySelectorAll('[data-go]').forEach(b=>b.onclick=()
 document.querySelectorAll('.acc-h').forEach(h=>h.onclick=()=>{ac();const k=h.dataset.a;ACC=ACC===k?null:k;['T','Q','B'].forEach(x=>$('#acc'+x).classList.toggle('open',ACC===x));});
 $('#homeGo').onclick=async()=>{ac();if(!store.get('rz_hello',0)){store.set('rz_hello',1);await speak('koe-zunda','わたしは ずんだもん。いっしょに れんしゅうしよう');}if(!store.get('rz_story',0)){openStory(0);return;}const i=contTarget();if(i>=0)openStep(i);else openGroup(1);};
 $('#homeCards').onclick=()=>{ac();showCards();};
+$('#homeNames').onclick=()=>{ac();openNames();};
 /* ---------- おんぷの おはなし（どうにゅう） ---------- */
 const SY={run:0,i:0};
 const STORY=[
@@ -1696,6 +1705,20 @@ async function storyRhythm(alive){
   for(let k=0;k<n;k++){click(t0+k*B,k===0,sess);setTimeout(()=>{if(!alive())return;const c=document.querySelectorAll('#syBlocks .sy-cell')[k];if(c){c.classList.add('lit');setTimeout(()=>c.classList.remove('lit'),B*900);}},(t0-a.currentTime+k*B)*1000);}
   await wait((t0-a.currentTime+n*B)*1000+300);
 }
+/* ---------- なまえの ひみつ（おんぷ・きゅうふを えらぶ） ---------- */
+const NAME_TILES={
+  note:[()=>byId('w'),()=>byId('h'),()=>byId('dh'),()=>byId('q'),
+    ()=>({id:'ee',nm:'はちぶおんぷ',k:'hachibu',nk:'hachibu',ev:[N(.5,'')]}),
+    ()=>({id:'f1',nm:'じゅうろくぶおんぷ',k:'juurokubu',nk:'juurokubu',ev:[N(.25,'')]})],
+  rest:[()=>byId('wr'),()=>byId('hr'),()=>byId('dhr'),()=>byId('qr'),
+    ()=>({id:'re',nm:'はちぶきゅうふ',k:'hachibu-kyuufu',nk:'hachibu-kyuufu',ev:[N(.5,'',1)]})]};
+function openNames(){
+  stStop();go('names');
+  const tile=(f,k,i)=>{const w=f();return `<button class="ntile" data-k="${k}" data-i="${i}">${notation(w.ev,1,true,null,true)}<span>${w.nm}</span></button>`;};
+  $('#namesBox').innerHTML=`<div class="nhead">🎵 おんぷ</div><div class="ngrid">${NAME_TILES.note.map((f,i)=>tile(f,'note',i)).join('')}</div>
+    <div class="nhead">💤 きゅうふ</div><div class="ngrid">${NAME_TILES.rest.map((f,i)=>tile(f,'rest',i)).join('')}</div>`;
+  $('#namesBox').querySelectorAll('.ntile').forEach(b=>b.onclick=()=>{ac();openNameLesson(NAME_TILES[b.dataset.k][+b.dataset.i]());});
+}
 /* ---------- なかまの ページ ---------- */
 const GNAMES={1:['w','h','q','dh'],2:['qr'],3:['ee'],4:['f1'],5:[]};
 let CUR_G=1;
@@ -1713,7 +1736,8 @@ function openGroup(g){
   $('#grpBox').innerHTML=h;
   $('#grpBox').querySelectorAll('.road-st:not([disabled])').forEach(b=>b.onclick=()=>{ac();openStep(+b.dataset.i);});
   $('#gCards').onclick=()=>{ac();LIST_G=g;go('list');renderList();};
-  const gn=$('#gNames');if(gn)gn.onclick=()=>{ac();const ns=GNAMES[g];
+  const gn=$('#gNames');if(gn)gn.onclick=()=>{ac();openNames();};
+  if(false){const ns=GNAMES[g];
     openModal(`<h3>📛 なまえの ひみつ</h3><div class="hint">しりたい おんぷを えらんでね</div><div class="row" style="gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0">${ns.map(id=>`<button class="tog" data-n="${id}" style="color:var(--ink);padding:10px">${notation(byId(id).ev,1,true,null,true)}</button>`).join('')}</div><div class="btns"><button class="bigbtn gray" id="gnClose">とじる</button></div>`);
     $('#gnClose').onclick=closeModal;$('#mbox').querySelectorAll('[data-n]').forEach(x=>x.onclick=()=>{closeModal();openNameLesson(byId(x.dataset.n));});};
 }
