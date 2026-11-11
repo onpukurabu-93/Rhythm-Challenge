@@ -229,7 +229,11 @@ i.lb{font-style:normal}
 .ntile svg{height:70px!important;width:auto!important;max-width:100%}.ntile span{font-size:12px;font-weight:800;color:var(--sub);line-height:1.3}
 .tapflash{outline:4px solid #ffcf6e;outline-offset:2px;border-radius:12px}
 #stSeq [data-pi]{cursor:pointer}
-.sy-note .hid{opacity:0}.sy-note .drop{animation:syDrop .5s cubic-bezier(.3,1.6,.6,1)}@keyframes syDrop{from{opacity:0;transform:translateY(-18px)}}
+.sy-note .hid{opacity:0}
+#syZig.drawing{stroke-dasharray:100;stroke-dashoffset:100;animation:syDraw 1.6s ease-in-out forwards}@keyframes syDraw{to{stroke-dashoffset:0}}
+.sy-start{fill:#e8774f;animation:sySpot 1s ease-in-out infinite}
+.sy-later{opacity:.0;transition:opacity .4s}.sy-later.show{opacity:1}
+.sy-note .drop{animation:syDrop .5s cubic-bezier(.3,1.6,.6,1)}@keyframes syDrop{from{opacity:0;transform:translateY(-18px)}}
 .sy-bar.rest .sy-pc{background:#fff;border:3px dashed #9c8bd0}
 .sy-cell.on.r{background:#fff;outline:3px dashed #9c8bd0;outline-offset:-5px}.sy-cell.on.r.lit{background:#efe9ff}
 .sy-gest{height:92px;display:flex;align-items:center;justify-content:center}.sy-gest.pop{animation:pop .35s}.gs-emo{font-size:70px;line-height:1}
@@ -239,6 +243,7 @@ i.lb{font-style:normal}
 .mvcard img{width:100%;max-width:150px;border-radius:12px}.mvcard.big img{max-width:200px}.mvcard b{font-size:14px}.mvcard.big b{font-size:17px}
 .mvrow{display:flex;align-items:center;gap:2px}.mvrow .gs-emo{font-size:34px}.mvrow svg{width:46px;height:46px}.mvar{font-size:14px;color:var(--sub)}
 .mvnote{font-size:13px;color:var(--sub);text-align:center;margin:14px 6px;line-height:1.6}
+.sndfix{border:0;background:#fff;border-radius:14px;box-shadow:0 2px 0 #e8dccb;font-size:18px;padding:6px 8px;margin-right:4px}.sndfix.ok{background:#e5f4e4}
 .qhead{font-weight:800;font-size:15px;color:var(--sub);margin:10px 4px 2px;text-align:left}
 .singbox{display:flex;flex-direction:column;align-items:center;gap:10px}
 #cap{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translate(-50%,20px);max-width:92vw;background:#3a2a1e;color:#fff;font-weight:800;font-size:16px;padding:10px 16px;border-radius:16px;opacity:0;pointer-events:none;transition:.25s;z-index:60;text-align:center}
@@ -446,6 +451,7 @@ body.sheeton #v-step{padding-bottom:210px}
 <header>
   <button id="backBtn" aria-label="もどる">←</button>
   <h1><span class="logo"><i style="background:var(--c1)"></i><i style="background:var(--c2)"></i><i style="background:var(--c3)"></i><i style="background:var(--c4)"></i></span><span id="hdTitle">リズムチャレンジ</span></h1>
+  <button id="sndFix" class="sndfix" aria-label="おとを なおす">🔊</button>
   <button id="numTog" class="numtog" style="display:none"></button>
   <div id="stars">⭐ 0</div>
 </header>
@@ -595,7 +601,7 @@ function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_T
 new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
   else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/11-j';
+const VERSION='11/11-k';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -622,7 +628,7 @@ function audioKick(){try{try{if(navigator.audioSession&&navigator.audioSession.t
 ['pointerdown','touchend','click'].forEach(ev=>document.addEventListener(ev,()=>{if(!AC||AC.state!=='running'||!AUDIO_UNLOCKED)audioKick();},{capture:true,passive:true}));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&AC&&AC.state!=='running'){try{AC.resume();}catch(e){}}});
 /* 止まっていたら さわったときに もどす（つくりなおしは しない） */
-['pointerdown','touchend'].forEach(ev=>document.addEventListener(ev,()=>{if(AC&&AC.state!=='running'){try{AC.resume().catch(()=>{});}catch(e){}}},{capture:true,passive:true}));
+['pointerdown','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,()=>{if(AC&&AC.state!=='running'){try{AC.resume().then(()=>alog('さわって もどった：'+AC.state)).catch(()=>{});}catch(e){}}},{capture:true,passive:true}));
 setInterval(()=>{if(AC&&AC.state!=='running'&&document.visibilityState==='visible'){try{AC.resume().catch(()=>{});}catch(e){}}},1500);
 function newSess(){const a=ac();const g=a.createGain();g.connect(out());return g;}
 function killSess(g){if(!g)return;try{const a=ac();g.gain.cancelScheduledValues(a.currentTime);g.gain.setValueAtTime(0,a.currentTime);setTimeout(()=>{try{g.disconnect()}catch(e){}},200)}catch(e){}}
@@ -673,7 +679,7 @@ async function probeFiles(){
   ['zou','inu','risu'].forEach(k=>keys.push('mel-'+k));for(let k=1;k<=16;k++)keys.push('kazu-'+k);
   [...new Set(Object.values(KANAR))].forEach(k=>keys.push('kana-'+k));
   /* PROMPTS の ほかに よぶ こえ（どうぶつクイズ・おべんとう・なまえ・ステップ） */
-  ['bye-zou','bye-inu','bye-risu','dare','chigau','tsuginodare','ana','sukima','zunda','st1','st2','st3','st4','st4b','st5','st5b','st6','st6b','st7','st7b','st8','st9','st10','st10b','st11','st12','dekita2','mv-tan','mv-un','rs1','rs2','rs2b','rs3','rs4','rs4b','rs5','rs5b','rs6','rs7','rs7b','rs8','rs8b','rs9','rs9b','rs10','rs11'].forEach(k=>keys.push('koe-'+k));
+  ['bye-zou','bye-inu','bye-risu','dare','chigau','tsuginodare','ana','sukima','zunda','st1','st2','st3','st4','st4b','st5','st5b','st6','st6b','st7','st7b','st8','st9','st10','st10b','st11','st12','dekita2','mv-tan','mv-un','rs1','rs1b','rs2','rs2b','rs3','rs4','rs4b','rs5','rs5b','rs6','rs7'].forEach(k=>keys.push('koe-'+k));
   Object.keys(HM_TEXT).forEach(k=>keys.push('hm-'+k));
   [...NAMEQ,...NAMEQR].forEach(x=>keys.push('koe-dore-'+x.id));COURSE.forEach(c=>keys.push('koe-step-'+c.id));
   const names=[...new Set(keys)].flatMap(k=>/^kana-/.test(k)?[k+'.mp3']:/^mel-/.test(k)?[k+'.m4a',k+'.mp3']:[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.flatMap(w=>['e-'+w.k+'.png','e-'+w.k+'.PNG']));
@@ -1631,6 +1637,8 @@ document.querySelectorAll('.acc-h').forEach(h=>h.onclick=()=>{ac();const k=h.dat
 $('#homeGo').onclick=async()=>{ac();if(!store.get('rz_hello',0)){store.set('rz_hello',1);await speak('koe-zunda','わたしは ずんだもん。いっしょに れんしゅうしよう');}if(!store.get('rz_story',0)){openStory(0);return;}const i=contTarget();if(i>=0&&COURSE[i].g===2&&!store.get('rz_story2',0)){openStory(0,'rest');return;}if(i>=0)openStep(i);else openGroup(1);};
 $('#homeCards').onclick=()=>{ac();showCards();};
 $('#homeNames').onclick=()=>{ac();openNames();};
+$('#sndFix').onclick=()=>{const a=ac();const ok=()=>{try{tone(a.currentTime+.03,.18,null,880,.35);}catch(e){}const b=$('#sndFix');b.classList.add('ok');setTimeout(()=>b.classList.remove('ok'),900);alog('🔊ボタン：'+a.state);};
+  try{a.resume().then(ok).catch(ok);}catch(e){ok();}};
 $('#homeMoves').onclick=()=>{ac();openMoves();};
 $('#homeStory').onclick=()=>{ac();openModal(`<h3>📖 おはなし</h3><div class="btns" style="flex-direction:column;gap:10px;margin:10px 0"><button class="bigbtn" id="pkN" style="background:var(--c1)">🎵 おんぷの おはなし</button><button class="bigbtn" id="pkR" style="background:#8a6fd1">💤 きゅうふの おはなし</button></div><div class="btns"><button class="bigbtn gray" id="pkC">とじる</button></div>`);
   $('#pkN').onclick=()=>{closeModal();openStory(0);};$('#pkR').onclick=()=>{closeModal();openStory(0,'rest');};$('#pkC').onclick=closeModal;};
@@ -1651,17 +1659,13 @@ const STORY=[
   {k:'st12',t:'じょうずに いえたかな？ つぎは ずんだもんと いっしょに リズムを うたう れんしゅうを するのだ！',show:{end:1},act:'end'}
 ];
 const STORY_R=[
-  {k:'rs1',t:'これは せん だよ',show:{line:1},act:'next'},
-  {k:'rs2',t:'ひかってる ところを さわってみて',show:{line:1,hangSpot:1},act:'hang',after:{k:'rs2b',t:'せんの したに ぶらさがったら ぜんきゅうふ。テーブル みたいだね',name:'ぜんきゅうふ'}},
-  {k:'rs3',t:'ぜんきゅうふは まるごと おやすみ。うん 2 3 4。せーの うん 2 3 4',show:{rh:'wr'},act:'rhythm'},
-  {k:'rs4',t:'こんどは ひかってる ところを さわってみて',show:{line:1,hatSpot:1},act:'hat',after:{k:'rs4b',t:'せんの うえに のったら にぶきゅうふ。ぼうし みたいだね',name:'にぶきゅうふ'}},
-  {k:'rs5',t:'おやすみの つみきを さわって はんぶんこに してみて',show:{line:1,half:1,bar:1},act:'split2',after:{k:'rs5b',t:'ぜんきゅうふを 2つに わけたから、にぶきゅうふ'}},
-  {k:'rs6',t:'にぶきゅうふは うん 2。せーの うん 2',show:{rh:'hr'},act:'rhythm'},
-  {k:'rs7',t:'にぶきゅうふに ほくろを つけてみて',show:{rh:'hr',dotSpot:1},act:'dot',after:{k:'rs7b',t:'ほくろが ついたら うん 2 3。せーの うん 2 3'},rh2:'dhr'},
-  {k:'rs8',t:'ひかってる ところを さわってみて',show:{zigSpot:1},act:'zig',after:{k:'rs8b',t:'これは しぶきゅうふ。ギザギザの かたち だよ',name:'しぶきゅうふ'}},
-  {k:'rs9',t:'おやすみの つみきを さわって 4つに わけてみて',show:{zig:1,bar:1},act:'split4',after:{k:'rs9b',t:'ぜんきゅうふを 4つに わけたから、しぶきゅうふ'}},
-  {k:'rs10',t:'しぶきゅうふは うん。せーの うん',show:{rh:'qr'},act:'rhythm'},
-  {k:'rs11',t:'おやすみも じょうずに できたね！ つぎは ずんだもんと いっしょに れんしゅう するのだ！',show:{end:1},act:'end'}
+  {k:'rs1',t:'ひかってる ところを さわってみて',show:{zigSpot:1},act:'zig',after:{k:'rs1b',t:'これは しぶきゅうふ。うん って いうよ。いっしょに いってみよう。せーの うん',name:'しぶきゅうふ'},rh2:'qr'},
+  {k:'rs2',t:'こんどは ひかってる ところを さわってみて',show:{line:1,hatSpot:1},act:'hat',after:{k:'rs2b',t:'せんの うえに のったら にぶきゅうふ。ぼうし みたいだね',name:'にぶきゅうふ'}},
+  {k:'rs3',t:'にぶきゅうふは うんが 2つぶん。せーの うん 2',show:{rh:'hr'},act:'rhythm'},
+  {k:'rs4',t:'にぶきゅうふに ほくろを つけてみて',show:{rh:'hr',dotSpot:1},act:'dot',after:{k:'rs4b',t:'ほくろが ついたら うん 2 3。せーの うん 2 3'},rh2:'dhr'},
+  {k:'rs5',t:'ひかってる ところを さわってみて',show:{line:1,hangSpot:1},act:'hang',after:{k:'rs5b',t:'せんの したに ぶらさがったら ぜんきゅうふ。テーブル みたいだね',name:'ぜんきゅうふ'}},
+  {k:'rs6',t:'ぜんきゅうふは うんが 4つ。せーの うん 2 3 4',show:{rh:'wr'},act:'rhythm'},
+  {k:'rs7',t:'おやすみも じょうずに できたね！ つぎは ずんだもんと いっしょに れんしゅう するのだ！',show:{end:1},act:'end'}
 ];
 function restSVG(o){/* 1ぽんの せんと きゅうふ（テーブル・ぼうし・ギザギザ） */
   const k='#2b2320';
@@ -1673,7 +1677,7 @@ function restSVG(o){/* 1ぽんの せんと きゅうふ（テーブル・ぼう
     ${o.hatSpot?`<rect class="sy-spot" x="104" y="46" width="72" height="34" rx="10"/>`:''}
     ${o.dot!==undefined?`<circle id="syDot" cx="186" cy="72" r="8" fill="${k}" opacity="${o.dot?1:0}"/>`:''}
     ${o.dotSpot?`<circle class="sy-spot" id="syDotSpot" cx="186" cy="72" r="22"/>`:''}
-    <path id="syZig" class="${o.zig?'':'hid'}" d="M128 22 L156 56 L130 86 L158 118 Q120 104 138 150" fill="none" stroke="${k}" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+    ${o.zigSpot?`<circle class="sy-start" cx="138" cy="150" r="9"/>`:''}<path id="syZig" pathLength="100" class="${o.zig?'':'hid'}" d="M138 150 Q120 104 158 118 L130 86 L156 56 L128 22" fill="none" stroke="${k}" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
     ${o.zigSpot?`<rect class="sy-spot" x="110" y="16" width="64" height="140" rx="16"/>`:''}
   </svg>`;
 }
@@ -1718,7 +1722,7 @@ function storyScene(){
   if(o.end)stage=`<div class="sy-end">🎉</div>`;
   else if(REST&&o.rh){const id=sc.rh2&&SY.dotDone?sc.rh2:o.rh;
     stage=`<div class="sy-rh">${restSVG({line:id!=='qr',whole:id==='wr',half:id==='hr'||id==='dhr',zig:id==='qr',dot:id==='dhr'?1:(o.dotSpot?0:undefined),dotSpot:o.dotSpot&&!SY.dotDone})}</div><div id="syGest" class="sy-gest"></div><div id="syBlocks">${storyBlocks(id)}</div>`;}
-  else if(REST)stage=`<div class="sy-stage">${restSVG(o)}</div>${o.bar?`<div id="syBarWrap">${storyBar(1,1,1)}</div>`:''}`;
+  else if(REST)stage=`<div class="sy-stage">${restSVG(o)}</div>${o.bar?`<div id="syBarWrap">${storyBar(1,1,1)}</div>`:''}${sc.rh2&&sc.act!=='dot'?`<div id="syGest" class="sy-gest"></div><div id="syBlocks" class="sy-later">${storyBlocks(sc.rh2)}</div>`:''}`;
   else if(o.rh){const w=byId(sc.rh2&&SY.dotDone?sc.rh2:o.rh);
     stage=`<div class="sy-rh">${storyNoteSVG({head:1,stem:w.id!=='w',fill:w.id==='q',dot:w.id==='dh'?1:(o.dotSpot?0:undefined),dotSpot:o.dotSpot&&!SY.dotDone})}</div><div id="syGest" class="sy-gest"></div><div id="syBlocks">${storyBlocks(w.id)}</div>`;}
   else stage=`<div class="sy-stage">${storyNoteSVG(o)}</div>${o.bar?`<div id="syBarWrap">${storyBar(1,o.barNote)}</div>`:''}`;
@@ -1734,7 +1738,7 @@ function storyScene(){
   const autoNext=ms=>{setTimeout(()=>{if(!alive())return;SY.dotDone=false;SY.i++;storyScene();},ms);};
   const doneAct=async()=>{if(!alive())return;yay();if(sc.after){box.dataset.after=1;$('#syMsg').textContent=sc.after.t;if(sc.after.name){const n=$('#syName');n.textContent=sc.after.name;n.classList.remove('pop');void n.offsetWidth;n.classList.add('pop');}
       await speak('koe-'+sc.after.k,sc.after.t);if(!alive())return;}
-    if(o.rh||sc.rh2){await wait(350);if(!alive())return;await storyRhythm(alive);if(!alive())return;rhBtns();return;}
+    if(o.rh||sc.rh2){const sl=document.querySelector('.sy-later');if(sl)sl.classList.add('show');await wait(350);if(!alive())return;await storyRhythm(alive);if(!alive())return;rhBtns();return;}
     autoNext(1600);};
   const rhBtns=()=>{btns(`<button class="bigbtn glow" id="syNext" style="background:var(--c3);font-size:24px">つぎ ▶</button><button class="bigbtn" id="syAgain" style="font-size:18px">🔁 もういちど</button>`);
     $('#syNext').onclick=()=>{ac();SY.dotDone=false;SY.i++;storyScene();};$('#syAgain').onclick=()=>{ac();storyRhythm(alive);};};
@@ -1773,7 +1777,9 @@ function storyForce(sc){/* できなかったとき：おわった すがたに 
 function storyAct(sc,alive,done){
   const svg=document.querySelector('.sy-note');
   if(['hang','hat','zig'].includes(sc.act)){const id={hang:'syWhole',hat:'syHalf',zig:'syZig'}[sc.act];
-    svg.onpointerdown=()=>{ac();svg.onpointerdown=null;svg.querySelectorAll('.sy-spot').forEach(x=>x.remove());const e=$('#'+id);e.classList.remove('hid');e.classList.add('drop');try{tone(ac().currentTime,.2,null,sc.act==='hang'?392:sc.act==='hat'?587:494)}catch(_){}setTimeout(done,700);};}
+    svg.onpointerdown=()=>{ac();svg.onpointerdown=null;svg.querySelectorAll('.sy-spot').forEach(x=>x.remove());const e=$('#'+id);e.classList.remove('hid');
+      if(sc.act==='zig'){e.classList.add('drawing');try{tone(ac().currentTime,.2,null,494)}catch(_){}setTimeout(()=>{const st=svg.querySelector('.sy-start');if(st)st.remove();},1700);setTimeout(done,1900);return;}
+      e.classList.add('drop');try{tone(ac().currentTime,.2,null,sc.act==='hang'?392:sc.act==='hat'?587:494)}catch(_){}setTimeout(done,700);};}
   if(sc.act==='stem'){const sp=svg.querySelector('.sy-spot');const go=()=>{if(!alive())return;sp&&sp.remove();const st=$('#syStem');st.classList.add('growing');st.classList.remove('grow0');try{tone(ac().currentTime,.25,null,523)}catch(e){}setTimeout(done,700);};
     svg.onpointerdown=e=>{ac();go();svg.onpointerdown=null;};}
   if(sc.act==='split2'||sc.act==='split4'){const n=sc.act==='split2'?2:4;const bw=$('#syBarWrap');bw.classList.add('tapme');
@@ -1793,7 +1799,7 @@ function storyAct(sc,alive,done){
     svg.onpointermove=e=>{if(drawing)addp(e);};svg.onpointerup=()=>{drawing=false;};}
 }
 async function storyRhythm(alive){
-  const sc=SY.list[SY.i];const id=sc.rh2&&SY.dotDone?sc.rh2:(sc.show.rh||'q');const w=byId(id),n=len(w),isR=!!w.ev[0].r;
+  const sc=SY.list[SY.i];const id=sc.rh2&&(SY.dotDone||sc.act!=='dot')?sc.rh2:(sc.show.rh||'q');const w=byId(id),n=len(w),isR=!!w.ev[0].r;
   const a=ac(),B=60/72,t0=a.currentTime+.35,sess=newSess();
   const save=ST.items;ST.items=[w];try{if(sylReady())scheduleSyl(t0,sess);}catch(e){}ST.items=save;
   for(let k=0;k<n;k++){setTimeout(()=>{if(!alive())return;const gz=$('#syGest');if(gz){gz.innerHTML=k===0?(isR?gestFists():gestClap()):gestFingers(k+1);gz.classList.remove('pop');void gz.offsetWidth;gz.classList.add('pop');}const c=document.querySelectorAll('#syBlocks .sy-cell')[k];if(c){c.classList.add('lit');setTimeout(()=>c.classList.remove('lit'),B*900);}},(t0-a.currentTime+k*B)*1000);}
