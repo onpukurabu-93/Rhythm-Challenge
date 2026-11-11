@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -581,7 +582,7 @@ function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_T
 new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
   else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/11-e';
+const VERSION='11/11-g';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -660,6 +661,7 @@ async function probeFiles(){
   [...new Set(Object.values(KANAR))].forEach(k=>keys.push('kana-'+k));
   /* PROMPTS の ほかに よぶ こえ（どうぶつクイズ・おべんとう・なまえ・ステップ） */
   ['bye-zou','bye-inu','bye-risu','dare','chigau','tsuginodare','ana','sukima','zunda','st1','st2','st3','st4','st4b','st5','st5b','st6','st6b','st7','st7b','st8','st9','st10','st10b','st11','st12'].forEach(k=>keys.push('koe-'+k));
+  Object.keys(HM_TEXT).forEach(k=>keys.push('hm-'+k));
   [...NAMEQ,...NAMEQR].forEach(x=>keys.push('koe-dore-'+x.id));COURSE.forEach(c=>keys.push('koe-step-'+c.id));
   const names=[...new Set(keys)].flatMap(k=>/^kana-/.test(k)?[k+'.mp3']:/^mel-/.test(k)?[k+'.m4a',k+'.mp3']:[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.flatMap(w=>['e-'+w.k+'.png','e-'+w.k+'.PNG']));
   await Promise.all(names.map(n=>fetch(n,{method:'HEAD',cache:'no-cache'}).then(r=>{if(r.ok)AV.add(n);}).catch(()=>{})));
@@ -1085,6 +1087,18 @@ function NKMAP(){const m={'はちぶおんぷ':'hachibu','はちぶきゅうふ'
 function beam8x4(){/* はちぶおんぷ 4つを 1本の はりで つなぐ（タカタカ） */
   let h='<svg viewBox="0 0 124 66" width="124" height="66">';[16,46,76,106].forEach(x=>{h+=`<ellipse cx="${x}" cy="50" rx="8.5" ry="5.8" transform="rotate(-18 ${x} 50)" fill="#2b2320"/><line x1="${x+7.6}" y1="48" x2="${x+7.6}" y2="12" stroke="#2b2320" stroke-width="2.4"/>`;});
   return h+'<rect x="22.4" y="9" width="91.6" height="7" fill="#2b2320"/></svg>';}
+const HM_TEXT={
+  tan4:'これは ぜんおんぷ。わけない、まるごとの ながさ だよ',
+  tan2:'ぜんおんぷを 2つに わけたから、にぶおんぷ って いうんだよ',
+  tan3:'にぶおんぷに ほくろが ついたら、ふてん にぶおんぷ って いうんだよ',
+  tan:'ぜんおんぷを 4つに わけたから、しぶおんぷ って いうんだよ',
+  hachibu:'ぜんおんぷを 8つに わけたから、はちぶおんぷ って いうんだよ',
+  juurokubu:'ぜんおんぷを 16に わけたから、じゅうろくぶおんぷ って いうんだよ',
+  un4:'これは ぜんきゅうふ。まるごと おやすみ だよ',
+  un2:'ぜんきゅうふを 2つに わけたから、にぶきゅうふ って いうんだよ',
+  un3:'にぶきゅうふに ほくろが ついたら、ふてん にぶきゅうふ って いうんだよ',
+  un:'ぜんきゅうふを 4つに わけたから、しぶきゅうふ って いうんだよ',
+  'hachibu-kyuufu':'ぜんきゅうふを 8つに わけたから、はちぶきゅうふ って いうんだよ'};
 function openNameLesson(w){
   const info=NAMEINFO[w.id];if(!info){speak('na-'+w.nk,w.nm);return;}
   const base=byId(info.base),bl=len(base);
@@ -1135,8 +1149,8 @@ function openNameLesson(w){
     try{tone(ac().currentTime,.09,null,e.classList.contains('r')?392:659,.3);}catch(_){}},900+i*step)));
   NL_TIMERS.push(setTimeout(()=>{
     $('#nlCount').textContent='';
-    $('#nlSent').innerHTML=`<div>${sent}</div><div class="nl-big">${bigName}</div>${sub?`<div class="nl-sub">${sub}</div>`:''}`;
-    const say1=`${sent.replace(/\s+/g,' ')}、${w.nm.replace(' 2つ','')}`;
+    $('#nlSent').innerHTML=`<div class="nl-big">${bigName}</div>`;
+    const say1=HM_TEXT[w.k]||`${sent.replace(/\s+/g,' ')}、${w.nm.replace(' 2つ','')}`;
     speak('hm-'+w.k,say1);
   },900+els.length*step+300));
 }
@@ -1598,18 +1612,18 @@ $('#homeNames').onclick=()=>{ac();openNames();};
 /* ---------- おんぷの おはなし（どうにゅう） ---------- */
 const SY={run:0,i:0};
 const STORY=[
-  {k:'st1',t:'これは しろい まる だね',show:{head:1},act:'next'},
-  {k:'st2',t:'ゆびで まるを 1こ かいてね',show:{head:1,ghost:1},act:'trace'},
-  {k:'st3',t:'これは ぜんおんぷ って いうんだよ',show:{head:1,name:'ぜんおんぷ'},act:'next'},
-  {k:'st4',t:'ひかってる ところを さわって ぼうを はやしてみよう',show:{head:1,stemSpot:1},act:'stem',after:{k:'st4b',t:'ぼうが はえたね。これは にぶおんぷ って いうんだよ',name:'にぶおんぷ'}},
-  {k:'st5',t:'ながい つみきを さわって、2つに わけてみよう',show:{head:1,stem:1,bar:1,barNote:'w'},act:'split2',after:{k:'st5b',t:'ぜんおんぷを 2つに わけたから、にぶおんぷ'}},
-  {k:'st6',t:'まるの なかを ゆびで こすって ぬってみよう',show:{head:1,stem:1},act:'rub',after:{k:'st6b',t:'いろを ぬったね。これは しぶおんぷ って いうんだよ',name:'しぶおんぷ'}},
-  {k:'st7',t:'つみきを さわって、4つに わけてみよう',show:{head:1,stem:1,fill:1,bar:1,barNote:'h2'},act:'split4',after:{k:'st7b',t:'ぜんおんぷを 4つに わけたから、しぶおんぷ'}},
-  {k:'st8',t:'しぶおんぷは「たん」。いっしょに いってみよう',show:{rh:'q'},act:'rhythm'},
-  {k:'st9',t:'にぶおんぷは「たん 2」',show:{rh:'h'},act:'rhythm'},
-  {k:'st10',t:'にぶおんぷに ほくろを つけてみよう',show:{rh:'h',dotSpot:1},act:'dot',after:{k:'st10b',t:'ほくろが ついたら「たん 2 3」'},rh2:'dh'},
-  {k:'st11',t:'ぜんおんぷは「たん 2 3 4」。たんが 4つ ぶん だからね',show:{rh:'w'},act:'rhythm'},
-  {k:'st12',t:'できたね！ つぎは ずんだもんと いっしょに リズムを いってみよう',show:{end:1},act:'end'}
+  {k:'st1',t:'これは しろい まる だね。',show:{head:1},act:'next'},
+  {k:'st2',t:'ゆびで まるを 1こ かいてみて',show:{head:1,ghost:1},act:'trace'},
+  {k:'st3',t:'これは、ぜんおんぷ って いうんだよ',show:{head:1,name:'ぜんおんぷ'},act:'next'},
+  {k:'st4',t:'ひかってる ところを、さわってみて。ぼうが はえるよ。',show:{head:1,stemSpot:1},act:'stem',after:{k:'st4b',t:'しろい まるに ぼうを つけたら、2ぶおんぷに なるんだ',name:'にぶおんぷ'}},
+  {k:'st5',t:'ながい つみきを さわって はんぶんこに してみて。',show:{head:1,stem:1,bar:1,barNote:'w'},act:'split2',after:{k:'st5b',t:'ぜんおんぷを 2つに わけたから、にぶおんぷ って いうんだよ'}},
+  {k:'st6',t:'こんどは まるの なかを ゆびで こすってみて。',show:{head:1,stem:1},act:'rub',after:{k:'st6b',t:'にぶおんぷが くろく なったね。これは 4ぶおんぷ って いうんだよ。',name:'しぶおんぷ'}},
+  {k:'st7',t:'つみきを さわってみて。',show:{head:1,stem:1,fill:1,bar:1,barNote:'h2'},act:'split4',after:{k:'st7b',t:'ぜんおんぷを 4つに わけたから、4ぶおんぷ だよ'}},
+  {k:'st8',t:'4ぶおんぷは たん。いっしょに いおう。せーの たん。',show:{rh:'q'},act:'rhythm'},
+  {k:'st9',t:'にぶおんぷは たんが 2つ だから、たん2。せーの たん2',show:{rh:'h'},act:'rhythm'},
+  {k:'st10',t:'にぶおんぷに ほくろを つけてみて',show:{rh:'h',dotSpot:1},act:'dot',after:{k:'st10b',t:'ほくろが ついたら たんが 3つの たん23。せーの たん23'},rh2:'dh'},
+  {k:'st11',t:'ぜんおんぷは たんが 4つ あるから たん234。せーの たん234',show:{rh:'w'},act:'rhythm'},
+  {k:'st12',t:'じょうずに いえたかな？ つぎは ずんだもんと いっしょに リズムを うたう れんしゅうを するのだ！',show:{end:1},act:'end'}
 ];
 function openStory(i){stStop();go('story');SY.i=i||0;SY.run++;storyScene();}
 function storyNoteSVG(o){
