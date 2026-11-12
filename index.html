@@ -497,7 +497,7 @@ body.sheeton #v-step{padding-bottom:210px}
     <div class="row"><span class="lab">つみきの もじ</span><div class="seg" id="setLbl"><button data-v="0">おんぷだけ</button><button data-v="1">ことばも だす</button></div></div>
     <div class="row"><span class="lab">かぞえかた</span><div class="seg" id="setNum"><button data-v="0">にー さん しー</button><button data-v="1">2 3 4</button></div></div>
     <div class="row"><span class="lab">カチカチ</span><div class="seg" id="setClick"><button data-v="1">あり</button><button data-v="0">なし</button></div></div>
-    <div class="row" style="gap:8px;justify-content:center;margin:10px 0"><button class="tog" id="sndTestBtn" style="color:var(--ink)">🔊 おとの テスト</button><button class="tog" id="chkMenuBtn" style="color:var(--ink)">🧭 チェック用メニュー</button></div>
+    <div class="row" style="gap:8px;justify-content:center;margin:10px 0"><button class="tog" id="sndTestBtn" style="color:var(--ink)">🔊 おとの テスト</button><button class="tog" id="chkMenuBtn" style="color:var(--ink)">🧭 チェック用メニュー</button><button class="tog" id="micTestBtn" style="color:var(--ink)">🎤 マイクを ためす</button></div>
     <div class="row"><span class="lab">せんせいよう</span><div class="seg" id="setUnlock"><button data-v="0">ふつう</button><button data-v="1">ぜんぶ ひらく（チェック用）</button></div></div>
     <div class="row" style="justify-content:space-between"><span class="hint" style="margin:0" id="verLbl"></span><button class="tog" id="resetBtn" style="font-size:13px">せんせいよう：おべんとうの きろくを けす</button></div>
   </div>
@@ -616,7 +616,7 @@ function numWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_T
 new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const t=m.target;if(t.nodeValue===t.__w||t.nodeValue===t.__o)continue;t.__o=null;numText(t);}
   else m.addedNodes.forEach(x=>{if(x.nodeType===3)numText(x);else if(x.nodeType===1&&x.tagName!=='SCRIPT')numWalk(x);});}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 const len=w=>w.ev.reduce((a,e)=>a+e.d,0);
-const VERSION='11/12-a';
+const VERSION='11/12-b';
 const near=(a,b)=>Math.abs(a-b)<1e-3;
 const $=s=>document.querySelector(s);
 
@@ -694,7 +694,7 @@ async function probeFiles(){
   ['zou','inu','risu'].forEach(k=>keys.push('mel-'+k));for(let k=1;k<=16;k++)keys.push('kazu-'+k);
   [...new Set(Object.values(KANAR))].forEach(k=>keys.push('kana-'+k));
   /* PROMPTS の ほかに よぶ こえ（どうぶつクイズ・おべんとう・なまえ・ステップ） */
-  ['isseeno','seeno','tsumiosu','bye-zou','bye-inu','bye-risu','dare','chigau','tsuginodare','ana','sukima','zunda','st1','st2','st3','st4','st4b','st5','st5b','st6','st6b','st7','st7b','st8','st9','st10','st10b','st11','st12','dekita2','mv-tan','mv-un','rs1','rs1b','rs2','rs2b','rs3','rs4','rs4b','rs5','rs5b','rs6','rs7'].forEach(k=>keys.push('koe-'+k));
+  ['isseeno','seeno','tsumiosu','call-maru','call-zen','call-nibu','call-shibu','call-nikyu','call-zenkyu','bye-zou','bye-inu','bye-risu','dare','chigau','tsuginodare','ana','sukima','zunda','st1','st2','st3','st4','st4b','st5','st5b','st6','st6b','st7','st7b','st8','st9','st10','st10b','st11','st12','dekita2','mv-tan','mv-un','rs1','rs1b','rs2','rs2b','rs3','rs4','rs4b','rs5','rs5b','rs6','rs7'].forEach(k=>keys.push('koe-'+k));
   Object.keys(HM_TEXT).forEach(k=>keys.push('hm-'+k));
   [...NAMEQ,...NAMEQR].forEach(x=>keys.push('koe-dore-'+x.id));COURSE.forEach(c=>keys.push('koe-step-'+c.id));
   const names=[...new Set(keys)].flatMap(k=>/^kana-/.test(k)?[k+'.mp3']:/^mel-/.test(k)?[k+'.m4a',k+'.mp3']:[k+'.mp3',k+'.wav',k+'.m4a']).concat(WORDS.flatMap(w=>['e-'+w.k+'.png','e-'+w.k+'.PNG']));
@@ -1418,6 +1418,17 @@ function bnHelp(){
 $('#bnHelpBtn').onclick=()=>{ac();bnHelp();};
 /* ===== せんせいよう：おとの テスト ===== */
 let SND_T=null;
+function micTest(){
+  openModal(`<h3>🎤 マイクを ためす</h3><div class="hint">「きょか」を おしてから、こえを だしてみてください。メーターが うごけば OK です。</div>
+    <div style="height:26px;background:#eee;border-radius:13px;overflow:hidden;margin:14px 0"><div id="mtBar" style="height:100%;width:0;background:var(--c3);transition:width .08s"></div></div>
+    <div class="sndst" id="mtSt">じゅんびちゅう…</div><div class="btns" style="margin-top:10px"><button class="bigbtn gray" id="mtClose">とじる</button></div>`);
+  let st=null,iv=null;const close=()=>{clearInterval(iv);if(st)st.getTracks().forEach(t=>t.stop());closeModal();};$('#mtClose').onclick=close;
+  const out=t=>{const e=$('#mtSt');if(e)e.textContent=t;};
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){out('このページでは マイクが つかえません。\nSafariで GitHubの ページを ひらいてください（Claudeアプリの なかでは つかえません）。');return;}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{st=s;MIC_OK=1;MIC_ERR='';const a=ac();a.resume();const src=a.createMediaStreamSource(s),an=a.createAnalyser(),g=a.createGain();g.gain.value=0;src.connect(an);an.connect(g);g.connect(a.destination);const buf=new Float32Array(an.fftSize);
+    out('✅ マイク OK。こえを だすと メーターが うごきます');iv=setInterval(()=>{if(!$('#mtBar')){clearInterval(iv);s.getTracks().forEach(t=>t.stop());return;}an.getFloatTimeDomainData(buf);let q=0;for(const v of buf)q+=v*v;$('#mtBar').style.width=Math.min(100,Math.sqrt(q/buf.length)*800)+'%';},60);})
+  .catch(e=>{MIC_ERR=(e&&e.name)||'error';out('⚠️ マイクが つかえません（'+MIC_ERR+'）\n・iPhoneの せってい → アプリ → Safari → マイク を「確認」か「許可」に\n・ホームがめんの アイコンではなく Safariで ひらく\n・Claudeアプリの なかでは つかえません');});
+}
 function sndTest(){
   const st=()=>{const el=$('#sndSt');if(!el){clearInterval(SND_T);return;}
     const ses=navigator.audioSession?navigator.audioSession.type:'（なし）';
@@ -1464,7 +1475,7 @@ function chkMenu(){
     if(f.startsWith('st')){S.unlock=1;store.set('rz_set',S);return openStep(+f.slice(2));}
     if(f.startsWith('qz:')){go('quizSetup');const q=document.querySelector(`#qTypes .qtype[data-t="${f.slice(3)}"]`);if(q)q.click();}});
 }
-$('#sndTestBtn').onclick=()=>{ac();sndTest();};$('#chkMenuBtn').onclick=()=>{ac();chkMenu();};
+$('#sndTestBtn').onclick=()=>{ac();sndTest();};$('#chkMenuBtn').onclick=()=>{ac();chkMenu();};$('#micTestBtn').onclick=()=>{ac();micTest();};
 $('#bnUndo').onclick=()=>{if(BN.done&&BN.mode==='odai')return;BN.items.pop();bnDrawBox();bnDrawPal();$('#bnMsg').textContent='';};
 $('#bnClear').onclick=()=>{if(BN.done&&BN.mode==='odai')return;BN.items=[];bnDrawBox();bnDrawPal();$('#bnMsg').textContent='';};
 $('#bnNext').onclick=()=>{ac();if(!BN.done&&BN.mode==='odai'){BP.hist.push(0);if(BP.hist.length>12)BP.hist.shift();bpSave();}bnNewQ();renderBento();};
@@ -1660,13 +1671,13 @@ $('#homeStory').onclick=()=>{ac();openModal(`<h3>📖 おはなし</h3><div clas
 /* ---------- おんぷの おはなし（どうにゅう） ---------- */
 const SY={run:0,i:0,list:null};
 const STORY=[
-  {k:'st1',t:'これは しろい まる だね。',show:{head:1},act:'call'},
+  {k:'st1',t:'これは しろい まる だね。',show:{head:1},act:'call',cw:'maru'},
   {k:'st2',t:'ゆびで まるを 1こ かいてみて',show:{head:1,ghost:1},act:'trace'},
-  {k:'st3',t:'これは、ぜんおんぷ って いうんだよ',show:{head:1,name:'ぜんおんぷ'},act:'call'},
-  {k:'st4',t:'ひかってる ところを、さわってみて。ぼうが はえるよ。',show:{head:1,stemSpot:1},act:'stem',after:{k:'st4b',t:'しろい まるに ぼうを つけたら、2ぶおんぷに なるんだ',name:'にぶおんぷ',call:1}},
-  {k:'st5',t:'ながい つみきを さわって はんぶんこに してみて。',show:{head:1,stem:1,bar:1,barNote:'w'},act:'split2',after:{k:'st5b',t:'ぜんおんぷを 2つに わけたから、にぶおんぷ って いうんだよ',call:1}},
-  {k:'st6',t:'こんどは まるの なかを ゆびで こすってみて。',show:{head:1,stem:1},act:'rub',after:{k:'st6b',t:'にぶおんぷが くろく なったね。これは 4ぶおんぷ って いうんだよ。',name:'しぶおんぷ',call:1}},
-  {k:'st7',t:'つみきを さわってみて。',show:{head:1,stem:1,fill:1,bar:1,barNote:'h2'},act:'split4',after:{k:'st7b',t:'ぜんおんぷを 4つに わけたから、4ぶおんぷ だよ',call:1}},
+  {k:'st3',t:'これは、ぜんおんぷ って いうんだよ',show:{head:1,name:'ぜんおんぷ'},act:'call',cw:'zen'},
+  {k:'st4',t:'ひかってる ところを、さわってみて。ぼうが はえるよ。',show:{head:1,stemSpot:1},act:'stem',after:{k:'st4b',t:'しろい まるに ぼうを つけたら、2ぶおんぷに なるんだ',name:'にぶおんぷ',call:'nibu'}},
+  {k:'st5',t:'ながい つみきを さわって はんぶんこに してみて。',show:{head:1,stem:1,bar:1,barNote:'w'},act:'split2',after:{k:'st5b',t:'ぜんおんぷを 2つに わけたから、にぶおんぷ って いうんだよ',call:'nibu'}},
+  {k:'st6',t:'こんどは まるの なかを ゆびで こすってみて。',show:{head:1,stem:1},act:'rub',after:{k:'st6b',t:'にぶおんぷが くろく なったね。これは 4ぶおんぷ って いうんだよ。',name:'しぶおんぷ',call:'shibu'}},
+  {k:'st7',t:'つみきを さわってみて。',show:{head:1,stem:1,fill:1,bar:1,barNote:'h2'},act:'split4',after:{k:'st7b',t:'ぜんおんぷを 4つに わけたから、4ぶおんぷ だよ',call:'shibu'}},
   {k:'st8',t:'4ぶおんぷは たん。いっしょに いおう。せーの たん。',show:{rh:'q'},act:'rhythm'},
   {k:'st9',t:'にぶおんぷは たんが 2つ だから、たん2。せーの たん2',show:{rh:'h'},act:'rhythm'},
   {k:'st10',t:'にぶおんぷに ほくろを つけてみて',show:{rh:'h',dotSpot:1},act:'dot',after:{k:'st10b',t:'ほくろが ついたら たんが 3つの たん23。せーの たん23'},rh2:'dh'},
@@ -1675,10 +1686,10 @@ const STORY=[
 ];
 const STORY_R=[
   {k:'rs1',t:'ひかってる ところを さわってみて',show:{zigSpot:1},act:'zig',after:{k:'rs1b',t:'これは しぶきゅうふ。うん って いうよ。いっしょに いってみよう。せーの うん',name:'しぶきゅうふ'},rh2:'qr'},
-  {k:'rs2',t:'こんどは ひかってる ところを さわってみて',show:{line:1,hatSpot:1},act:'hat',after:{k:'rs2b',t:'せんの うえに のったら にぶきゅうふ。ぼうし みたいだね',name:'にぶきゅうふ',call:1}},
+  {k:'rs2',t:'こんどは ひかってる ところを さわってみて',show:{line:1,hatSpot:1},act:'hat',after:{k:'rs2b',t:'せんの うえに のったら にぶきゅうふ。ぼうし みたいだね',name:'にぶきゅうふ',call:'nikyu'}},
   {k:'rs3',t:'にぶきゅうふは うんが 2つぶん。せーの うん 2',show:{rh:'hr'},act:'rhythm'},
   {k:'rs4',t:'にぶきゅうふに ほくろを つけてみて',show:{rh:'hr',dotSpot:1},act:'dot',after:{k:'rs4b',t:'ほくろが ついたら うん 2 3。せーの うん 2 3'},rh2:'dhr'},
-  {k:'rs5',t:'ひかってる ところを さわってみて',show:{line:1,hangSpot:1},act:'hang',after:{k:'rs5b',t:'せんの したに ぶらさがったら ぜんきゅうふ。テーブル みたいだね',name:'ぜんきゅうふ',call:1}},
+  {k:'rs5',t:'ひかってる ところを さわってみて',show:{line:1,hangSpot:1},act:'hang',after:{k:'rs5b',t:'せんの したに ぶらさがったら ぜんきゅうふ。テーブル みたいだね',name:'ぜんきゅうふ',call:'zenkyu'}},
   {k:'rs6',t:'ぜんきゅうふは うんが 4つ。せーの うん 2 3 4',show:{rh:'wr'},act:'rhythm'},
   {k:'rs7',t:'おやすみも じょうずに できたね！ つぎは ずんだもんと いっしょに れんしゅう するのだ！',show:{end:1},act:'end'}
 ];
@@ -1705,13 +1716,30 @@ function gestFingers(n){/* ゆびを n ぽん */
   let h=`<svg viewBox="0 0 100 100" width="90" height="90"><rect x="24" y="52" width="52" height="40" rx="16" fill="#f6d2b4" stroke="#2b2320" stroke-width="3"/>`;
   const xs=[26,39,52,65];for(let i=0;i<4;i++){const up=i<n;h+=`<rect x="${xs[i]}" y="${up?10:44}" width="11" height="${up?48:16}" rx="5.5" fill="#f6d2b4" stroke="#2b2320" stroke-width="3"/>`;}
   return h+`<text x="88" y="30" font-size="22" font-weight="800" fill="#e8774f" text-anchor="middle">${n}</text></svg>`;}
-function openStory(i,kind){stStop();go('story');SY.list=kind==='rest'?STORY_R:STORY;SY.kind=kind==='rest'?'rest':'note';setTitle(SY.kind==='rest'?'きゅうふの おはなし':'おんぷの おはなし');SY.i=i||0;SY.run++;storyScene();}
+function openStory(i,kind){micPrime();stStop();go('story');SY.list=kind==='rest'?STORY_R:STORY;SY.kind=kind==='rest'?'rest':'note';setTitle(SY.kind==='rest'?'きゅうふの おはなし':'おんぷの おはなし');SY.i=i||0;SY.run++;storyScene();}
+const CALLW={maru:'まる',zen:'ぜんおんぷ',nibu:'にぶおんぷ',shibu:'4ぶおんぷ',nikyu:'にぶきゅうふ',zenkyu:'ぜんきゅうふ'};
+const CALLNK={zen:'ぜんおんぷ',nibu:'にぶおんぷ',shibu:'しぶおんぷ',nikyu:'にぶきゅうふ',zenkyu:'ぜんきゅうふ'};
+let MIC_OK=0,MIC_ERR='',MIC_PEND=0;
+function micPrime(){/* さわった しゅんかんに マイクの きょかを もらう */
+  if(!S.mic||MIC_OK||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)MIC_ERR='このページでは マイクが つかえません';return;}
+  if(MIC_PEND)return;MIC_PEND=1;
+  try{navigator.mediaDevices.getUserMedia({audio:true}).then(st=>{MIC_PEND=0;MIC_OK=1;MIC_ERR='';st.getTracks().forEach(t=>t.stop());alog('マイク○');try{ac().resume()}catch(e){}}).catch(e=>{MIC_PEND=0;MIC_ERR=(e&&e.name)||'error';alog('マイク×：'+MIC_ERR);});}catch(e){MIC_PEND=0;MIC_ERR='error';}
+}
+function clipTail(b){if(b._tail!=null)return b._tail;const d=b.getChannelData(0);let i=d.length-1;while(i>0&&Math.abs(d[i])<.02)i--;b._tail=i/b.sampleRate;return b._tail;}
+let SEENO_GAP=.3;/* 「の」の ながさ（びょう）。「の」の はじまりから 1はくで「たん」 */
+function seenoAt(bpm){/* せーの を ならして、1はくめ（たん）の じこくを かえす */
+  const a=ac(),B=60/(bpm||72),n=clipName('koe-seeno');
+  if(!S.voice||!n||!CLIPS[n]){say('せーの');const t=a.currentTime+.1;[0,1,2].forEach(k=>tone(t+k*B,.05,null,k===2?880:660,.25));return t+3*B;}
+  const b=CLIPS[n];if(CLIP_NOW){try{CLIP_NOW.stop()}catch(e){}}const src=a.createBufferSource();src.buffer=b;src.connect(vout());CLIP_NOW=src;
+  const st=a.currentTime+.05,lead=b._lead||0;src.start(st,lead);const end=st+Math.max(.2,clipTail(b)-lead);
+  return end-SEENO_GAP+B;
+}
 function traceDots(cx,cy){const r=[],a=-20*Math.PI/180;for(let k=0;k<16;k++){const t=k/16*Math.PI*2,x=46*Math.cos(t),y=34*Math.sin(t);r.push([cx+x*Math.cos(a)-y*Math.sin(a),cy+x*Math.sin(a)+y*Math.cos(a)]);}return r;}
 function clipLen(key){const n=clipName(key);return n&&CLIPS[n]&&CLIPS[n].duration?CLIPS[n].duration-(CLIPS[n]._lead||0):0;}
 /* こえを きく：せーの の あと、こえが でたら true */
 async function voiceListen(ms,onLvl){
   if(!S.mic||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)return null;
-  let st;try{st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});}catch(e){alog('マイク×：'+(e&&e.name));return null;}
+  let st;try{st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});MIC_OK=1;}catch(e){MIC_ERR=(e&&e.name)||'error';alog('マイク×：'+MIC_ERR);return null;}
   const a=ac();let src,an,g;try{src=a.createMediaStreamSource(st);an=a.createAnalyser();an.fftSize=1024;g=a.createGain();g.gain.value=0;src.connect(an);an.connect(g);g.connect(a.destination);}catch(e){st.getTracks().forEach(t=>t.stop());return null;}
   const buf=new Float32Array(an.fftSize);let base=0,hot=0,got=false;const t0=performance.now();
   return new Promise(res=>{const iv=setInterval(()=>{an.getFloatTimeDomainData(buf);let s=0;for(let i=0;i<buf.length;i++)s+=buf[i]*buf[i];const rms=Math.sqrt(s/buf.length),el=performance.now()-t0;
@@ -1769,24 +1797,26 @@ function storyScene(){
   const autoNext=ms=>{setTimeout(goNext,ms);};
   const talk=(k,t)=>{SY.talk=1;return speak(k,t).then(()=>{if(alive())SY.talk=0;});};
   /* いっしょに いってみよう。せーの → こえが でたら めくる */
-  const callAlong=async()=>{await talk('koe-isseeno','いっしょに いってみよう。せーの');if(!alive())return;
-    btns(`<span class="sy-ear" id="syEar">👂</span>`);
+  const callAlong=async(cw)=>{const wd=CALLW[cw]||'';await talk(cw?'koe-call-'+cw:'koe-isseeno',wd?wd+'って いっしょに いってみよう。せーの':'いっしょに いってみよう。せーの');if(!alive())return;
+    btns(`<span class="sy-ear" id="syEar">👂</span>${S.mic&&MIC_ERR?'<small style="font-size:14px;color:#c55">🎤×</small>':''}`);
     const r=await voiceListen(4500,l=>{const e=$('#syEar');if(e)e.style.transform=`scale(${1+l*.6})`;});if(!alive())return;
     if(r){const e=$('#syEar');if(e){e.style.transform='';e.classList.add('got');}try{const t=ac().currentTime;[880,1175].forEach((f,k)=>tone(t+k*.1,.14,null,f,.32));}catch(_){}autoNext(700);return;}
+    if(r===null&&S.mic){const e=$('#syEar');if(e&&!e.nextElementSibling)e.insertAdjacentHTML('afterend','<small style="font-size:14px;color:#c55">🎤×</small>');}
+    if(wd){const nk=CALLNK[cw]&&NKMAP()[CALLNK[cw]];await (nk?speak('na-'+nk,wd):say(wd));if(!alive())return;}
     nextBtn();};
   const doneAct=async()=>{if(!alive())return;yay();if(sc.after){box.dataset.after=1;$('#syMsg').textContent=sc.after.t;if(sc.after.name){const n=$('#syName');n.textContent=sc.after.name;n.classList.remove('pop');void n.offsetWidth;n.classList.add('pop');}
       await talk('koe-'+sc.after.k,sc.after.t);if(!alive())return;}
     if(o.rh||sc.rh2){const sl=document.querySelector('.sy-later');if(sl)sl.classList.add('show');await wait(350);if(!alive())return;SY.busy=1;await storyRhythm(alive);SY.busy=0;if(!alive())return;rhBtns();return;}
-    if(sc.after&&sc.after.call){await wait(300);if(!alive())return;return callAlong();}
+    if(sc.after&&sc.after.call){await wait(300);if(!alive())return;return callAlong(typeof sc.after.call==='string'?sc.after.call:'');}
     autoNext(1600);};
-  const again=async()=>{if(SY.busy||SY.talk||!alive())return;SY.busy=1;await talk('koe-seeno','せーの');if(!alive())return;await wait(480);if(!alive())return;await storyRhythm(alive);SY.busy=0;};
+  const again=async()=>{if(SY.busy||SY.talk||!alive())return;SY.busy=1;const t0=seenoAt(72);await storyRhythm(alive,t0);SY.busy=0;};
   const rhBtns=()=>{btns(`<button class="bigbtn glow" id="syNext" style="background:var(--c3);font-size:24px">つぎ ▶</button><button class="bigbtn" id="syAgain" style="font-size:18px">🔁 もういちど</button>`);
     $('#syNext').onclick=()=>{ac();if(SY.busy===2)return;SY.busy=2;goNext();};$('#syAgain').onclick=()=>{ac();again();};};
   if(o.head&&SY.i===0){const g=$('#syHeadG');g.classList.add('pop');}
   const relisten=()=>{if(!alive()||SY.talk||SY.busy)return;const t=sc.after&&box.dataset.after?sc.after:sc;talk('koe-'+t.k,t.t);};
   if(['next','call','rhythm','end'].includes(sc.act)){const st=box.querySelector('.sy-stage,.sy-rh');if(st)st.onclick=()=>{ac();relisten();};}
   $('#syName').onclick=()=>{ac();relisten();};
-  if(!box.dataset.swipe){box.dataset.swipe=1;let sx=null,sy0=0;
+  if(!box.dataset.swipe){box.dataset.swipe=1;let sx=null,sy0=0;box.addEventListener('pointerdown',()=>{if(!MIC_OK)micPrime();},true);
     box.addEventListener('touchstart',e=>{const a=SY.list[SY.i].act;if(e.target.closest('.sy-note')&&['trace','rub'].includes(a)){sx=null;return;}sx=e.touches[0].clientX;sy0=e.touches[0].clientY;},{passive:true});
     box.addEventListener('touchend',e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy0;sx=null;
       if(Math.abs(dx)<70||Math.abs(dy)>Math.abs(dx))return;SY.dotDone=false;if(dx<0&&SY.i<SY.list.length-1){SY.i++;storyScene();}else if(dx>0&&SY.i>0){SY.i--;storyScene();}},{passive:true});}
@@ -1800,7 +1830,7 @@ function storyScene(){
   talk('koe-'+sc.k,sc.t).then(async()=>{if(!alive())return;
     if(ACT)return arm();
     if(sc.act==='next'){if(SY.i===0)return nextBtn();return autoNext(1300);}
-    if(sc.act==='call'){await wait(250);if(!alive())return;return callAlong();}
+    if(sc.act==='call'){await wait(250);if(!alive())return;return callAlong(sc.cw);}
     if(sc.act==='rhythm'){await wait(350);if(!alive())return;SY.busy=1;await storyRhythm(alive);SY.busy=0;if(!alive())return;rhBtns();return;}
     if(sc.act==='end'){store.set(REST?'rz_story2':'rz_story',1);btns(`<button class="bigbtn glow" id="syGo" style="background:var(--c3);padding:14px 34px" aria-label="れんしゅう">🧱</button><button class="bigbtn gray" id="syRe" style="font-size:26px!important;padding:10px 18px" aria-label="さいしょから">🔁</button>`);$('#syBtns').classList.add('sy-endbtns');
       $('#syGo').onclick=()=>{ac();openStep(COURSE.findIndex(c=>c.id===(REST?'g2s1':'g1s1')));};$('#syRe').onclick=()=>{ac();openStory(0,REST?'rest':undefined);};return;}
@@ -1831,18 +1861,21 @@ function storyAct(sc,alive,done){
     svg.onpointerdown=e=>{ac();add(.12);svg.setPointerCapture&&svg.setPointerCapture(e.pointerId);};svg.onpointermove=e=>{if(e.buttons||e.pointerType==='touch')add(.025);};}
   if(sc.act==='dot'){const sp=$('#syDotSpot');svg.onpointerdown=()=>{ac();svg.onpointerdown=null;SY.dotDone=true;sp&&sp.remove();$('#syDot').setAttribute('opacity',1);$('#syBlocks').innerHTML=storyBlocks(sc.rh2||'dh');try{tone(ac().currentTime,.15,null,880)}catch(e){}setTimeout(done,500);};}
   if(sc.act==='trace'){
-    /* まるを なぞる：てんてんを 14こ いじょう とおったら できた */
-    const pts=[],pl=$('#syTrace'),dots=[...svg.querySelectorAll('.sy-tdot')].map(d=>({d,x:+d.getAttribute('cx'),y:+d.getAttribute('cy'),on:false}));let drawing=false,fin=false;
+    /* まるを なぞる：ひとふでで ぜんぶの てんを とおって、かきはじめに もどったら できた（はなしたら やりなおし） */
+    const pts=[],pl=$('#syTrace'),dots=[...svg.querySelectorAll('.sy-tdot')].map(d=>({d,x:+d.getAttribute('cx'),y:+d.getAttribute('cy'),on:false}));let drawing=false,fin=false,sk=-1,away=false;
     const loc=e=>{const r=svg.getBoundingClientRect();return [50+(e.clientX-r.left)*180/r.width,(e.clientY-r.top)*170/r.height];};
+    const reset=()=>{pts.length=0;pl.setAttribute('points','');dots.forEach(D=>{D.on=false;D.d.classList.remove('on');});sk=-1;away=false;};
     const addp=e=>{if(fin)return;const [x,y]=loc(e);pts.push(x.toFixed(0)+','+y.toFixed(0));pl.setAttribute('points',pts.join(' '));
-      dots.forEach(D=>{if(!D.on&&Math.hypot(D.x-x,D.y-y)<15){D.on=true;D.d.classList.add('on');}});
-      if(dots.filter(D=>D.on).length>=14){fin=true;drawing=false;document.querySelectorAll('.sy-ghost,.sy-tdot').forEach(g=>g.remove());try{const t=ac().currentTime;[784,988,1319].forEach((f,k)=>tone(t+k*.09,.14,null,f,.32));}catch(_){}setTimeout(done,450);}};
-    svg.onpointerdown=e=>{ac();drawing=true;try{svg.setPointerCapture(e.pointerId)}catch(_){}addp(e);};
-    svg.onpointermove=e=>{if(drawing)addp(e);};svg.onpointerup=()=>{drawing=false;};}
+      dots.forEach((D,k)=>{if(Math.hypot(D.x-x,D.y-y)<16){if(!D.on){D.on=true;D.d.classList.add('on');if(sk<0)sk=k;}}});
+      const n=dots.filter(D=>D.on).length;
+      if(sk>=0){const S0=dots[sk],dd=Math.hypot(S0.x-x,S0.y-y);if(dd>40)away=true;
+        if(n>=16&&away&&dd<14){fin=true;drawing=false;document.querySelectorAll('.sy-ghost,.sy-tdot').forEach(g=>g.remove());try{const t=ac().currentTime;[784,988,1319].forEach((f,k)=>tone(t+k*.09,.14,null,f,.32));}catch(_){}setTimeout(done,450);}}};
+    svg.onpointerdown=e=>{ac();reset();drawing=true;try{svg.setPointerCapture(e.pointerId)}catch(_){}addp(e);};
+    svg.onpointermove=e=>{if(drawing)addp(e);};svg.onpointerup=svg.onpointercancel=()=>{if(!fin){drawing=false;reset();}};}
 }
-async function storyRhythm(alive){
+async function storyRhythm(alive,at){
   const sc=SY.list[SY.i];const id=sc.rh2&&(SY.dotDone||sc.act!=='dot')?sc.rh2:(sc.show.rh||'q');const w=byId(id),n=len(w),isR=!!w.ev[0].r;
-  const a=ac(),B=60/72,t0=a.currentTime+.35,sess=newSess();
+  const a=ac(),B=60/72,t0=at||a.currentTime+.35,sess=newSess();
   const save=ST.items;ST.items=[w];try{if(sylReady())scheduleSyl(t0,sess);}catch(e){}ST.items=save;
   for(let k=0;k<n;k++){setTimeout(()=>{if(!alive())return;const gz=$('#syGest');if(gz){gz.innerHTML=k===0?(isR?gestFists():gestClap()):gestFingers(k+1);gz.classList.remove('pop');void gz.offsetWidth;gz.classList.add('pop');}const c=document.querySelectorAll('#syBlocks .sy-cell')[k];if(c){c.classList.add('lit');setTimeout(()=>c.classList.remove('lit'),B*900);}},(t0-a.currentTime+k*B)*1000);}
   await wait((t0-a.currentTime+n*B)*1000+300);const gz=$('#syGest');if(gz)setTimeout(()=>{if(alive())gz.innerHTML='';},600);
@@ -2495,7 +2528,7 @@ async function nextQ(){
   /* ⓪ どうぶつさん だれかな？（メロディー） */
   if(QZ.type==='animal'){
     const list=['h','q','ee'].map(byId);const ans=pickAns(list);
-    const apic=w=>{const L=ANI_IMG[w.mel];if(L&&L.length){let k;do{k=Math.random()*L.length|0;}while(L.length>1&&QZ.lastImg&&QZ.lastImg[w.mel]===k);QZ.lastImg=QZ.lastImg||{};QZ.lastImg[w.mel]=k;return `<img class="pic" src="${L[k]}" alt="" style="height:96px;max-width:100%;object-fit:contain">`;}
+    const apic=w=>{const L=ANI_IMG[w.mel];if(L&&L.length){let k;do{k=Math.random()*L.length|0;}while(L.length>1&&QZ.lastImg&&QZ.lastImg[w.mel]===k);QZ.lastImg=QZ.lastImg||{};QZ.lastImg[w.mel]=k;const sz={zou:1,inu:.64,risu:.44}[w.mel]||.7;return `<span style="display:flex;align-items:flex-end;justify-content:center;height:100px;width:100%"><img class="pic" src="${L[k]}" alt="" style="max-width:${sz*100}%;max-height:${Math.round(sz*100)}px;width:auto;height:auto;object-fit:contain"></span>`;}
       return picName(w)?`<img class="pic" src="${picName(w)}" alt="" style="height:72px">`:`<span style="font-size:60px">${w.ani}</span>`;};
     box.innerHTML=progHTML()+`<div class="qprompt" style="font-size:22px">どの どうぶつさんが<br>あそびに きてるかな？</div>
       <div class="btns" style="margin:6px 0 14px"><button class="bigbtn" id="qReplay">🔊 もういちど きく</button></div>
@@ -2586,16 +2619,16 @@ async function nextQ(){
     QZ.hist=QZ.hist||[];let ans=QZ.hist[QZ.i];const first=!ans;if(!ans){ans=pickAns(pool());QZ.hist[QZ.i]=ans;}QZ.ans=ans;QZ.busy=0;
     const u=Math.min(60,Math.floor((availW()-60)/Math.max(1,len(ans))));
     box.innerHTML=progHTML()+`<div class="qprompt">くちで うたって みよう</div>
-      <button class="qnote qtapnote singbox" id="qsNote">${notation(ans.ev,len(ans)<1?3:2,true,null,true)}<div id="qsB">${blocks(ans,u)}</div><span class="hfing">👈</span></button>
+      <button class="qnote qtapnote singbox" id="qsNote">${notation(ans.ev,len(ans)<1?3:2,true,null,true)}<div id="qsB" style="visibility:hidden">${blocks(ans,u)}</div><span class="hfing">👈</span></button>
       <div class="qnav"><button class="tog" id="qsPrev" style="font-size:22px;padding:10px 14px" ${QZ.i>0?'':'disabled'}>◀</button>
       <button class="bigbtn glow" id="qsGo" style="background:var(--c3);font-size:26px;padding:12px 26px">🎤 せーの</button>
       <button class="tog" id="qsNext" style="font-size:22px;padding:10px 14px">▶</button></div>`;
     const nn=$('#qsNote');nn.classList.add(QZ.hintSeen?'hglow1':'hglow');
-    const sing=async()=>{const a=ac(),t0=a.currentTime+.25;const save=ST.items;ST.items=[ans];const sess=newSess();try{scheduleSyl(t0,sess);}catch(e){}ST.items=save;
+    const sing=async(at)=>{const a=ac(),t0=at||a.currentTime+.25;const save=ST.items;ST.items=[ans];const sess=newSess();try{scheduleSyl(t0,sess);}catch(e){}ST.items=save;
       await wait(playWord(ans,{at:t0,keep:true,clicks:true,el:$('#qsB .blocks')}));};
     const me=QZ.i;const here=()=>QZ.alive&&QZ.i===me&&QZ.type==='word';
-    nn.onclick=async()=>{ac();if(QZ.busy||!here())return;QZ.busy=1;nn.classList.remove('hglow','hglow1');QZ.hintSeen=true;await sing();QZ.busy=0;};
-    $('#qsGo').onclick=async()=>{ac();if(QZ.busy||!here())return;QZ.busy=1;await speak('koe-seeno','せーの');if(!here())return;await wait(300);await sing();if(!here())return;
+    nn.onclick=async()=>{ac();if(QZ.busy||!here())return;QZ.busy=1;nn.classList.remove('hglow','hglow1');QZ.hintSeen=true;$('#qsB').style.visibility='visible';await sing();QZ.busy=0;};
+    $('#qsGo').onclick=async()=>{ac();if(QZ.busy||!here())return;QZ.busy=1;await sing(seenoAt(S.bpm));if(!here())return;
       QZ.done=QZ.done||{};if(!QZ.done[me]){QZ.done[me]=1;QZ.score++;addStar();}yay();await wait(900);if(!here())return;QZ.i++;nextQ();};
     $('#qsPrev').onclick=()=>{ac();if(QZ.busy||QZ.i<=0)return;QZ.i--;nextQ();};
     $('#qsNext').onclick=()=>{ac();if(QZ.busy)return;QZ.i++;nextQ();};
